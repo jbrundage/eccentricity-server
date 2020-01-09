@@ -1,0 +1,41 @@
+{
+  "name": "eccentricity",
+  "version": "1.0.0",
+  "description": "mercantile space shooter",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elendee/ecc.git"
+  },
+  "keywords": [
+    "3d",
+    "sandbox",
+    "space",
+    "merchant",
+    "mmo",
+    "javascript"
+  ],
+  "author": "multyplecks",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elendee/eccentricity-server/issues"
+  },
+  "homepage": "https://github.com/elendee/eccentricity-server#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-mongo": "^3.1.2",
+    "cookie-parser": "^1.4.4",
+    "cors": "^2.8.5",
+    "email-validator": "^2.0.4",
+    "express": "^4.17.1",
+    "express-session": "^1.17.0",
+    "memorystore": "^1.6.1",
+    "mysql": "^2.17.1",
+    "password-validator": "^5.0.2",
+    "readline": "^1.3.0",
+    "ws": "^7.2.1"
+  }
+}

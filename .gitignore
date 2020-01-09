@@ -1,0 +1,11 @@
+.*
+!.gitignore
+
+env.js
+
+package-lock.json
+
+node_modules/
+_dep/
+
+robots.txt
