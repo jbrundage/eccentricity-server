@@ -16,7 +16,7 @@ class Entity{
 
 		this.sys_id = init.sys_id
 
-		this.id = init.id || lib.unique_id( 'entity', ( GALAXY.systems[ this.sys_id ] ? ( GALAXY.systems[ this.sys_id ].entities || {} ) : {} ) )
+		this.id = init.id //|| lib.unique_id( 'entity', ( GALAXY.systems[ this.sys_id ] ? ( GALAXY.systems[ this.sys_id ].entities || {} ) : {} ) )
 
 		this.entropy = 'positive'
 

@@ -1,14 +1,13 @@
 const log = require('../../log.js')
-
-const DB = require('../../db.js');
-
-const Pilot = require('./Sentient/Pilot.js');
+const lib = require('../../lib.js');
 
 const Settings = require('../Settings.js');
 
-const lib = require('../../lib.js');
+const DB = require('../../db.js');
 
-const Document = require('./Entry.js')
+const Pilot = require('./Entity/Sentient/Pilot.js');
+
+const Entry = require('./_Entry.js')
 
 const GALAXY = require('../../single/Galaxy.js')()
 
@@ -16,7 +15,7 @@ const GALAXY = require('../../single/Galaxy.js')()
 log( 'call', 'User.js' )
 
 
-class User extends Document {
+class User extends Entry {
 
 	constructor( init ){
 
@@ -26,16 +25,17 @@ class User extends Document {
 
 		this.version = init.version || 2  // no init.id means this will un-auth entire session
 
-		this.collection = 'user'
+		this.table = 'users'
 
 		this.id = init.id
 		// this.id = lib.glean_ID( [init._id, init.id] ) || lib.unique_id( 'user', GALAXY.users )
 
 		this.pilots = init.pilots || []
 		// this.PILOT = init.PILOT || new Pilot()
-		init.PILOT = init.PILOT || {}
-		init.PILOT.id = this.id
-		this.PILOT = new Pilot( init.PILOT )
+		this.active_pilot = init.active_pilot
+		// init.PILOT = init.PILOT || {}
+		// init.PILOT.id = this.id
+		// this.PILOT = new Pilot( init.PILOT )
 
 		this.email = init.email || false
 		this.level = init.level || 0
@@ -54,13 +54,13 @@ class User extends Document {
 
 	async get_pilots ( request ) {
 
-		const db = DB.getDB()
+		// const db = DB.getDB()
 
 		const id_array = []
 
-		for( let i = 0; i < this.pilots.length; i++ ){
-			id_array.push( lib.OID( this.pilots[i] ) )
-		}
+		// for( let i = 0; i < this.pilots.length; i++ ){
+		// 	id_array.push( lib.OID( this.pilots[i] ) )
+		// }
 
 		const pilots = false
 

@@ -2,15 +2,15 @@ const env = require('../../env.js')
 const log = require('../../log.js')
 const lib = require('../../lib.js')
 
-const Station = require('../Entity/Station.js')
+const Station = require('./Entity/Insentient/Station.js')
 
-const Asteroid = require('../Entity/Asteroid.js')
+const Asteroid = require('../ephemera/Asteroid.js')
 
-const Document = require('./Entry.js')
+const Entry = require('./_Entry.js')
 
 const GALAXY = require('../../single/Galaxy.js')()
 
-const Commander = require('./Sentient/Commander.js')
+const Commander = require('./Entity/Sentient/Commander.js')
 
 
 const maps = {
@@ -23,7 +23,7 @@ const maps = {
 // const WSS = require('../Server.js')()
 log( 'call', 'System.js' )
 
-class System extends Document {
+class System extends Entry {
 
 
 	constructor( init ){

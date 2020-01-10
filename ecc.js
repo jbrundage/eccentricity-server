@@ -35,7 +35,7 @@ const query = require('./db_query.js')
 
 const auth = require('./auth.js')
 
-const User = require('./class/Collection/User.js')
+const User = require('./class/Entry/User.js')
 
 const WSS = require('./single/Server.js')()
 // const GALAXY = require('./single/Galaxy.js')()

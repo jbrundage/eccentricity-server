@@ -4,7 +4,7 @@ const DB = require('./db.js')
 
 const log = require('./log.js')
 
-// const System = require('./ecc/class/Collection/System.js')
+// const System = require('./ecc/class/Entry/System.js')
 
 // const GALAXY = require('./ecc/single/Galaxy.js')()
 

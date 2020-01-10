@@ -15,7 +15,7 @@ const DB = require('./db.js');
 
 const SALT_ROUNDS = 10;
 
-// const User = require('./class/Collection/User.js');
+// const User = require('./class/Entry/User.js');
 
 log('call', 'auth.js')
 
