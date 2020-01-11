@@ -55,7 +55,10 @@ class User extends Entry {
 
 		if( !this.PILOT ){
 
-			this.PILOT = await this.fetch_pilot()
+			return {temp: 'blorb'}
+
+			log('MONGO', 'user.fetch')
+			// this.PILOT = await this.fetch_pilot()
 
 		}
 
