@@ -16,7 +16,9 @@ function getInstance(){
 	})
 
 	wss.user_data = { // use this instead of passing WebSocket everywhere Server is required
+
 		OPEN: WebSocket.OPEN
+		
 	}
 
 	return wss

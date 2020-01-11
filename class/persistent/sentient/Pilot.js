@@ -1,8 +1,8 @@
 
 const env = require('../../../env.js')
 const lib = require('../../../lib.js')
-const Ship = require('../../Entity/Ship.js')
-const Freighter = require('../../Entity/ShipFreighter.js')
+const Ship = require('../entropic/Ship.js')
+const Freighter = require('../entropic/ShipFreighter.js')
 const Sentient = require('./Sentient.js')
 
 class Pilot extends Sentient {
@@ -24,10 +24,13 @@ class Pilot extends Sentient {
 		
 		this.rep = init.rep || {}
 
-		init.SHIP = init.SHIP || {}
-		init.SHIP.id = this.id
+		this.active_ship = init.active_ship 
+
+		this.ships = init.ships || []
+		// init.SHIP = init.SHIP || {}
+		// init.SHIP.id = this.id
 		// this.SHIP = new Freighter( init.SHIP )
-		this.SHIP = new Ship( init.SHIP )
+		// this.SHIP = new Ship( init.SHIP )
 
 		// server only:
 

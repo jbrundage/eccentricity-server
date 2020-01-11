@@ -1,8 +1,8 @@
 const lib = require('../../../lib.js')
-const Ship = require('../../Entity/Ship.js')
+const Ship = require('../entropic/Ship.js')
 
 
-const Document = require('../Entry.js')
+const Document = require('../_Entry.js')
 
 class Sentient extends Document {
 

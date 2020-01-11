@@ -5,10 +5,10 @@ const lib = require('../../lib.js')
 
 const GALAXY = require('../../single/Galaxy.js')()
 
-log('call', 'Entity.js')
+log('call', 'Ephemera.js')
 
 
-class Entity{
+class Ephemera{
 
 	constructor( init ){
 
@@ -46,14 +46,7 @@ class Entity{
 
 	}
 
-	is_hydrated(){
-
-		console.log('err: is_hydrated not meant to be executed, only tested for exists')
-
-	}
-
-
 
 }
 
-module.exports = Entity
+module.exports = Ephemera

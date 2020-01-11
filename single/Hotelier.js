@@ -3,8 +3,8 @@ const lib = require('../lib.js')
 const OID = require('mongodb').ObjectId
 const log = require('../log.js')
 
-const User = require('../class/Entry/User.js')
-const System = require('../class/Entry/System.js')
+const User = require('../class/persistent/User.js')
+const System = require('../class/persistent/System.js')
 
 const GALAXY = require('./Galaxy.js')()
 
@@ -104,7 +104,7 @@ class Hotelier {
 
 	touch_system( id ){
 
-		const db = DB.getDB()
+		const pool = DB.getPool()
 
 		return new Promise( (resolve, reject) => {
 

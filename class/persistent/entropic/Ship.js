@@ -1,14 +1,14 @@
 
-const log = require('../../log.js')
+const log = require('../../../log.js')
 
-const lib = require('../../lib.js')
+const lib = require('../../../lib.js')
 
-const Entity = require('./Entity.js');
+const Entry = require('../_Entry.js');
 
 log('call', 'Ship.js')
 
 
-class Ship extends Entity{
+class Ship extends Entry{
 
 	constructor( init ){
 

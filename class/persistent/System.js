@@ -2,15 +2,15 @@ const env = require('../../env.js')
 const log = require('../../log.js')
 const lib = require('../../lib.js')
 
-const Station = require('./Entity/Insentient/Station.js')
+const Station = require('./entropic/Station.js')
 
-const Asteroid = require('../ephemera/Asteroid.js')
+const Asteroid = require('../ephemera/entropic/Asteroid.js')
 
 const Entry = require('./_Entry.js')
 
 const GALAXY = require('../../single/Galaxy.js')()
 
-const Commander = require('./Entity/Sentient/Commander.js')
+const Commander = require('./sentient/Commander.js')
 
 
 const maps = {

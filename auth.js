@@ -15,7 +15,7 @@ const DB = require('./db.js');
 
 const SALT_ROUNDS = 10;
 
-// const User = require('./class/Entry/User.js');
+const User = require('./class/persistent/User.js');
 
 log('call', 'auth.js')
 
@@ -26,7 +26,7 @@ const auth = {
 
 	verify_user: function(request){
 
-		const db = DB.getDB()
+		const pool = DB.getPool()
 
 		const email = request.body.email.toLowerCase().trim()
 		const password = request.body.password
@@ -109,7 +109,7 @@ const auth = {
 
 			if( !request.session.user.id || request.session.user.id.match(/__/) ){ // should always be the case if routing correctly
 
-			const db = DB.getDB()
+			const pool = DB.getPool()
 
 			const email = request.body.email.toLowerCase().trim()
 
@@ -214,7 +214,7 @@ const auth = {
 
 	logout_user: function(request){
 
-		const db = DB.getDB()
+		const pool = DB.getPool()
 
 		return new Promise(function(resolve, reject){
 

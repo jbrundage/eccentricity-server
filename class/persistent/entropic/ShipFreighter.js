@@ -1,7 +1,7 @@
 
-const log = require('../../log.js')
+const log = require('../../../log.js')
 
-const lib = require('../../lib.js')
+const lib = require('../../../lib.js')
 
 const Ship = require('./Ship.js')
 

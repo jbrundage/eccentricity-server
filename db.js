@@ -2,49 +2,57 @@ const env = require('./env.js')
 const mysql = require('mysql')
 const assert = require('assert')
 
-// const connectionString = process.env.DATABASE_URL || 'postgres://localhost:5432/todo'
+let _pool
 
-let _db
-
-function initDB(callback) {
+function initPool( callback ) {
     
-    if (_db) {
-        console.warn("trying to init DB redundantly")
-        return callback(null, _db)
+    if ( _pool ) {
+        console.warn("trying to init pool redundantly")
+        return callback(null, _pool)
     }
 
-   	_db = mysql.createConnection({
+	//  _pool = mysql.createConnection({
+	// 	host: env.DB.HOST,
+	// 	db: env.DB.NAME,
+	// 	user: env.DB.USER,
+	// 	password: env.DB.PW,
+	// 	charset: env.DB.CHARSET
+	// 	// debug: // default false
+	// 	// trace: // default true
+	// 	// ssl: ...
+	// 	// socketPath: env.SOCKETPATH // unix socketpath :3
+	// })
+
+	_pool = mysql.createPool({
+		connectionLimit: 10,
 		host: env.DB.HOST,
-		db: env.DB.NAME,
 		user: env.DB.USER,
 		password: env.DB.PW,
-		// debug: // default false
-		// trace: // default true
-		// ssl: ...
-		// socketPath: env.SOCKETPATH // unix socketpath :3
+		database: env.DB.NAME,
+		charset: env.DB.CHARSET
 	})
 
-    // _db = new pg.Client({
-    //     user: env.db_user,
-    //     host: env.db_host,
-    //     database: env.db_name,
-    //     password: env.db_pw,
-    //     port: env.postgres_port,
-    // })
-    _db.connect(function(){
+	return callback( null, _pool )
 
-	    return callback(null, _db)
+	// pool.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
+	//   if (error) throw error;
+	//   console.log('The solution is: ', results[0].solution);
+	// })
+
+    // _pool.connect(function(){
+
+	   //  return callback(null, _pool)
 	    
-    })
+    // })
 
 }
 
-function getDB() {
-    assert.ok(_db, "DB has not been initialized, call init first")
-    return _db
+function getPool() {
+    assert.ok( _pool, "Pool has not been initialized, call init first" )
+    return _pool
 }
 
 module.exports = {
-    getDB,
-    initDB
+    getPool,
+    initPool
 }

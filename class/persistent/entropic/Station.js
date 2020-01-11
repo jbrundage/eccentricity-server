@@ -1,12 +1,12 @@
 
-const log = require('../../log.js')
+const log = require('../../../log.js')
 
-const Entity  = require('./Entity.js')
+const Entropic  = require('../../Entropic.js')
 
 log('call', 'Station.js')
 
 
-class Station extends Entity {
+class Station extends Entropic {
 
 	constructor( init ){
 

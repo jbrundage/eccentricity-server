@@ -35,7 +35,7 @@ const query = require('./db_query.js')
 
 const auth = require('./auth.js')
 
-const User = require('./class/Entry/User.js')
+const User = require('./class/persistent/User.js')
 
 const WSS = require('./single/Server.js')()
 // const GALAXY = require('./single/Galaxy.js')()
@@ -69,7 +69,11 @@ const gatekeep = function(req, res, next) {
 
 	log('gatekeep', req.path )
 
-	if( !req.path.match(/static/) ){
+	if( req.path.match(/\/resource/) || req.path.match(/\/client/) ){
+
+		next()
+
+	}else{
 
 		if( !req.session.user || !req.session.user.version || req.session.user.version != version ){
 
@@ -83,9 +87,9 @@ const gatekeep = function(req, res, next) {
 
 		}
 
-	}
+		next()
 
-	next()
+	}
 
 
 }
@@ -170,7 +174,10 @@ exp.get('/robots.txt', function(request, response){
 
 exp.get('/fetch_user', function( request, response ){
 
-	response.json( request.session.user )
+	request.session.user.fetch()
+	.then( res => {
+		response.json( res )
+	}).catch( err => { console.log('err fetch_user: ', err) })
 
 })
 
@@ -215,6 +222,24 @@ exp.get('/warn', function(request, response){
 // ^^ GET
 // -------
 // vv POST
+
+exp.post('/seed_galaxy', function( request, response ){
+
+	query.seed_galaxy( request )
+	.then( res => {
+		response.json( res )
+	}).catch( err => { log('flag', 'seed_galaxy err: ', err) })
+
+})
+
+exp.post('/seed_system', function( request, response ){
+
+	query.seed_system( request )
+	.then( res => {
+		response.json( res )
+	}).catch( err => { log('flag', 'seed_system err: ', err) })
+
+})
 
 exp.post('/fetch_system', function( request, response ){
 
@@ -311,15 +336,15 @@ exp.get('*', function(request, response){
 
 
 
-DB.initDB(function(err, db){
+DB.initPool(( err, db ) => {
 
-	if(err) return console.error('no db: ', err)
+	if(err) return console.error( 'no db: ', err )
 	
 	console.log('boot', 'DB init:', Date.now())
   
 	server.listen( env.PORT, function() {
 
-		log('boot', 'Starting server on ' + host + ':' + env.PORT, Date.now())
+		log( 'boot', 'Starting server on ' + host + ':' + env.PORT, Date.now() )
 
 		WSS.on('connection', function connection( socket, req ) {
 

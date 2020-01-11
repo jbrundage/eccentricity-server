@@ -12,7 +12,7 @@ class Entry {
 
 		init = init || {}
 
-		this.root = 'document'
+		this.root = 'entry'
 
 	}
 
@@ -53,7 +53,7 @@ class Entry {
 
 		const doc = this
 
-		const db = DB.getDB()
+		const pool = DB.getPool()
 
 		return new Promise( ( resolve, reject ) => {
 

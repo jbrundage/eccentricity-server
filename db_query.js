@@ -2,6 +2,8 @@ const env = require('./env.js')
 
 const DB = require('./db.js')
 
+const mysql = require('mysql')
+
 const log = require('./log.js')
 
 // const System = require('./ecc/class/Entry/System.js')
@@ -14,7 +16,7 @@ const r = {
 
 	find_session_system: function( request ){  
 
-		const db = DB.getDB()
+		const pool = DB.getPool()
 
 		const sys_id = request.session.user.PILOT.station_key.system
 
@@ -81,6 +83,78 @@ const r = {
 
 		})
 
+	},
+
+	seed_galaxy: async function( req ){
+
+		console.log( req.body )
+
+		if( req.body.key === env.SECRET ){
+
+			console.log( 'ja: ', req.body )
+
+			const pool = DB.getPool()
+
+			pool.query(`
+				
+				CREATE TABLE users (id SERIAL PRIMARY KEY, 
+					type VARCHAR(40) not null, 
+					subtype VARCHAR(40) not null, 
+					json BLOB not null);
+
+				CREATE TABLE pilots (id SERIAL PRIMARY KEY, 
+					type VARCHAR(40) not null, 
+					subtype VARCHAR(40) not null, 
+					json BLOB not null);
+				
+				CREATE TABLE ships (id SERIAL PRIMARY KEY, 
+					type VARCHAR(40) not null, 
+					subtype VARCHAR(40) not null, 
+					json BLOB not null);
+				
+				CREATE TABLE quests (id SERIAL PRIMARY KEY, 
+					type VARCHAR(40) not null, 
+					subtype VARCHAR(40) not null, 
+					json BLOB not null);
+				
+				CREATE TABLE sentient (id SERIAL PRIMARY KEY, 
+					type VARCHAR(40) not null, 
+					subtype VARCHAR(40) not null, 
+					json BLOB not null);
+				
+				CREATE TABLE systems (id SERIAL PRIMARY KEY, 
+					type VARCHAR(40) not null, 
+					subtype VARCHAR(40) not null, 
+					json BLOB not null);
+
+			`, ( err, results, field ) => {
+
+				return results
+
+			    // pool.query('INSERT INTO items(type, subtype, json) values($1, $2)', [ data.text, data.complete ])
+			    
+			})
+
+		}
+
+	},
+
+	seed_system: seed_system,
+
+	query: function( req ){
+
+		if( req.body.key === env.SECRET ){
+
+			const pool = DB.getPool()
+
+			pool.query( req.body.query, ( err, res, fields) =>{
+
+				console.log('query done: ', res )
+
+			})
+
+		}
+
 	}
 
 }
@@ -94,3 +168,8 @@ module.exports = r
 
 
 
+async function seed_system( req ){
+
+
+
+}

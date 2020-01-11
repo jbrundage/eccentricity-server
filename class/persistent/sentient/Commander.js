@@ -1,7 +1,7 @@
 
 const env = require('../../../env.js')
 const lib = require('../../../lib.js')
-const Station = require('../../Entity/Station.js')
+const Station = require('../entropic/Station.js')
 const Sentient = require('./Sentient.js')
 
 const GALAXY = require('../../../single/Galaxy.js')()
@@ -25,10 +25,12 @@ class Commander extends Sentient {
 		
 		this.rep = init.rep || {}
 
-		init.STATION = init.STATION || {}
-		init.STATION.id = this.id
-		// this.STATION = new Freighter( init.STATION )
-		this.STATION = new Station( init.STATION )
+		this.active_station = init.active_station
+
+		// init.STATION = init.STATION || {}
+		// init.STATION.id = this.id
+		// // this.STATION = new Freighter( init.STATION )
+		// this.STATION = new Station( init.STATION )
 
 		// server only:
 
