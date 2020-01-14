@@ -44,6 +44,8 @@ const HOTELIER = require('./single/Hotelier.js')()
 // const ecc_read = require('./_ecc-readline.js')
 const readline = require('readline')
 
+const render = require('./render_html.js')
+
 
 
 log('call', 'index-ecc.js')
@@ -137,12 +139,15 @@ exp.use( gatekeep )
 
 // routing
 exp.get('/', function(request, response) {
-	response.sendFile('/client/html/splash.html', {root: '../'})
+
+	
+	// response.sendFile('/client/html/splash.html', {root: '../'})
+	response.send( render('index') )
 	// response.send(erender('/client/html/splash.html.js', request))
 })
 
 exp.get('/login*', function(request, response){
-	response.sendFile('/client/html/login.html', {root: '../'})
+	response.send( render('login') )	
 })
 
 exp.get('/credit*', function(request, response){
@@ -174,17 +179,27 @@ exp.get('/robots.txt', function(request, response){
 
 exp.get('/fetch_user', function( request, response ){
 
-	request.session.user.fetch()
-	.then( res => {
-		response.json( res )
-	}).catch( err => { console.log('err fetch_user: ', err) })
+	request.session.user.fetch_user()
+		.then( res => {
+			response.json({
+				success: true,
+				user: res
+			})
+		})
+		.catch( err => { 
+			response.json({
+				success: false,
+				msg: 'invalid user'
+			})
+			console.log('err fetch_user: ', err) 
+		})
 
 })
 
 
 exp.get('/fetch_pilots', function(request, response){
 
-	request.session.user.get_pilots()
+	request.session.user.fetch_pilots()
 		.then(function(res){
 			response.status(200).json(res)
 		})
@@ -226,18 +241,18 @@ exp.get('/warn', function(request, response){
 exp.post('/seed_galaxy', function( request, response ){
 
 	query.seed_galaxy( request )
-	.then( res => {
-		response.json( res )
-	}).catch( err => { log('flag', 'seed_galaxy err: ', err) })
+		.then( res => {
+			response.json( res )
+		}).catch( err => { log('flag', 'seed_galaxy err: ', err) })
 
 })
 
 exp.post('/seed_system', function( request, response ){
 
 	query.seed_system( request )
-	.then( res => {
-		response.json( res )
-	}).catch( err => { log('flag', 'seed_system err: ', err) })
+		.then( res => {
+			response.json( res )
+		}).catch( err => { log('flag', 'seed_system err: ', err) })
 
 })
 
@@ -283,9 +298,9 @@ exp.post('/set_pilot', function(request, response){
 		})
 })
 
-exp.get('/logout', function(request, response){
-	auth.logout_user(request)
-		.then(function(res){
+exp.get('/logout', function( request, response ){
+	auth.logout_user( request )
+		.then( function( res ){
 		// res.redirect('/')
 			response.redirect('/')
 			// response.sendFile('/client/html/splash.html', {root: __dirname}); log('routing', 'landed root')
@@ -351,7 +366,7 @@ DB.initPool(( err, db ) => {
 			// socket.upgradeReq = req // this works for perma-storage but is 20% heavier according to ws man
 
 			const cookies = cookie.parse( req.headers.cookie )
-		    const sid = cookieParser.signedCookie( cookies['connect.sid'], env.SECRET )
+			const sid = cookieParser.signedCookie( cookies['connect.sid'], env.SECRET )
 
 			STORE.get( sid, function (err, ss) {
 
@@ -376,7 +391,7 @@ DB.initPool(( err, db ) => {
 						// return false 
 					}else{
 
-					    STORE.createSession( req, ss ) //creates the session object and APPEND on req (!)
+						STORE.createSession( req, ss ) //creates the session object and APPEND on req (!)
 
 						socket.request = req
 
@@ -452,15 +467,15 @@ if( env.port != 8080 ){
 		default:
 			readline_last.unshift(line.trim())
 			try_readline(line.trim())
-	   			break
+			break
 		}
 		rl.prompt()
 	}).on('close', () => {
 		process.exit(0)
 	})
 
-	function try_readline( msg ){
-		try{ log('serverlog', ( eval(`${msg}`) ) ) }catch(e){ console.log(e) }
-	}
+}
 
+function try_readline( msg ){
+	try{ log('serverlog', ( eval(`${msg}`) ) ) }catch(e){ console.log(e) }
 }

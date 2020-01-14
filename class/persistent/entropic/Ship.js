@@ -17,6 +17,7 @@ class Ship extends Entry{
 		init = init || {}
 
 		this.type = 'ship'
+		this.subtype = init.subtype
 
 		this.clickable = true
 
@@ -36,7 +37,6 @@ class Ship extends Entry{
 		this.name = init.name || lib.tables.names.ships[ Math.floor( Math.random() * lib.tables.names.ships.length ) ]
 
 		// stats
-		this.sections = init.sections || 1
 		this.turrets = init.turrets || 0
 		this.shields = init.shields || 0
 		this.stealth = init.stealth || 0
@@ -46,6 +46,10 @@ class Ship extends Entry{
 		// movement
 		this.thrust = init.thrust || 1.0000005
 		this.turn_speed = init.turn_speed || .5
+
+
+
+		// instantiated
 		this.align_buffer = init.align_buffer || 5
 		this.needs_align = 0
 

@@ -22,7 +22,7 @@ class Pilot extends Sentient {
 		this.license = init.license || 'provisional'
 		this.licensed = init.licensed || Date.now()
 		
-		this.rep = init.rep || {}
+		this.reputation = init.reputation || {}
 
 		this.active_ship = init.active_ship 
 

@@ -26,7 +26,6 @@ class Station extends Entropic {
 		this.capacity = init.capacity || 50 // players
 		this.hangar = init.hangar || 1 // defense ships
 		
-		this.sections = init.sections || 1
 		this.turrets = init.turrets || 0
 		this.shields = init.shields || 0
 		this.stealth = init.stealth || 0

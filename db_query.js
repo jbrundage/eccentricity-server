@@ -85,51 +85,43 @@ const r = {
 
 	},
 
-	seed_galaxy: async function( req ){
+	seed_galaxy: async function( secret ){
 
-		console.log( req.body )
-
-		if( req.body.key === env.SECRET ){
-
-			console.log( 'ja: ', req.body )
+		if( secret === env.SECRET ){
 
 			const pool = DB.getPool()
 
+			// console.log( pool )
+
 			pool.query(`
 				
-				CREATE TABLE users (id SERIAL PRIMARY KEY, 
-					type VARCHAR(40) not null, 
-					subtype VARCHAR(40) not null, 
-					json BLOB not null);
+				CREATE TABLE users (id PRIMARY, 
+					type VARCHAR(40) not null  );
 
-				CREATE TABLE pilots (id SERIAL PRIMARY KEY, 
-					type VARCHAR(40) not null, 
-					subtype VARCHAR(40) not null, 
-					json BLOB not null);
+				CREATE TABLE pilots (id PRIMARY, 
+					type VARCHAR(40) not null  );
 				
-				CREATE TABLE ships (id SERIAL PRIMARY KEY, 
-					type VARCHAR(40) not null, 
-					subtype VARCHAR(40) not null, 
-					json BLOB not null);
+				CREATE TABLE ships (id PRIMARY, 
+					type VARCHAR(40) not null  );
 				
-				CREATE TABLE quests (id SERIAL PRIMARY KEY, 
-					type VARCHAR(40) not null, 
-					subtype VARCHAR(40) not null, 
-					json BLOB not null);
+				CREATE TABLE quests (id PRIMARY, 
+					type VARCHAR(40) not null  );
 				
-				CREATE TABLE sentient (id SERIAL PRIMARY KEY, 
-					type VARCHAR(40) not null, 
-					subtype VARCHAR(40) not null, 
-					json BLOB not null);
+				CREATE TABLE sentient (id PRIMARY, 
+					type VARCHAR(40) not null  );
 				
-				CREATE TABLE systems (id SERIAL PRIMARY KEY, 
-					type VARCHAR(40) not null, 
-					subtype VARCHAR(40) not null, 
-					json BLOB not null);
+				CREATE TABLE systems (id PRIMARY, 
+					type VARCHAR(40) not null  );
 
 			`, ( err, results, field ) => {
 
-				return results
+				console.log( err )
+				console.log( results )
+				console.log( field )
+
+				return 'ok'
+
+				// return [ err, results, field ]
 
 			    // pool.query('INSERT INTO items(type, subtype, json) values($1, $2)', [ data.text, data.complete ])
 			    

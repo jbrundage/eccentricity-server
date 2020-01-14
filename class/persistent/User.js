@@ -51,72 +51,112 @@ class User extends Entry {
 
 	}
 
-	async fetch( request ){
+	fetch_user( request ){
 
-		if( !this.PILOT ){
-
-			return {temp: 'blorb'}
-
-			log('MONGO', 'user.fetch')
-			// this.PILOT = await this.fetch_pilot()
-
-		}
-
-	}
-
-
-	async fetch_pilot(){
+		const user = this
 
 		const pool = DB.getPool()
 
-		const pilot = await pool.query({
-			sql: `SELECT * from pilots WHERE id = ? limit 1`,
-			timeout: 30000, // 30s
-			values: [ this.active_pilot ]
-		}, ( err, results, fields ) => {
-			
-			if( err ) return false
+		return new Promise( (resolve, reject) => {
 
-			console.log( 'results: ', results )
+			if( !user.active_pilot ) this.PILOT = new Pilot()
 
-			let pilot = results[0]
+			if( typeof( user.PILOT.id ) === 'number' ){
 
-			// if pilot does not belong to user return false..
+				pool.query('SELECT * FROM `pilots` WHERE `id` = ?', [ user.PILOT.id ], ( err, results, fields ) => {
 
-			return results[0]
+					if( err ){
+						reject( err )
+						return false
+					}
 
+					log('flag', 'fetch user pilot: ', results )
+
+					user.PILOT = new Pilot( results[0] )
+
+				})
+
+			}
+
+			resolve( {temp: 'blorb'} )
 
 		})
 
 	}
 
 
-	// async get_pilots ( request ) {
+	fetch_active_pilot(){
 
-	// 	// const pool = DB.getPool()
+		const pool = DB.getPool()
 
-	// 	const id_array = []
+		const user = this
 
-	// 	// for( let i = 0; i < this.pilots.length; i++ ){
-	// 	// 	id_array.push( lib.OID( this.pilots[i] ) )
-	// 	// }
+		return new Promise( (resolve, reject) => {
 
-	// 	const pilots = false
+			if( !user.active_pilot ) {
+				reject('invalid user')
+				return false
+			}
 
-	// 	log('MONGO', 'User.js')
+			pool.query({
+				sql: `SELECT * from pilots WHERE id = ? limit 1`,
+				timeout: 30000, // 30s
+				values: [ user.active_pilot ]
+			}, ( err, results, fields ) => {
+				
+				if( err ) {
+					reject( err )
+					return false
+				}
 
-	// 	// const pilots = await db.collection('pilots').find({
-	// 	// 	"_id": {
-	// 	// 		$in: [ id_array ]
-	// 	// 	}
-	// 	// }).toArray()
+				console.log( 'results: ', results )
 
-	// 	return {
-	// 		success: true,
-	// 		pilots: pilots
-	// 	}
+				const pilot = results[0]
 
-	// }
+				// if pilot does not belong to user return false..
+
+				return results[0]
+
+			})
+
+		})
+
+	}
+
+
+	fetch_pilots ( request ) {
+
+		const pool = DB.getPool()
+
+		const user = this
+
+		return new Promise( ( resolve, reject ) => {
+
+			if( user.pilots.length ){
+
+				pool.query('SELECT * FROM `pilots` WHERE `id` IN (?)', [ user.pilots ], ( err, res, fields ) => {
+
+					if( err ){
+						reject( err )
+						return false
+					}
+
+					console.log(' fields:? ', fields )
+
+					const pilots = res
+
+					resolve({
+						success: true,
+						pilots: pilots
+					})
+
+				})
+
+			}
+
+		})
+
+	}
 
 
 

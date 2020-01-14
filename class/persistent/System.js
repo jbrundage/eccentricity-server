@@ -34,20 +34,22 @@ class System extends Entry {
 
 		this.initialized = init.initialized
 
-		this.collection = 'system'
+		this.table = 'system'
 
 		// this.id = lib.glean_ID( [init._id, init.id] )
 		this.id = init.id
 
-		this.sentient = this.validate_ids( init.sentient )
-		this.entities = this.validate_ids( init.entities )
-
-		this.reputations = init.reputations || {} 
+		this.reputation = init.reputation || {} 
 		// this.faction // only access through get_faction()
 
 		this.planets = init.planets || []
 		this.traffic = init.traffic || 5
 
+
+		// instantiated
+
+		this.sentient = this.validate_ids( init.sentient )
+		this.entities = this.validate_ids( init.entities )
 
 		this.pulses = {
 			npc: false
