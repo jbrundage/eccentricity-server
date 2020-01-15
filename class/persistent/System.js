@@ -42,7 +42,7 @@ class System extends Entry {
 		this.reputation = init.reputation || {} 
 		// this.faction // only access through get_faction()
 
-		this.planets = init.planets || []
+		this.planet = init.planet
 		this.traffic = init.traffic || 5
 
 

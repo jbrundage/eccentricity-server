@@ -65,7 +65,7 @@ const lru_session = session({
 })
 
 
-const version = 11
+const version = 12
 
 const gatekeep = function(req, res, next) {
 
@@ -79,17 +79,27 @@ const gatekeep = function(req, res, next) {
 
 		if( !req.session.user || !req.session.user.version || req.session.user.version != version ){
 
-			req.session.user = new User({
-				version: version
-			})
+			(async() => {
+
+				req.session.user = new User({
+					version: version
+				})		
+				req.session.user.PILOT = await req.session.user.touch_pilot()
+				req.session.user.PILOT.SHIP = await req.session.user.PILOT.touch_ship()
+
+				if( !req.session.user.PILOT || !req.session.user.PILOT.SHIP) log('flag', 'invalid user init', err )
+
+				next()
+
+			})()
 
 		}else{
 
 			req.session.user = new User( req.session.user )
+			next()
 
 		}
 
-		next()
 
 	}
 
@@ -177,9 +187,11 @@ exp.get('/robots.txt', function(request, response){
 
 
 
-exp.get('/fetch_user', function( request, response ){
+exp.get('/touch_user', function( request, response ){
 
-	request.session.user.fetch_user()
+	// console.log( request.session.user.touch_user() )
+
+	request.session.user.touch_user( 'pilotBool', 'shipBool' )
 		.then( res => {
 			response.json({
 				success: true,
@@ -189,24 +201,29 @@ exp.get('/fetch_user', function( request, response ){
 		.catch( err => { 
 			response.json({
 				success: false,
-				msg: 'invalid user'
+				err: err
 			})
-			console.log('err fetch_user: ', err) 
 		})
 
 })
 
 
-exp.get('/fetch_pilots', function(request, response){
+exp.get('/fetch_pilots', function( request, response ){
 
 	request.session.user.fetch_pilots()
-		.then(function(res){
-			response.status(200).json(res)
+		.then(function( res ){
+			response.json({
+				success: true,
+				pilots: res 
+			})
 		})
-		.catch(function(err){
-			log('flag', err)
-			response.status(500).json(err)
+		.catch(function( err ){
+			response.json({
+				success: false,
+				err: err
+			})
 		})
+
 })
 
 
@@ -396,6 +413,15 @@ DB.initPool(( err, db ) => {
 						socket.request = req
 
 						HOTELIER.init_player( socket )
+						.then( res => {
+							log('routing', 'player initiated: ', socket.id )
+						}).catch( err => {
+							socket.send(JSON.stringify({
+								type: 'error',
+								msg: err
+							}))
+							log('flag', 'err init_player: ', err ) 
+						})
 
 					}
 

@@ -1,6 +1,8 @@
 const log = require('../log.js')
 const lib = require('../lib.js')
 
+const DB = require('../db.js')
+
 log( 'call', 'Galaxy.js' )
 
 
@@ -33,6 +35,12 @@ class Galaxy {
 		this.systems = init.systems || {}
 
 	}
+
+
+
+	
+
+
 
 	awaken(){
 

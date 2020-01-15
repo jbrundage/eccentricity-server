@@ -23,7 +23,7 @@ class Commander extends Sentient {
 		this.license = init.license || 'provisional'
 		this.licensed = init.licensed || Date.now()
 		
-		this.rep = init.rep || {}
+		this.reputation = init.reputation || {}
 
 		this.active_station = init.active_station
 
@@ -41,7 +41,10 @@ class Commander extends Sentient {
 
 		// this.edited = init.edited || 0
 
-		this.coin = init.coin || 100
+		this.coin = (function(){
+			if( init.coin === 0 ) return 0
+			return init.coin || 100
+		})()
 
 	}
 

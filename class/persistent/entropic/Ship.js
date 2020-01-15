@@ -54,18 +54,18 @@ class Ship extends Entry{
 		this.needs_align = 0
 
 		// init.ref = init.ref || {}
-		this.ref = init.ref || {}
-		this.ref.momentum = this.ref.momentum || {
-			x: lib.tables.momentum.ship.x,
-			y: lib.tables.momentum.ship.y,
-			z: lib.tables.momentum.ship.z
-		}
+		// this.ref = init.ref || {}
+		// this.ref.momentum = this.ref.momentum || {
+		// 	x: lib.tables.momentum.ship.x,
+		// 	y: lib.tables.momentum.ship.y,
+		// 	z: lib.tables.momentum.ship.z
+		// }
 		// this.ref.momentum = init.ref.momentum || lib.tables.momentum.ship
 		// this.ref.momentum.x = lib.tables.momentum.ship.x
 		// this.ref.momentum.y = lib.tables.momentum.ship.y
 		// this.ref.momentum.z = lib.tables.momentum.ship.z
 
-		this.private = init.private || this.private.push('align_buffer', 'equipped', 'needs_align')
+		this.private = init.private || ['align_buffer', 'equipped', 'needs_align']
 
 	}
 

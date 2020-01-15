@@ -1,3 +1,4 @@
+const env = require('../env.js')
 const DB = require('../db.js')
 const lib = require('../lib.js')
 const OID = require('mongodb').ObjectId
@@ -33,141 +34,115 @@ class Hotelier {
 	}
 
 
-	init_player( socket ){
+	async init_player( socket ){
 
-
-		if( socket.request.session.user ){
-
-			socket.id = socket.request.session.user.id || null // socket.id must match existing 
-
-			if( Object.keys( GALAXY.users ).length < 25 ){
-
-				// let system_id = lib.glean_ID( [ socket.request.session.user.PILOT.station_key.system ] )
-				let system_id = socket.request.session.user.PILOT.station_key.system
-
-				console.log( socket.request.session.user.PILOT.station_key )
-
-				this.touch_system( system_id )
-					.then( SYSTEM  => {
-
-						if( SYSTEM ){
-
-							GALAXY.users[ socket.id ] = new User( socket.request.session.user ) // idk why this instantiation isn't carried over from gatekeeper() but it isn't
-							GALAXY.sockets[ socket.id ] = socket
-
-							SYSTEM.entities[ socket.id ] = GALAXY.users[ socket.id ].PILOT.SHIP // !!
-							SYSTEM.sentient[ socket.id ] = GALAXY.users[ socket.id ].PILOT // !!
-
-							SYSTEM.bind_player( socket.id )
-
-							GALAXY.sockets[ socket.id ].send( JSON.stringify( {
-								type: 'init_session',
-								system: SYSTEM,
-								user: GALAXY.users[ socket.id ]
-							}) )
-
-							SYSTEM.emit('broadcast', socket.id, JSON.stringify( {
-								type: 'init_pilot',
-								pilot: GALAXY.users[ socket.id ].PILOT  //.core()
-							} ) )
-
-						}else{
-
-							log('MONGO', 'Hotelier.js 2')
-
-						}
-
-					}).catch( err => { 
-						socket.send(JSON.stringify({
-							type: 'error',
-							msg: 'failed to find initial system'
-						}))
-						console.log('err touch_system: ', err) 
-					})
-
-			}else{
-
-				console.log('max users reached')
-
-			}
-
-		}else{
-
+		if( !socket.request.session.user ){
 			socket.disconnect()
-			console.log('user not initialized for socket: ', socket.id, '(' + socket.request.session.user + ')' )
-
+			log('hotelier', 'user not initialized for socket: ', socket.id, '(' + socket.request.session.user + ')' )
+			return false
 		}
+
+		socket.id = socket.request.session.user.id || null // socket.id must match existing 
+
+		if( Object.keys( GALAXY.users ).length > env.MAX_PILOTS ){
+			log('hotelier', 'max users reached' )
+			return false
+		}
+
+		let station_key = socket.request.session.user.PILOT.station_key
+
+		// if( typeof( station_key ) !== 'number' ){
+		// 	return 
+		// }
+
+		// console.log( socket.request.session.user.PILOT.station_key )
+
+		const SYSTEM = await this.touch_system( station_key )
+
+		if( !SYSTEM ){
+			log('hotelier', 'failed to init system' )
+			return false
+		}
+
+		GALAXY.users[ socket.id ] = new User( socket.request.session.user ) // idk why this instantiation isn't carried over from gatekeeper() but it isn't
+		GALAXY.sockets[ socket.id ] = socket
+
+		SYSTEM.entities[ socket.id ] = GALAXY.users[ socket.id ].PILOT.SHIP // !!
+		SYSTEM.sentient[ socket.id ] = GALAXY.users[ socket.id ].PILOT // !!
+
+		SYSTEM.bind_player( socket.id )
+
+		GALAXY.sockets[ socket.id ].send( JSON.stringify( {
+			type: 'init_session',
+			system: SYSTEM,
+			user: GALAXY.users[ socket.id ]
+		}) )
+
+		SYSTEM.emit('broadcast', socket.id, JSON.stringify( {
+			type: 'init_pilot',
+			pilot: GALAXY.users[ socket.id ].PILOT  //.core()
+		} ) )
 
 	}
 
 
 
-	touch_system( id ){
+
+	async touch_system( id ){
 
 		const pool = DB.getPool()
 
-		return new Promise( (resolve, reject) => {
+		if( GALAXY.systems[ id ] ) { 
+
+			// GALAXY.systems[ id ] = new System( GALAXY.systems[ id ] ) // every player arrival could be way overkill
+
+			if( !GALAXY.pulse ) GALAXY.awaken()
+
+			return GALAXY.systems[ id ]
+
+		}
 
 
+		// const res = await new Promise( ( resolve, reject ) => {
 
-			// if( !lib.is_mongo_id_string( id ) ){
-   //              reject('invalid sys id: ' + id)
-   //              return false
-   //          }  
-
-			if( !GALAXY.systems[ id ]){
-
-				log('MONGO', 'Hotelier.js')
-
-				resolve()
-
-				// db.collection('system').findOne({
-
-				// 	_id: { $eq: OID( id ) }
-
-				// }, function( err, res ){
-
-				// 	if( err || !res ) {
-				// 		console.log('error sys init')
-				// 		reject( err )
-				// 		return false
-				// 	}
-
-				// 	GALAXY.systems[ id ] = new System( res )
-
-				// 	// GALAXY.systems[ id ].touch()
-				// 	GALAXY.systems[ id ].hydrate()
-				// 	.then( res => {
-
-				// 		console.log( res )
-
-				// 		if( !GALAXY.pulse ) GALAXY.awaken()
-
-				// 		resolve( GALAXY.systems[ id ])
-
-				// 	}).catch( err => { console.log( 'err touch: ', err ) } )
-
-				// })
-
-			}else{
-
-				// GALAXY.systems[ id ] = new System( GALAXY.systems[ id ] ) // hmm
-
-				// GALAXY.systems[ id ].touch()
-				// .then( res => {
-					
-				// 	console.log( res )
-
-				// 	if( !GALAXY.pulse ) GALAXY.awaken()
-
-					resolve( GALAXY.systems[ id ])
-
-				// }).catch( err => { console.log( 'err touch: ', err ) } )
-
+		pool.query('SELECT * FROM \`systems\` WHERE id = ? LIMIT 1', [ id ], ( err, res, fields ) => {
+			if( err || !res ) {
+				log('hotelier', 'error sys init: ', err)
+				return false
 			}
+
+			log('hotelier', 'hydrate system: ', res )
+
+			if( !GALAXY.pulse ) GALAXY.awaken()
+
+			GALAXY.systems[ id ] = new System( res[0] )
+
+			GALAXY.systems[ id ].hydrate()
+			.then( ok => {
+
+				return GALAXY.systems[ id ]
+
+			}).catch( err => { log( 'flag', err ); return false } )
 
 		})
 
+		// })
+	}
+
+
+	async create_system( init ){
+
+		const pool = DB.getPool()
+
+		const system = new System()
+
+		const vals = {
+			name: system.name,
+			reputation: JSON.stringify( system.reputation ),
+			traffic: system.traffic
+		}
+
+		pool.query('INSERT INTO \`systems\` ( name, reputation, traffic ) VALUES ( ? , ? , ? )')
 	}
 
 }

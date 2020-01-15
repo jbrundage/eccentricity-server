@@ -51,80 +51,112 @@ class User extends Entry {
 
 	}
 
-	fetch_user( request ){
+	async touch_user( touch_pilot, touch_ship ){
 
 		const user = this
 
-		const pool = DB.getPool()
+		// return new Promise( ( resolve, reject ) => {
 
-		return new Promise( (resolve, reject) => {
+		if( !touch_pilot ) return user
 
-			if( !user.active_pilot ) this.PILOT = new Pilot()
+		user.PILOT = await user.touch_pilot()
 
-			if( typeof( user.PILOT.id ) === 'number' ){
+		if( !touch_ship ) return user
 
-				pool.query('SELECT * FROM `pilots` WHERE `id` = ?', [ user.PILOT.id ], ( err, results, fields ) => {
+		user.PILOT.SHIP = await user.PILOT.touch_ship()
 
-					if( err ){
-						reject( err )
-						return false
-					}
-
-					log('flag', 'fetch user pilot: ', results )
-
-					user.PILOT = new Pilot( results[0] )
-
-				})
-
-			}
-
-			resolve( {temp: 'blorb'} )
-
-		})
+		return user
 
 	}
 
 
-	fetch_active_pilot(){
-
-		const pool = DB.getPool()
+	touch_pilot(){
 
 		const user = this
+
+		const pool = DB.getPool()
 
 		return new Promise( (resolve, reject) => {
 
 			if( !user.active_pilot ) {
-				reject('invalid user')
-				return false
-			}
 
-			pool.query({
-				sql: `SELECT * from pilots WHERE id = ? limit 1`,
-				timeout: 30000, // 30s
-				values: [ user.active_pilot ]
-			}, ( err, results, fields ) => {
-				
-				if( err ) {
-					reject( err )
+				user.PILOT = new Pilot() // builds provisional Pilot
+
+				resolve( user.PILOT ) // already instantiated by gatekeeper()
+
+			}else{
+
+				if( typeof( user.active_pilot ) !== 'number' || user.active_pilot <= 0 ) {
+					resolve({
+						success: false,
+						msg: 'invalid active_pilot'
+					})
 					return false
 				}
 
-				console.log( 'results: ', results )
+				let needs_query = false
 
-				const pilot = results[0]
+				if( user.PILOT ){
 
-				// if pilot does not belong to user return false..
+					if( user.PILOT.id === user.active_pilot ){
 
-				return results[0]
+						user.PILOT = new Pilot( user.PILOT )
 
-			})
+						resolve({
+							success: true,
+							pilot: user.PILOT
+						})
+						return true
+
+					}else{
+
+						needs_query = true
+
+					}
+
+				}else{
+
+					needs_query = true
+
+				}
+
+				if( needs_query ){
+
+					pool.query('SELECT * FROM `pilots` WHERE `id` = ?', [ user.active_pilot ], ( err, results, fields ) => {
+
+						if( err || !results ){
+							reject( err )
+							return false
+						}
+
+						log('flag', 'fetch user pilot: ', results )
+
+						user.PILOT = new Pilot( results[0] )
+
+						resolve({
+							success: true,
+							pilot: user.PILOT
+						})
+
+					})
+
+				}else{
+
+					resolve({
+						success: false,
+						msg: 'invalid pilot retrieval'
+					})
+
+				}
+
+			}
 
 		})
 
 	}
 
 
-	fetch_pilots ( request ) {
+	fetch_pilots() {
 
 		const pool = DB.getPool()
 
@@ -132,27 +164,23 @@ class User extends Entry {
 
 		return new Promise( ( resolve, reject ) => {
 
-			if( user.pilots.length ){
+			pool.query('SELECT * FROM `pilots` WHERE user_id= ?', [ user.id ], ( err, res, fields ) => {
 
-				pool.query('SELECT * FROM `pilots` WHERE `id` IN (?)', [ user.pilots ], ( err, res, fields ) => {
+				if( err ){
+					reject( err )
+					return false
+				}
 
-					if( err ){
-						reject( err )
-						return false
-					}
+				console.log(' res:? ', err, res )//, fields )
 
-					console.log(' fields:? ', fields )
+				const pilots = res
 
-					const pilots = res
-
-					resolve({
-						success: true,
-						pilots: pilots
-					})
-
+				resolve({
+					success: true,
+					pilots: pilots
 				})
 
-			}
+			})
 
 		})
 

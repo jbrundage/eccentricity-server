@@ -6,6 +6,8 @@ const mysql = require('mysql')
 
 const log = require('./log.js')
 
+const Hotelier = require('./single/Hotelier.js')
+
 // const System = require('./ecc/class/Entry/System.js')
 
 // const GALAXY = require('./ecc/single/Galaxy.js')()
@@ -162,6 +164,19 @@ module.exports = r
 
 async function seed_system( req ){
 
+	if( !req.body.secret === env.SECRET ) return false
 
+	try{
+
+		const system = await Hotelier.create_system()
+
+		return true
+
+	}catch( err ){
+
+		log('flag', 'failed to seed ', err )
+
+	}
 
 }
+
