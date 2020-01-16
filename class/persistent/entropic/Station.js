@@ -1,7 +1,9 @@
 
 const log = require('../../../log.js')
+const lib = require('../../../lib.js')
 
-const Entropic  = require('../../Entropic.js')
+// const Entropic  = require('../../Entropic.js')
+const Entropic  = require('./_PersistentEntropic.js')
 
 log('call', 'Station.js')
 
@@ -29,6 +31,12 @@ class Station extends Entropic {
 		this.turrets = init.turrets || 0
 		this.shields = init.shields || 0
 		this.stealth = init.stealth || 0
+
+		this.ref.position = this.ref.position || {
+			x: lib.tables.position.station.x,
+			y: lib.tables.position.station.y,
+			z: lib.tables.position.station.z
+		}
 
 	}
 

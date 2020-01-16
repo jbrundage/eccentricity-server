@@ -36,26 +36,37 @@ class Hotelier {
 
 	async init_player( socket ){
 
-		if( !socket.request.session.user ){
+		// validation
+		let player = ''
+		if( !socket.request.session.user ) player = 'user not found for socket session'
+		if( !socket.request.session.user.PILOT ) player = 'pilot not found for user'
+		
+		if( player !== '' ){
+			socket.send( JSON.stringify({
+				type: 'error',
+				msg: 'failed to init user'
+			}))
+			return false
+		}
+
+		let msg = ''
+	
+		if( Object.keys( GALAXY.users ).length > env.MAX_PILOTS ) msg = 'max users reached' 
+	
+		const station_key = socket.request.session.user.PILOT.station_key
+
+		if( typeof( station_key ) !== 'number' ) msg = 'invalid station key'
+
+		if( msg != '' ){
 			socket.disconnect()
-			log('hotelier', 'user not initialized for socket: ', socket.id, '(' + socket.request.session.user + ')' )
+			log('hotelier', 'invalid init_player: ', msg)
 			return false
 		}
+		//end validation
 
-		socket.id = socket.request.session.user.id || null // socket.id must match existing 
 
-		if( Object.keys( GALAXY.users ).length > env.MAX_PILOTS ){
-			log('hotelier', 'max users reached' )
-			return false
-		}
 
-		let station_key = socket.request.session.user.PILOT.station_key
-
-		// if( typeof( station_key ) !== 'number' ){
-		// 	return 
-		// }
-
-		// console.log( socket.request.session.user.PILOT.station_key )
+		socket.id = lib.unique_id( 'sockets', GALAXY.sockets )
 
 		const SYSTEM = await this.touch_system( station_key )
 
@@ -64,11 +75,20 @@ class Hotelier {
 			return false
 		}
 
-		GALAXY.users[ socket.id ] = new User( socket.request.session.user ) // idk why this instantiation isn't carried over from gatekeeper() but it isn't
+		// log('flag', 'sys exam;', SYSTEM )
+
+		GALAXY.users[ socket.id ] = socket.request.session.user 
 		GALAXY.sockets[ socket.id ] = socket
 
-		SYSTEM.entities[ socket.id ] = GALAXY.users[ socket.id ].PILOT.SHIP // !!
-		SYSTEM.sentient[ socket.id ] = GALAXY.users[ socket.id ].PILOT // !!
+		// if( !GALAXY.users[ socket.id ].PILOT.SHIP.eid ) {
+		// 	GALAXY.users[ socket.id ].PILOT.SHIP.eid = lib.unique_id('entities', GALAXY.entities )
+		// }
+
+		SYSTEM.entities[ socket.id ] = GALAXY.users[ socket.id ].PILOT.SHIP ;  console.log( SYSTEM.entities[ socket.id ] )
+		SYSTEM.entities[ socket.id ].eid = socket.id
+
+		SYSTEM.sentient[ socket.id ] = GALAXY.users[ socket.id ].PILOT 
+		SYSTEM.sentient[ socket.id ].eid = socket.id
 
 		SYSTEM.bind_player( socket.id )
 
@@ -90,7 +110,6 @@ class Hotelier {
 
 	async touch_system( id ){
 
-		const pool = DB.getPool()
 
 		if( GALAXY.systems[ id ] ) { 
 
@@ -102,31 +121,26 @@ class Hotelier {
 
 		}
 
+		const pool = DB.getPool()
 
 		// const res = await new Promise( ( resolve, reject ) => {
+		const sql = 'SELECT * FROM \`systems\` WHERE id = ? LIMIT 1'
 
-		pool.query('SELECT * FROM \`systems\` WHERE id = ? LIMIT 1', [ id ], ( err, res, fields ) => {
-			if( err || !res ) {
-				log('hotelier', 'error sys init: ', err)
-				return false
-			}
+		const { results, fields } = await pool.queryPromise( sql, [ id ] )//, ( err, res, fields ) => {
+			
+		if( !results ) {
+			log('hotelier', 'no results: ', results )
+			return false
+		}
 
-			log('hotelier', 'hydrate system: ', res )
+		GALAXY.systems[ id ] = new System( results[0] )
 
-			if( !GALAXY.pulse ) GALAXY.awaken()
+		await GALAXY.systems[ id ].hydrate() // HERE all should have eid's
 
-			GALAXY.systems[ id ] = new System( res[0] )
+		if( !GALAXY.pulse ) GALAXY.awaken()
 
-			GALAXY.systems[ id ].hydrate()
-			.then( ok => {
+		return GALAXY.systems[ id ]
 
-				return GALAXY.systems[ id ]
-
-			}).catch( err => { log( 'flag', err ); return false } )
-
-		})
-
-		// })
 	}
 
 
@@ -136,13 +150,16 @@ class Hotelier {
 
 		const system = new System()
 
-		const vals = {
-			name: system.name,
-			reputation: JSON.stringify( system.reputation ),
-			traffic: system.traffic
-		}
+		pool.query('INSERT INTO \`systems\` ( name, reputation, traffic ) VALUES ( ? , ? , ? )', [ system.name, system.reputation, system.traffic ], (err, res, fields) => {
+			if( err || !res ) {
+				log('hotelier', 'error sys init: ', err)
+				return false
+			}
 
-		pool.query('INSERT INTO \`systems\` ( name, reputation, traffic ) VALUES ( ? , ? , ? )')
+			return system
+
+		})
+
 	}
 
 }

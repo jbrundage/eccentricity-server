@@ -1,5 +1,5 @@
 
-const log = require('../log.js')
+const log = require('../../log.js')
 
 log('call', 'Settings.js')
 

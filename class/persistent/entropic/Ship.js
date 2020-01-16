@@ -3,12 +3,15 @@ const log = require('../../../log.js')
 
 const lib = require('../../../lib.js')
 
-const Entry = require('../_Entry.js');
+// const Entry = require('../_Entry.js');
+
+const Entropic  = require('./_PersistentEntropic.js')
+
 
 log('call', 'Ship.js')
 
 
-class Ship extends Entry{
+class Ship extends Entropic {
 
 	constructor( init ){
 
@@ -17,7 +20,6 @@ class Ship extends Entry{
 		init = init || {}
 
 		this.type = 'ship'
-		this.subtype = init.subtype
 
 		this.clickable = true
 
@@ -47,23 +49,22 @@ class Ship extends Entry{
 		this.thrust = init.thrust || 1.0000005
 		this.turn_speed = init.turn_speed || .5
 
+		this.speed_limit = init.speed_limit || 5
+
+		this.ref = init.ref || {}
+		this.ref.position = this.ref.position || {x: 0, y: 0, z: 0}
+		// {
+		// 	x: lib.tables.position.ship.x,
+		// 	y: lib.tables.position.ship.y,
+		// 	z: lib.tables.position.ship.z
+		// }
 
 
 		// instantiated
 		this.align_buffer = init.align_buffer || 5
 		this.needs_align = 0
 
-		// init.ref = init.ref || {}
-		// this.ref = init.ref || {}
-		// this.ref.momentum = this.ref.momentum || {
-		// 	x: lib.tables.momentum.ship.x,
-		// 	y: lib.tables.momentum.ship.y,
-		// 	z: lib.tables.momentum.ship.z
-		// }
-		// this.ref.momentum = init.ref.momentum || lib.tables.momentum.ship
-		// this.ref.momentum.x = lib.tables.momentum.ship.x
-		// this.ref.momentum.y = lib.tables.momentum.ship.y
-		// this.ref.momentum.z = lib.tables.momentum.ship.z
+		
 
 		this.private = init.private || ['align_buffer', 'equipped', 'needs_align']
 

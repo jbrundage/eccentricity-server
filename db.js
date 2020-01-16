@@ -1,3 +1,5 @@
+// const util = require('util')
+
 const env = require('./env.js')
 const mysql = require('mysql')
 const assert = require('assert')
@@ -31,6 +33,22 @@ function initPool( callback ) {
 		database: env.DB.NAME,
 		charset: env.DB.CHARSET
 	})
+
+
+	const queryPromise = ( ...args ) => new Promise( (resolve, reject) => {
+
+		_pool.query( ...args, (error, results, fields) => {
+			if (error) {
+				reject(error)
+			} else {
+				resolve({ results, fields })
+			}
+		})
+	})
+
+	_pool.queryPromise = queryPromise
+
+	// util.promisify( _pool.query )
 
 	return callback( null, _pool )
 

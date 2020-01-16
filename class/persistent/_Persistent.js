@@ -2,17 +2,21 @@ const log = require('../../log.js');
 const DB = require('../../db.js');
 const lib = require('../../lib.js');
 
-log( 'call', 'Entry.js' )
+log( 'call', 'Persistent.js' )
 
 
 
-class Entry {
+class Persistent {
 
 	constructor( init ){
 
 		init = init || {}
 
-		this.root = 'entry'
+		this.id = init.id
+
+		this.eid = init.eid
+
+		this.temporality = 'persistent'
 
 	}
 
@@ -21,23 +25,6 @@ class Entry {
 		console.log('err: do not execute is_hydrated, only test exists')
 
 	}
-
-
-	// core(){
-		
-	// 	let core = {}
-
-	// 	for( const key of Object.keys( this )){
-	// 		if( !this.non_core_vals.includes( key ) ){
-	// 			if( this[ key ].core ){
-					
-	// 			}
-	// 			core[ key ] = this.key
-	// 		}
-	// 	}
-
-	// 	return core
-	// }
 
 	insertOne(){
 
@@ -49,7 +36,7 @@ class Entry {
 
 	updateOne(){
 
-		if( !this.collection ) return false
+		if( !this.table ) return false
 
 		const doc = this
 
@@ -57,7 +44,8 @@ class Entry {
 
 		return new Promise( ( resolve, reject ) => {
 
-			log('MONGO', 'Entry.js')
+			log('flag', 'skipping _Persistent.updateOne()')
+			
 			resolve()
 
 			// db.collection( doc.collection ).updateOne({
@@ -78,5 +66,5 @@ class Entry {
 
 
 
-module.exports = Entry
+module.exports = Persistent
 

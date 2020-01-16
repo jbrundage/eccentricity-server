@@ -1,13 +1,13 @@
 const log = require('../../log.js')
 const lib = require('../../lib.js')
 
-const Settings = require('../Settings.js')
+const Settings = require('../aux/Settings.js')
 
 const DB = require('../../db.js')
 
 const Pilot = require('./sentient/Pilot.js')
 
-const Entry = require('./_Entry.js')
+const Persistent = require('./_Persistent.js')
 
 const GALAXY = require('../../single/Galaxy.js')()
 
@@ -15,7 +15,7 @@ const GALAXY = require('../../single/Galaxy.js')()
 log( 'call', 'User.js' )
 
 
-class User extends Entry {
+class User extends Persistent {
 
 	constructor( init ){
 
@@ -26,9 +26,6 @@ class User extends Entry {
 		this.version = init.version || 2  // no init.id means this will un-auth entire session
 
 		this.table = 'users'
-
-		this.id = init.id
-		// this.id = lib.glean_ID( [init._id, init.id] ) || lib.unique_id( 'user', GALAXY.users )
 
 		this.active_pilot = init.active_pilot
 		this.pilots = init.pilots || []
@@ -47,27 +44,10 @@ class User extends Entry {
 
 		this.bad_packets = 0
 
-		this.non_core_vals = ['socket']
+		this.private = ['socket']
 
 	}
 
-	async touch_user( touch_pilot, touch_ship ){
-
-		const user = this
-
-		// return new Promise( ( resolve, reject ) => {
-
-		if( !touch_pilot ) return user
-
-		user.PILOT = await user.touch_pilot()
-
-		if( !touch_ship ) return user
-
-		user.PILOT.SHIP = await user.PILOT.touch_ship()
-
-		return user
-
-	}
 
 
 	touch_pilot(){

@@ -65,7 +65,7 @@ const lru_session = session({
 })
 
 
-const version = 12
+const version = 13
 
 const gatekeep = function(req, res, next) {
 
@@ -77,7 +77,9 @@ const gatekeep = function(req, res, next) {
 
 	}else{
 
-		if( !req.session.user || !req.session.user.version || req.session.user.version != version ){
+		if( !req.session.user || !req.session.user.PILOT || !req.session.user.version || req.session.user.version != version ){
+
+			// ^^ vv only destroys session user, doesn't destroy session
 
 			(async() => {
 
@@ -189,21 +191,30 @@ exp.get('/robots.txt', function(request, response){
 
 exp.get('/touch_user', function( request, response ){
 
-	// console.log( request.session.user.touch_user() )
+	(async() => {
 
-	request.session.user.touch_user( 'pilotBool', 'shipBool' )
-		.then( res => {
-			response.json({
-				success: true,
-				user: res
-			})
-		})
-		.catch( err => { 
-			response.json({
-				success: false,
-				err: err
-			})
-		})
+		request.session.user.PILOT = await request.session.user.touch_pilot()
+		request.session.user.SHIP = await request.session.user.PILOT.touch_ship()
+
+		response.json( request.session.user )
+
+		return true
+
+	})()
+
+	// request.session.user.touch_user( 'pilotBool', 'shipBool' )
+	// 	.then( res => {
+	// 		response.json({
+	// 			success: true,
+	// 			user: res
+	// 		})
+	// 	})
+	// 	.catch( err => { 
+	// 		response.json({
+	// 			success: false,
+	// 			err: err
+	// 		})
+	// 	})
 
 })
 

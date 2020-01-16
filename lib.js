@@ -32,14 +32,17 @@ const lib = {
 		},
 		position: {
 			station: {
+				base: { x: Math.random() * 10000, y: Math.random() * 10000, z: Math.random() * 10000 },
 				primary: { x: 500, y: 0, z: 0 },
 				mining: { x: -500, y: 0, z: 0 },
 				docking: { x: 0, y: 0, z: 99000 }
-			}
+			},
+			// ship: { x: 0, y: 0, z: 1000 }
 		},
 		minimum_station_dist: 1000,
 		momentum: {
-			ship: { x: 0, y: 0, z: .1 }
+			ship: { x: 0, y: 0, z: .1 },
+			entropic: { x: 0, y: 0, z: .1 }
 		},
 		verboten: ['fuck', 'shit', 'cunt', 'damn', 'nigger', 'kike', 'chink', 'bitch']
 
@@ -63,8 +66,8 @@ const lib = {
 
 	is_ecc_id: function( id ){
 
-		if ( id.match(/^[0-9a-fA-F]{24}$/) ) return true
-		if ( id.match(/^\_[0-9a-zA-Z]{3}\_/) ) return true
+		// if ( id.match(/^[0-9a-fA-F]{24}$/) ) return true
+		if ( id.match(/^\_[0-9a-zA-Z]{3}\_.*/) ) return true
 		return false
 
 	},
@@ -92,6 +95,9 @@ const lib = {
 				break;
 			case 'sentient':
 				new_id = '_sen_' + new_id
+				break;
+			case 'sockets':
+				new_id = '_sck_' + new_id
 				break;
 			case 'user': 
 				new_id = '_tmp_' + new_id

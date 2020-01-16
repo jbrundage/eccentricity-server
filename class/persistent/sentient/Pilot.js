@@ -6,7 +6,9 @@ const db =  require('../../../db.js')
 
 const Ship = require('../entropic/Ship.js')
 const Freighter = require('../entropic/ShipFreighter.js')
-const Sentient = require('./Sentient.js')
+// const Sentient = require('./Sentient.js')
+const Sentient = require('./_PersistentSentient.js')
+
 
 
 class Pilot extends Sentient {
@@ -16,10 +18,6 @@ class Pilot extends Sentient {
 		super( init )
 
 		init = init || {}
-
-		// client:
-
-		this.id = init.id
 
 		this.type = 'pilot'
 

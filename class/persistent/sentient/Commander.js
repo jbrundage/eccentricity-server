@@ -2,7 +2,7 @@
 const env = require('../../../env.js')
 const lib = require('../../../lib.js')
 const Station = require('../entropic/Station.js')
-const Sentient = require('./Sentient.js')
+const Sentient = require('./_PersistentSentient.js')
 
 const GALAXY = require('../../../single/Galaxy.js')()
 
@@ -16,8 +16,6 @@ class Commander extends Sentient {
 
 		// client:
 
-		this.id = init.id || lib.unique_id( 'sentient', ( GALAXY.systems[ this.sys_id ] ? ( GALAXY.systems[ this.sys_id ].sentient || {} ) : {} ) )
-
 		this.type = 'commander'
 
 		this.license = init.license || 'provisional'
@@ -27,7 +25,7 @@ class Commander extends Sentient {
 
 		this.active_station = init.active_station
 
-		// init.STATION = init.STATION || {}
+		this.STATION = init.STATION
 		// init.STATION.id = this.id
 		// // this.STATION = new Freighter( init.STATION )
 		// this.STATION = new Station( init.STATION )

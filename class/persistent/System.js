@@ -6,7 +6,7 @@ const Station = require('./entropic/Station.js')
 
 const Asteroid = require('../ephemera/entropic/Asteroid.js')
 
-const Entry = require('./_Entry.js')
+const Persistent = require('./_Persistent.js')
 
 const GALAXY = require('../../single/Galaxy.js')()
 
@@ -23,7 +23,7 @@ const maps = {
 // const WSS = require('../Server.js')()
 log( 'call', 'System.js' )
 
-class System extends Entry {
+class System extends Persistent {
 
 
 	constructor( init ){
@@ -64,23 +64,80 @@ class System extends Entry {
 	async hydrate(){
 
 		if( !this.initialized ) {
-		
-			this.create_commanders()
+
+			this.create_commanders_with_stations()
 			this.initialized = true
 
-			await this.updateOne()
-		
+			log('system', 'creating system')
+
+			await this.updateOne() // just for initialized
+
+			log('flag', 'skipping station commanders')
+
+			return 'hydrated'
+
 		}else{
 
-			this.hydrate_commanders()
-			// this.hydrate_pilots() // hydrate only executes on asleep systems, so never any players ...
+			log('system', 'hydrating system')
+
+			this.hydrate_commanders_with_stations() // still need to init with eid here
+
 			await this.hydrate_entities()
+
+			return 'hydrated'
 
 		}
 
-		// const r = await this.init_npcs() // change of plans - make periodic only
+	}
 
-		return 'initialized'
+
+
+
+
+	create_commanders_with_stations(){
+
+		const system = this
+
+		const new_p = new Station({
+			subtype: 'primary'
+		})
+		new_p.eid = lib.unique_id( 'entity', system.entities )
+
+		// console.log( new_p , 'what gives' )
+		
+		system.entities[ new_p.eid ] = new_p
+
+		const new_c = new Commander({
+			STATION: system.entities[ new_p.eid ]
+		})
+		new_c.eid = lib.unique_id( 'sentient', system.sentient )
+
+		// console.log( new_c.STATION , '??')
+		
+		new_c.STATION.ref.position.x = lib.tables.position.station.primary.x
+		new_c.STATION.ref.position.y = lib.tables.position.station.primary.y
+		new_c.STATION.ref.position.z = lib.tables.position.station.primary.z
+
+		system.sentient[ new_c.eid ] = new_c
+
+
+		const new_d = new Station({
+			subtype: 'docking'
+		})
+		new_d.eid = lib.unique_id( 'entity', system.entities )
+		
+		system.entities[ new_d.eid ] = new_d	
+		
+		const new_c2 = new Commander({
+			STATION: new_d
+		})
+		new_c2.eid = lib.unique_id( 'sentient', system.sentient )
+
+		new_c2.STATION.ref.position.x = lib.tables.position.station.docking.x
+		new_c2.STATION.ref.position.y = lib.tables.position.station.docking.y
+		new_c2.STATION.ref.position.z = lib.tables.position.station.docking.z
+
+		system.sentient[ new_c2.eid ] = new_c2
 
 	}
 
@@ -89,29 +146,29 @@ class System extends Entry {
 
 
 
-	hydrate_commanders(){
+	hydrate_commanders_with_stations(){
 
 		const system = this
 
 		let p = false
 		let d = false
 
-		for( const id of Object.keys( system.sentient ) ){
+		for( const eid of Object.keys( system.sentient ) ){
 
-			if( id && id != 'undefined' ){
+			if( eid && eid != 'undefined' ){
 
-				if( system.sentient[ id ].type == 'commander' ) {
+				if( system.sentient[ eid ].type == 'commander' ) {
 
-					system.sentient[ id ] = new Commander( system.sentient[ id ] )
+					system.sentient[ eid ] = new Commander( system.sentient[ eid ] )
 
-					if( system.sentient[ id ].STATION.subtype == 'primary' ) p = true
-					if( system.sentient[ id ].STATION.subtype == 'docking' ) d = true
+					if( system.sentient[ eid ].STATION.subtype == 'primary' ) p = true
+					if( system.sentient[ eid ].STATION.subtype == 'docking' ) d = true
 
 				}
 
 			}else{
 
-				console.log('invalid sentient: ', system.sentient[ id ] )
+				log('system', 'invalid sentient: ', system.sentient[ eid ] )
 
 			}
 
@@ -128,7 +185,7 @@ class System extends Entry {
 			p.STATION.ref.position.x = lib.tables.position.station.primary.x
 			p.STATION.ref.position.y = lib.tables.position.station.primary.y
 			p.STATION.ref.position.z = lib.tables.position.station.primary.z
-			system.entities[ p.id ] = p.STATION
+			system.entities[ p.eid ] = p.STATION
 		} 
 
 		if( !d ){
@@ -140,7 +197,7 @@ class System extends Entry {
 			d.STATION.ref.position.x = lib.tables.position.station.docking.x
 			d.STATION.ref.position.y = lib.tables.position.station.docking.y
 			d.STATION.ref.position.z = lib.tables.position.station.docking.z
-			system.entities[ d.id ] = d.STATION
+			system.entities[ d.eid ] = d.STATION
 		}
 
 	}
@@ -149,39 +206,6 @@ class System extends Entry {
 
 
 
-
-
-
-	create_commanders(){
-
-		const system = this
-
-		const new_p = new Station({
-			subtype: 'primary'
-		})
-		system.entities[ new_p.id ] = new_p
-		const new_c = new Commander({
-			STATION: new_p
-		})
-		new_c.STATION.ref.position.x = lib.tables.position.station.primary.x
-		new_c.STATION.ref.position.y = lib.tables.position.station.primary.y
-		new_c.STATION.ref.position.z = lib.tables.position.station.primary.z
-		system.sentient[ new_c.id ] = new_c
-
-
-		const new_d = new Station({
-			subtype: 'docking'
-		})
-		system.entities[ new_d.id ] = new_d	
-		const new_c2 = new Commander({
-			STATION: new_d
-		})
-		new_c2.STATION.ref.position.x = lib.tables.position.station.docking.x
-		new_c2.STATION.ref.position.y = lib.tables.position.station.docking.y
-		new_c2.STATION.ref.position.z = lib.tables.position.station.docking.z
-		system.sentient[ new_c2.id ] = new_c2
-
-	}
 
 
 
@@ -203,7 +227,7 @@ class System extends Entry {
 
 						if( system.entities[ id ].type == 'station' ){ // this means it was not instantiated with Commander
 
-							console.log('not hydrated but not found: ', system.entities[ id ] )
+							log('system', 'not hydrated but not found: ', system.entities[ id ] )
 							delete system.entities[ id ]
 							needs_update = true
 
@@ -217,7 +241,7 @@ class System extends Entry {
 
 							}else{
 
-								console.log('missing hydration class map for subtype: ', system.entities[ id ].subtype )
+								log('system', 'missing hydration class map for subtype: ', system.entities[ id ].subtype )
 
 							}
 
@@ -227,7 +251,7 @@ class System extends Entry {
 
 				}else{
 
-					console.log('invalid entity hydrate id: ' + id + ' :', id )
+					log('system', 'invalid entity hydrate id: ' + id + ' :', id )
 
 				}
 
@@ -274,6 +298,7 @@ class System extends Entry {
 		return obj || {}
 
 	}
+
 
 
 
@@ -362,10 +387,6 @@ class System extends Entry {
 
 
 
-
-
-
-
 	get_faction(){
 
 		let high = 0
@@ -388,7 +409,7 @@ class System extends Entry {
 
 
 
-	get_station( type ){ // primary, docking
+	get_station_by_type( type ){ // primary, docking
 
 		let search = false
 
@@ -396,7 +417,7 @@ class System extends Entry {
 
 			if( search ){
 
-				console.log('duplicate ' + type + ' found' )
+				log('system', 'duplicate ' + type + ' found' )
 
 			}else if( this.entities[ id ].type === type ){
 
@@ -409,6 +430,32 @@ class System extends Entry {
 		return search
 
 	}
+
+
+
+	get_pilots(){
+
+		let p = {}
+
+		for( const id of Object.keys( this.sentient ) ) {
+
+			if( this.sentient[ id ].type == 'pilot' ) p[ id ] = this.sentient[ id ]
+
+		}
+
+		return p
+
+	}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -435,8 +482,6 @@ class System extends Entry {
 			switch( packet.type ){
 
 				case 'move':
-
-					// console.log( packet )
 
 					USER.PILOT.SHIP.ref.position = packet.pos || USER.PILOT.SHIP.ref.position
 					USER.PILOT.SHIP.ref.quaternion = packet.quat || USER.PILOT.SHIP.ref.quaternion 
@@ -547,7 +592,7 @@ class System extends Entry {
 
 			case 'dm':
 
-				console.log('unfinished DM handler')
+				log('system', 'FLAG - unfinished DM handler')
 
 				break;
 
@@ -561,20 +606,6 @@ class System extends Entry {
 
 
 
-	get_pilots(){
-
-		let p = {}
-
-		for( const id of Object.keys( this.sentient ) ) {
-
-			if( this.sentient[ id ].type == 'pilot' ) p[ id ] = this.sentient[ id ]
-
-		}
-
-		return p
-
-	}
-
 
 
 
@@ -583,12 +614,13 @@ class System extends Entry {
 		this.entities = {}
 		this.sentient = {}
 
-		this.updateOne()
-		.then( res => {
+		// TEMP !  -  re-enable this:
+		// this.updateOne()
+		// .then( res => {
 
-			log('system', 'closed')
+		// 	log('system', 'closed')
 
-		}).catch( err => { console.log( 'save System err: ', err ) })
+		// }).catch( err => { console.log( 'save System err: ', err ) })
 
 		delete GALAXY.systems[ this.id ] // seems to work...
 
