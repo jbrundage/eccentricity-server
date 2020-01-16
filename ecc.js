@@ -429,7 +429,7 @@ DB.initPool(( err, db ) => {
 						}).catch( err => {
 							socket.send(JSON.stringify({
 								type: 'error',
-								msg: err
+								msg: 'error initializing player'
 							}))
 							log('flag', 'err init_player: ', err ) 
 						})
