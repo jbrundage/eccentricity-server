@@ -271,14 +271,6 @@ exp.get('/warn', function(request, response){
 // -------
 // vv POST
 
-exp.post('/yang', function( request, response){
-
-	response.json({
-		msg: 'gotem'
-	})
-
-})
-
 exp.post('/seed_galaxy', function( request, response ){
 
 	query.seed_galaxy( request )
