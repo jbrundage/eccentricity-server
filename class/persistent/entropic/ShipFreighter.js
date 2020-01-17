@@ -8,7 +8,7 @@ const Ship = require('./Ship.js')
 log('call', 'ShipFreighter.js')
 
 
-class ShipFreighter extends Ship  {
+class Freighter extends Ship  {
 
 	constructor( init ){
 
@@ -16,7 +16,7 @@ class ShipFreighter extends Ship  {
 
 		init = init || {}
 
-		this.subtype = 'freighter'
+		this.type = 'freighter'
 	
 		this.model_url = init.model_url || 'ships/freighter/ryath/untitled.glb'
 
@@ -38,4 +38,4 @@ class ShipFreighter extends Ship  {
 
 }
 
-module.exports = ShipFreighter
+module.exports = Freighter

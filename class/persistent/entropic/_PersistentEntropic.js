@@ -10,7 +10,7 @@ class PersistentEntropic extends Entropic {
 
 		init = init || {}
 
-		this.root = 'entry'
+		this.temporality = 'persistent'
 
 	}
 

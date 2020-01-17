@@ -44,7 +44,7 @@ class Hotelier {
 		if( player !== '' ){
 			socket.send( JSON.stringify({
 				type: 'error',
-				msg: 'failed to init user'
+				msg: 'failed to init user<br>try reloading once'
 			}))
 			return false
 		}
@@ -84,7 +84,7 @@ class Hotelier {
 		// 	GALAXY.users[ socket.id ].PILOT.SHIP.eid = lib.unique_id('entities', GALAXY.entities )
 		// }
 
-		SYSTEM.entities[ socket.id ] = GALAXY.users[ socket.id ].PILOT.SHIP ;  console.log( SYSTEM.entities[ socket.id ] )
+		SYSTEM.entities[ socket.id ] = GALAXY.users[ socket.id ].PILOT.SHIP 
 		SYSTEM.entities[ socket.id ].eid = socket.id
 
 		SYSTEM.sentient[ socket.id ] = GALAXY.users[ socket.id ].PILOT 

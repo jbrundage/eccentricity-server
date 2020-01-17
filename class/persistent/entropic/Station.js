@@ -19,6 +19,8 @@ class Station extends Entropic {
 		this.type = 'station'
 		this.subtype = init.subtype
 
+		this.table = 'stations'
+
 		this.clickable = true
 
 		// this.model_url = init.model_url || 'stations/neutral/primary.glb'
@@ -27,7 +29,7 @@ class Station extends Entropic {
 		// stats
 		this.capacity = init.capacity || 50 // players
 		this.hangar = init.hangar || 1 // defense ships
-		
+
 		this.turrets = init.turrets || 0
 		this.shields = init.shields || 0
 		this.stealth = init.stealth || 0

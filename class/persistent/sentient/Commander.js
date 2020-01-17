@@ -18,6 +18,8 @@ class Commander extends Sentient {
 
 		this.type = 'commander'
 
+		this.table = 'commanders'
+
 		this.license = init.license || 'provisional'
 		this.licensed = init.licensed || Date.now()
 		
@@ -26,18 +28,6 @@ class Commander extends Sentient {
 		this.active_station = init.active_station
 
 		this.STATION = init.STATION
-		// init.STATION.id = this.id
-		// // this.STATION = new Freighter( init.STATION )
-		// this.STATION = new Station( init.STATION )
-
-		// server only:
-
-		// this.station_key = init.station_key || {
-		// 	system: env.INIT_SYSTEM_KEY,
-		// 	station: this.STATION.id
-		// }
-
-		// this.edited = init.edited || 0
 
 		this.coin = (function(){
 			if( init.coin === 0 ) return 0

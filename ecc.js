@@ -89,7 +89,9 @@ const gatekeep = function(req, res, next) {
 				req.session.user.PILOT = await req.session.user.touch_pilot()
 				req.session.user.PILOT.SHIP = await req.session.user.PILOT.touch_ship()
 
-				if( !req.session.user.PILOT || !req.session.user.PILOT.SHIP) log('flag', 'invalid user init', err )
+				if( !req.session.user.PILOT || !req.session.user.PILOT.SHIP) {
+					log('flag', 'invalid user init' )
+				}
 
 				next()
 
@@ -196,7 +198,10 @@ exp.get('/touch_user', function( request, response ){
 		request.session.user.PILOT = await request.session.user.touch_pilot()
 		request.session.user.SHIP = await request.session.user.PILOT.touch_ship()
 
-		response.json( request.session.user )
+		response.json({
+			success: true,
+			user: request.session.user 
+		})
 
 		return true
 

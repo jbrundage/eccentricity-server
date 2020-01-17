@@ -21,6 +21,8 @@ class Ship extends Entropic {
 
 		this.type = 'ship'
 
+		this.table = 'ships'
+
 		this.clickable = true
 
 		this.capacity = init.capacity || 1

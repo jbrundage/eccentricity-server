@@ -3,21 +3,29 @@ const log = require('../../log.js')
 const lib = require('../../lib.js')
 
 const Station = require('./entropic/Station.js')
+const Commander = require('./sentient/Commander.js')
+const Pilot = require('./sentient/Pilot.js')
 
 const Asteroid = require('../ephemera/entropic/Asteroid.js')
+const Ship = require('./entropic/Ship.js')
+const Freighter = require('./entropic/ShipFreighter.js')
 
 const Persistent = require('./_Persistent.js')
 
 const GALAXY = require('../../single/Galaxy.js')()
 
-const Commander = require('./sentient/Commander.js')
 
 
 const maps = {
-	entity: {
+	entropic: {
 		asteroid: Asteroid,
+		ship: Ship,
+		freighter: Freighter
 	},
-	sentient: {}
+	sentient: {
+		commander: Commander,
+		pilot: Pilot
+	}
 }
 
 // const WSS = require('../Server.js')()
@@ -63,29 +71,45 @@ class System extends Persistent {
 
 	async hydrate(){
 
-		if( !this.initialized ) {
+		if( this.initialized ) {
 
-			this.create_commanders_with_stations()
-			this.initialized = true
-
-			log('system', 'creating system')
-
-			await this.updateOne() // just for initialized
-
-			log('flag', 'skipping station commanders')
-
-			return 'hydrated'
-
-		}else{
-
-			log('system', 'hydrating system')
-
-			this.hydrate_commanders_with_stations() // still need to init with eid here
+			// this.hydrate_commanders_with_stations() // still need to init with eid here
+			await this.hydrate_sentient()
 
 			await this.hydrate_entities()
 
 			return 'hydrated'
 
+		}else{
+
+			const p = this.simple_station('primary')
+			this.entities[ p.eid ] = p
+
+			const d = this.simple_station('docking')
+			this.entities[ d.eid ] = d
+
+			const c1 = new Commander({
+				eid: lib.unique_id('sentient', this.sentient )
+			})
+			this.sentient[ c1.eid ] = c1
+
+			const c2 = new Commander({
+				eid: lib.unique_id('sentient', this.sentient )
+			})
+			this.sentient[ c2.eid ] = c2
+
+			p.commander_id = c1.eid
+			d.commander_id = c2.eid
+
+			c1.station_id = p.eid
+			c2.station_id = d.eid
+
+			this.initialized = true
+
+			await this.updateOne() // ^^ for initialized
+
+			return 'hydrated'
+
 		}
 
 	}
@@ -94,111 +118,26 @@ class System extends Persistent {
 
 
 
-	create_commanders_with_stations(){
+	simple_station( subtype ){
 
-		const system = this
+		if( !subtype ) {
+			log('flag', 'station must have type' )
+			return false
+		}
 
-		const new_p = new Station({
-			subtype: 'primary'
-		})
-		new_p.eid = lib.unique_id( 'entity', system.entities )
-
-		// console.log( new_p , 'what gives' )
-		
-		system.entities[ new_p.eid ] = new_p
-
-		const new_c = new Commander({
-			STATION: system.entities[ new_p.eid ]
-		})
-		new_c.eid = lib.unique_id( 'sentient', system.sentient )
-
-		// console.log( new_c.STATION , '??')
-		
-		new_c.STATION.ref.position.x = lib.tables.position.station.primary.x
-		new_c.STATION.ref.position.y = lib.tables.position.station.primary.y
-		new_c.STATION.ref.position.z = lib.tables.position.station.primary.z
-
-		system.sentient[ new_c.eid ] = new_c
-
-
-		const new_d = new Station({
-			subtype: 'docking'
-		})
-		new_d.eid = lib.unique_id( 'entity', system.entities )
-		
-		system.entities[ new_d.eid ] = new_d	
-		
-		const new_c2 = new Commander({
-			STATION: new_d
-		})
-		new_c2.eid = lib.unique_id( 'sentient', system.sentient )
-
-		new_c2.STATION.ref.position.x = lib.tables.position.station.docking.x
-		new_c2.STATION.ref.position.y = lib.tables.position.station.docking.y
-		new_c2.STATION.ref.position.z = lib.tables.position.station.docking.z
-
-		system.sentient[ new_c2.eid ] = new_c2
-
-	}
-
-
-
-
-
-
-	hydrate_commanders_with_stations(){
-
-		const system = this
-
-		let p = false
-		let d = false
-
-		for( const eid of Object.keys( system.sentient ) ){
-
-			if( eid && eid != 'undefined' ){
-
-				if( system.sentient[ eid ].type == 'commander' ) {
-
-					system.sentient[ eid ] = new Commander( system.sentient[ eid ] )
-
-					if( system.sentient[ eid ].STATION.subtype == 'primary' ) p = true
-					if( system.sentient[ eid ].STATION.subtype == 'docking' ) d = true
-
+		const station = new Station({
+			subtype: subtype,
+			eid: lib.unique_id( 'entropic', this.entities ),
+			ref: {
+				position: {
+					x: lib.tables.position.station[ subtype ].x,
+					y: lib.tables.position.station[ subtype ].y,
+					z: lib.tables.position.station[ subtype ].z
 				}
-
-			}else{
-
-				log('system', 'invalid sentient: ', system.sentient[ eid ] )
-
 			}
-
-		}
-
-		// systems should not immediately respawn stations like this...
-
-		if( !p ){
-			p = new Commander({
-				STATION: {
-					subtype: 'primary'
-				}
-			})
-			p.STATION.ref.position.x = lib.tables.position.station.primary.x
-			p.STATION.ref.position.y = lib.tables.position.station.primary.y
-			p.STATION.ref.position.z = lib.tables.position.station.primary.z
-			system.entities[ p.eid ] = p.STATION
-		} 
-
-		if( !d ){
-			d = new Commander({
-				STATION: {
-					subtype: 'docking'
-				}
-			})
-			d.STATION.ref.position.x = lib.tables.position.station.docking.x
-			d.STATION.ref.position.y = lib.tables.position.station.docking.y
-			d.STATION.ref.position.z = lib.tables.position.station.docking.z
-			system.entities[ d.eid ] = d.STATION
-		}
+		})
+		
+		return station
 
 	}
 
@@ -208,69 +147,150 @@ class System extends Persistent {
 
 
 
+	// hydrate_commanders_with_stations(){
 
+	// 	const system = this
 
+	// 	let p = false
+	// 	let d = false
 
-	hydrate_entities(){
+	// 	for( const eid of Object.keys( system.sentient ) ){
+
+	// 		if( eid && eid != 'undefined' ){
+
+	// 			if( system.sentient[ eid ].type == 'commander' ) {
+
+	// 				system.sentient[ eid ] = new Commander( system.sentient[ eid ] )
+
+	// 				if( system.sentient[ eid ].STATION.subtype == 'primary' ) p = true
+	// 				if( system.sentient[ eid ].STATION.subtype == 'docking' ) d = true
+
+	// 			}
+
+	// 		}else{
+
+	// 			log('system', 'invalid sentient: ', system.sentient[ eid ] )
+
+	// 		}
+
+	// 	}
+
+	// 	// systems should not immediately respawn stations like this...
+
+	// 	if( !p ){
+	// 		p = new Commander({
+	// 			STATION: {
+	// 				subtype: 'primary'
+	// 			}
+	// 		})
+	// 		p.STATION.ref.position.x = lib.tables.position.station.primary.x
+	// 		p.STATION.ref.position.y = lib.tables.position.station.primary.y
+	// 		p.STATION.ref.position.z = lib.tables.position.station.primary.z
+	// 		system.entities[ p.eid ] = p.STATION
+	// 	} 
+
+	// 	if( !d ){
+	// 		d = new Commander({
+	// 			STATION: {
+	// 				subtype: 'docking'
+	// 			}
+	// 		})
+	// 		d.STATION.ref.position.x = lib.tables.position.station.docking.x
+	// 		d.STATION.ref.position.y = lib.tables.position.station.docking.y
+	// 		d.STATION.ref.position.z = lib.tables.position.station.docking.z
+	// 		system.entities[ d.eid ] = d.STATION
+	// 	}
+
+	// }
+	async hydrate_sentient(){
 
 		const system = this
 
-		return new Promise( ( resolve, reject ) => {
+		let needs_update = false
 
-			let needs_update = false
+		for( const id of Object.keys( system.sentient ) ){
 
-			for( const id of Object.keys( system.entities ) ){
+			if( id && id != 'undefined' && lib.is_ecc_id( id ) ){
 
-				if( id && id != 'undefined' && lib.is_ecc_id( id ) ){
+				if( !system.sentient[ id ].is_hydrated ){ 
 
-					if( !system.entities[ id ].is_hydrated ){ 
+					let type = system.sentient[ id ].subtype || system.sentient[ id ].type
 
-						if( system.entities[ id ].type == 'station' ){ // this means it was not instantiated with Commander
+					if( type && maps.sentient[ type ] ){ 
 
-							log('system', 'not hydrated but not found: ', system.entities[ id ] )
-							delete system.entities[ id ]
-							needs_update = true
+						const thisClass = maps.sentient[ type ]
 
-						}else{
+						system.sentient[ id ] = new thisClass( system.sentient[ id ] )
 
-							if( system.entities[ id ].subtype && maps.entity[ system.entities[ id ].subtype ] ){ // only asteroid currently..
+					}else{
 
-								const thisClass = maps.entity[ system.entities[ id ].subtype ]
-
-								system.entities[ id ] = new thisClass( system.entities[ id ] )
-
-							}else{
-
-								log('system', 'missing hydration class map for subtype: ', system.entities[ id ].subtype )
-
-							}
-
-						}
+						log('system', 'missing hydration class map for subtype: ', system.sentient[ id ].subtype )
 
 					}
 
-				}else{
-
-					log('system', 'invalid entity hydrate id: ' + id + ' :', id )
-
 				}
-
-			}
-
-			if( needs_update ){
-
-				system.updateOne()
-				.then( res => {
-					resolve( 'ok' )
-				}).catch( err => { reject('err hydrating entities: ', err )})
 
 			}else{
 
-				resolve( 'ok' )
+				log('system', 'invalid sentient hydrate id: ' + id + ' :', id )
 
 			}
 
-		})
+		}
+
+		if( needs_update ) await system.updateOne()
+
+		return
+
+	}
+
+
+
+
+
+
+
+
+
+	async hydrate_entities(){
+
+		const system = this
+
+		let needs_update = false
+
+		for( const id of Object.keys( system.entities ) ){
+
+			if( id && id != 'undefined' && lib.is_ecc_id( id ) ){
+
+				if( !system.entities[ id ].is_hydrated ){ 
+
+					let type = system.entities[ id ].subtype || system.entities[ id ].type
+
+					if( type && maps.entropic[ type ] ){ 
+
+						const thisClass = maps.entropic[ type ]
+
+						system.entities[ id ] = new thisClass( system.entities[ id ] )
+
+					}else{
+
+						log('system', 'missing hydration class map for subtype: ', system.entities[ id ].subtype )
+
+					}
+
+				}
+
+			}else{
+
+				log('system', 'invalid entropic hydrate id: ' + id + ' :', id )
+
+			}
+
+		}
+
+		if( needs_update ) await system.updateOne()
+
+		return
 
 	}
 

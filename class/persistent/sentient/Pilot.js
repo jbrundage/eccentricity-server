@@ -9,6 +9,11 @@ const Freighter = require('../entropic/ShipFreighter.js')
 // const Sentient = require('./Sentient.js')
 const Sentient = require('./_PersistentSentient.js')
 
+const map = {
+	ship: Ship,
+	freighter: Freighter
+}
+
 
 
 class Pilot extends Sentient {
@@ -21,23 +26,20 @@ class Pilot extends Sentient {
 
 		this.type = 'pilot'
 
+		this.table = 'pilots'
+
 		this.license = init.license || 'provisional'
 		this.licensed = init.licensed || Date.now()
 		
 		this.reputation = init.reputation || {}
 
-		this.active_ship = init.active_ship 
+		this.active_ship = init.active_ship
+
+		this.SHIP = init.SHIP 
 
 		this.ships = init.ships || []
 		
-		// init.SHIP = init.SHIP || {}
-		// init.SHIP.id = this.id
-		// this.SHIP = new Freighter( init.SHIP )
-		// this.SHIP = new Ship( init.SHIP )
-
 		// server only:
-
-		
 
 	}
 
@@ -47,51 +49,38 @@ class Pilot extends Sentient {
 
 		const pilot = this
 
-		if( pilot.active_ship ){
+		if( pilot.SHIP ){
 
-			if( typeof( pilot.active_ship ) !== 'number' ){
+			if( typeof( pilot.SHIP.id ) !== 'number' ){
 
-				log('flag', 'invalid pilot active_ship: ', pilot)
+				log('flag', 'invalid pilot ship id: ', pilot.SHIP )
 				return false
 
-			}else{
+			}else if( pilot.SHIP.id ){
 
-				if( pilot.SHIP ){
-
-					if( pilot.SHIP.id ) return new Ship( pilot.SHIP )
-
-				}else{
-
-					const pool = db.getPool()
-
-					pool.query(`SELECT * FROM \`ships\` WHERE id = ? LIMIT 1`, [ pilot.active_ship ], ( err, res, fields ) => {
-
-						if( err || !res ){
-							log('flag', 'no ship found')
-							return false
-						}
-
-						log('flag', 'ship return: ', res )
-
-						return {}
-
-					})
-
-				}
+				 return new Ship( pilot.SHIP )
 
 			}
 
+		}else if( pilot.active_ship && typeof( pilot.active_ship ) == 'number' ){
+
+			const pool = db.getPool()
+
+			const { results, fields } = await pool.queryPromise(`SELECT * FROM \`ships\` WHERE id = ? LIMIT 1`, [ pilot.ship_id ] )   //, {
+
+			if( !results ) return false
+
+			return new map[ results[0].type ]( results[0] )  // um yea.. more validation
+
 		}else{
 
-			pilot.SHIP = new Ship()
-
-			return pilot.SHIP
+			log('pilot', 'returning provisional ship')
+			return new Ship()
 
 		}
 
-		
-
 	}
+
 
 
 }
