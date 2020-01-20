@@ -57,7 +57,7 @@ class System extends Persistent {
 		// instantiated
 
 		this.sentient = this.validate_ids( init.sentient )
-		this.entities = this.validate_ids( init.entities )
+		this.entropic = this.validate_ids( init.entropic )
 
 		this.pulses = {
 			npc: false
@@ -76,17 +76,17 @@ class System extends Persistent {
 			// this.hydrate_commanders_with_stations() // still need to init with eid here
 			await this.hydrate_sentient()
 
-			await this.hydrate_entities()
+			await this.hydrate_entropics()
 
 			return 'hydrated'
 
 		}else{
 
 			const p = this.simple_station('primary')
-			this.entities[ p.eid ] = p
+			this.entropic[ p.eid ] = p
 
 			const d = this.simple_station('docking')
-			this.entities[ d.eid ] = d
+			this.entropic[ d.eid ] = d
 
 			const c1 = new Commander({
 				eid: lib.unique_id('sentient', this.sentient )
@@ -127,7 +127,7 @@ class System extends Persistent {
 
 		const station = new Station({
 			subtype: subtype,
-			eid: lib.unique_id( 'entropic', this.entities ),
+			eid: lib.unique_id( 'entropic', this.entropic ),
 			ref: {
 				position: {
 					x: lib.tables.position.station[ subtype ].x,
@@ -186,7 +186,7 @@ class System extends Persistent {
 	// 		p.STATION.ref.position.x = lib.tables.position.station.primary.x
 	// 		p.STATION.ref.position.y = lib.tables.position.station.primary.y
 	// 		p.STATION.ref.position.z = lib.tables.position.station.primary.z
-	// 		system.entities[ p.eid ] = p.STATION
+	// 		system.entropic[ p.eid ] = p.STATION
 	// 	} 
 
 	// 	if( !d ){
@@ -198,7 +198,7 @@ class System extends Persistent {
 	// 		d.STATION.ref.position.x = lib.tables.position.station.docking.x
 	// 		d.STATION.ref.position.y = lib.tables.position.station.docking.y
 	// 		d.STATION.ref.position.z = lib.tables.position.station.docking.z
-	// 		system.entities[ d.eid ] = d.STATION
+	// 		system.entropic[ d.eid ] = d.STATION
 	// 	}
 
 	// }
@@ -252,29 +252,29 @@ class System extends Persistent {
 
 
 
-	async hydrate_entities(){
+	async hydrate_entropics(){
 
 		const system = this
 
 		let needs_update = false
 
-		for( const id of Object.keys( system.entities ) ){
+		for( const id of Object.keys( system.entropic ) ){
 
 			if( id && id != 'undefined' && lib.is_ecc_id( id ) ){
 
-				if( !system.entities[ id ].is_hydrated ){ 
+				if( !system.entropic[ id ].is_hydrated ){ 
 
-					let type = system.entities[ id ].subtype || system.entities[ id ].type
+					let type = system.entropic[ id ].subtype || system.entropic[ id ].type
 
 					if( type && maps.entropic[ type ] ){ 
 
 						const thisClass = maps.entropic[ type ]
 
-						system.entities[ id ] = new thisClass( system.entities[ id ] )
+						system.entropic[ id ] = new thisClass( system.entropic[ id ] )
 
 					}else{
 
-						log('system', 'missing hydration class map for subtype: ', system.entities[ id ].subtype )
+						log('system', 'missing hydration class map for subtype: ', system.entropic[ id ].subtype )
 
 					}
 
@@ -353,19 +353,19 @@ class System extends Persistent {
 
 			const faction = system.get_faction()
 
-			for( const id of Object.keys( system.entities ) ){
+			for( const id of Object.keys( system.entropic ) ){
 
 				// tally desired defenders / misc
 
-				if( system.entities[ id ].type == 'station' ){
+				if( system.entropic[ id ].type == 'station' ){
 
-					if( system.entities[ id ].type == 'primary' || system.entities[ id ].type == 'station' ){
+					if( system.entropic[ id ].type == 'primary' || system.entropic[ id ].type == 'station' ){
 
-						defense.capacity += system.entities[ id ].power
+						defense.capacity += system.entropic[ id ].power
 
 					}
 
-				}else if( system.entities[ id ].type == 'ship' ){
+				}else if( system.entropic[ id ].type == 'ship' ){
 
 					if( system.sentient[ id ] ){
 
@@ -433,15 +433,15 @@ class System extends Persistent {
 
 		let search = false
 
-		for( const id of Object.keys( this.entities )){
+		for( const id of Object.keys( this.entropic )){
 
 			if( search ){
 
 				log('system', 'duplicate ' + type + ' found' )
 
-			}else if( this.entities[ id ].type === type ){
+			}else if( this.entropic[ id ].type === type ){
 
-				search = this.entities[ id ]
+				search = this.entropic[ id ]
 
 			}
 
@@ -554,7 +554,7 @@ class System extends Persistent {
 
 			delete GALAXY.users[ socket.id ]
 			delete GALAXY.sockets[ socket.id ] // (THIS) ...
-			delete SYSTEM.entities[ socket.id ]
+			delete SYSTEM.entropic[ socket.id ]
 			delete SYSTEM.sentient[ socket.id ]
 
 			// for( const id of Object.keys( SYSTEM.sentient )){ // ya goof
@@ -631,7 +631,7 @@ class System extends Persistent {
 
 	close(){
 
-		this.entities = {}
+		this.entropic = {}
 		this.sentient = {}
 
 		// TEMP !  -  re-enable this:

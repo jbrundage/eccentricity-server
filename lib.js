@@ -90,7 +90,7 @@ const lib = {
 		// let group = {}
 
 		switch( type ){
-			case 'entity':
+			case 'entropic':
 				new_id = '_ent_' + new_id
 				break;
 			case 'sentient':

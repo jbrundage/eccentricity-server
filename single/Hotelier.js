@@ -81,11 +81,11 @@ class Hotelier {
 		GALAXY.sockets[ socket.id ] = socket
 
 		// if( !GALAXY.users[ socket.id ].PILOT.SHIP.eid ) {
-		// 	GALAXY.users[ socket.id ].PILOT.SHIP.eid = lib.unique_id('entities', GALAXY.entities )
+		// 	GALAXY.users[ socket.id ].PILOT.SHIP.eid = lib.unique_id('entropics', GALAXY.entropic )
 		// }
 
-		SYSTEM.entities[ socket.id ] = GALAXY.users[ socket.id ].PILOT.SHIP 
-		SYSTEM.entities[ socket.id ].eid = socket.id
+		SYSTEM.entropic[ socket.id ] = GALAXY.users[ socket.id ].PILOT.SHIP 
+		SYSTEM.entropic[ socket.id ].eid = socket.id
 
 		SYSTEM.sentient[ socket.id ] = GALAXY.users[ socket.id ].PILOT 
 		SYSTEM.sentient[ socket.id ].eid = socket.id
@@ -136,6 +136,8 @@ class Hotelier {
 		GALAXY.systems[ id ] = new System( results[0] )
 
 		await GALAXY.systems[ id ].hydrate() // HERE all should have eid's
+
+		log('system', 'SYSTEM post hydrate: ', GALAXY.systems[ id ] )
 
 		if( !GALAXY.pulse ) GALAXY.awaken()
 

@@ -52,15 +52,15 @@ class Galaxy {
 
 				const packet = {
 					type: 'move',
-					entities: {}
+					entropic: {}
 				}
 
-				for( const id of Object.keys( g.systems[ key ].entities ) ){
+				for( const id of Object.keys( g.systems[ key ].entropic ) ){
 
-					packet.entities[ id ] = {
-						mom: g.systems[ key ].entities[ id ].ref.momentum || { x: 0, y: 0, z: 0 },
-						pos: g.systems[ key ].entities[ id ].ref.position || { x: 0, y: 0, z: 0 },
-						quat: g.systems[ key ].entities[ id ].ref.quaternion || { x: 0, y: 0, z: 0, w: 0 }
+					packet.entropic[ id ] = {
+						mom: g.systems[ key ].entropic[ id ].ref.momentum || { x: 0, y: 0, z: 0 },
+						pos: g.systems[ key ].entropic[ id ].ref.position || { x: 0, y: 0, z: 0 },
+						quat: g.systems[ key ].entropic[ id ].ref.quaternion || { x: 0, y: 0, z: 0, w: 0 }
 					}
 
 				}

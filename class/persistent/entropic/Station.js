@@ -34,10 +34,11 @@ class Station extends Entropic {
 		this.shields = init.shields || 0
 		this.stealth = init.stealth || 0
 
+		this.ref = init.ref || {}
 		this.ref.position = this.ref.position || {
-			x: lib.tables.position.station.x,
-			y: lib.tables.position.station.y,
-			z: lib.tables.position.station.z
+			x: Math.random() * 5000,//lib.tables.position.station.x,
+			y: Math.random() * 5000,//lib.tables.position.station.y,
+			z: Math.random() * 5000//lib.tables.position.station.z
 		}
 
 	}
