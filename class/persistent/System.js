@@ -12,7 +12,7 @@ const Freighter = require('./entropic/ShipFreighter.js')
 
 const Persistent = require('./_Persistent.js')
 
-const GALAXY = require('../../single/Galaxy.js')()
+// const GALAXY = require('../../single/Galaxy.js')()
 
 
 
@@ -480,105 +480,7 @@ class System extends Persistent {
 
 
 
-	bind_player( s_id ){
 
-		let packet = {}
-
-		const USER  = GALAXY.users[ s_id ]
-
-		const SYSTEM = this
-
-		GALAXY.sockets[ s_id ].on('message', function( data ){
-
-			try{ 
-				packet = lib.sanitize_packet( JSON.parse( data ) )
-			}catch(e){
-				USER.bad_packets++
-				if( USER.bad_packets > 100 ){
-					log('flag', 'packet problem for USER:', USER.id, e )
-				}
-			}
-
-			switch( packet.type ){
-
-				case 'move':
-
-					USER.PILOT.SHIP.ref.position = packet.pos || USER.PILOT.SHIP.ref.position
-					USER.PILOT.SHIP.ref.quaternion = packet.quat || USER.PILOT.SHIP.ref.quaternion 
-					USER.PILOT.SHIP.ref.momentum = packet.mom || USER.PILOT.SHIP.ref.momentum
-					break;
-
-				case 'chat':
-
-					switch( packet.method ){
-						case 'say':
-							const chat = lib.sanitize_chat( packet.chat )
-							if( chat ){
-								SYSTEM.emit('broadcast', s_id, JSON.stringify({
-									type: 'chat',
-									id: s_id,
-									speaker: GALAXY.users[ s_id ].PILOT.fname,
-									method: packet.method,
-									chat: chat,
-								}) )
-							}else{
-								console.log(' invalid chat received ')
-							}
-							break;
-
-						default: break;
-
-					}
-
-					break;
-				case 'combat':
-					console.log(packet)
-					break;
-				case 'action':
-					console.log(packet)
-					break;
-				case 'data':
-					console.log(packet)
-					break;
-
-				default: break;
-
-			}
-
-		})
-
-		GALAXY.sockets[ s_id ].on('close', function( data ){
-
-			const socket = this
-			const p_id = socket.id
-
-			delete GALAXY.users[ socket.id ]
-			delete GALAXY.sockets[ socket.id ] // (THIS) ...
-			delete SYSTEM.entropic[ socket.id ]
-			delete SYSTEM.sentient[ socket.id ]
-
-			// for( const id of Object.keys( SYSTEM.sentient )){ // ya goof
-			for( const id of Object.keys( GALAXY.sockets )){ 
-
-				// console.log( id, socket.id )
-
-				if( socket.id != id ){
-
-					GALAXY.sockets[ id ].send( JSON.stringify({
-
-						type: 'close_pilot',
-						pilot_id: p_id
-
-					}) )
-
-				}
-			}
-
-			if( Object.keys( SYSTEM.get_pilots() ).length <= 0 ) SYSTEM.close()
-
-		})
-
-	}
 
 
 
@@ -586,41 +488,7 @@ class System extends Persistent {
 
 
 
-	emit( type, sender_id, string ){
-
-		switch( type ){
-
-			// case 'pulse':
-
-			// 	for( const id of Object.keys( this.get_pilots() ) ){
-
-			// 		GALAXY.sockets[ id ].send( string )
-
-			// 	}
-			// 	break;
-
-			case 'broadcast':
-
-				for( const id of Object.keys( this.get_pilots() ) ){
-
-					// if( sender_id != id ){
-					GALAXY.sockets[ id ].send( string )
-					// }
-
-				}
-				break;
-
-			case 'dm':
-
-				log('system', 'FLAG - unfinished DM handler')
-
-				break;
-
-			default: break;
-
-		}
-
-	}
+	
 
 
 
@@ -642,7 +510,9 @@ class System extends Persistent {
 
 		// }).catch( err => { console.log( 'save System err: ', err ) })
 
-		delete GALAXY.systems[ this.id ] // seems to work...
+		log('flag', 'recode CLOSE function')
+
+		// delete GALAXY.systems[ this.id ] // seems to work...
 
 
 	}

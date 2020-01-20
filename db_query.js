@@ -6,11 +6,11 @@ const mysql = require('mysql')
 
 const log = require('./log.js')
 
-const Hotelier = require('./single/Hotelier.js')
+// const Hotelier = require('./single/Hotelier.js')
 
 // const System = require('./ecc/class/Entry/System.js')
 
-// const GALAXY = require('./ecc/single/Galaxy.js')()
+const GALAXY = require('./single/Galaxy.js')()
 
 log('call', 'db_query.js')
 
@@ -110,7 +110,9 @@ async function seed_system( req ){
 
 	try{
 
-		const system = await Hotelier.create_system()
+		log('flag', 'missing SEED_SYSTEM')
+
+		// const system = await GALAXY.create_system()
 
 		return true
 

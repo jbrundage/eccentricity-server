@@ -14,6 +14,8 @@ class Entropic {
 
 		this.eid = init.eid
 
+		this.sentient_id = init.sentient_id
+
 		this.clickable = true
 
 		this.entropy = 'positive'

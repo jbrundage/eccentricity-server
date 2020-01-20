@@ -38,8 +38,8 @@ const auth = require('./auth.js')
 const User = require('./class/persistent/User.js')
 
 const WSS = require('./single/Server.js')()
-// const GALAXY = require('./single/Galaxy.js')()
-const HOTELIER = require('./single/Hotelier.js')()
+const GALAXY = require('./single/Galaxy.js')()
+// const HOTELIER = require('./single/Hotelier.js')()
 
 // const ecc_read = require('./_ecc-readline.js')
 const readline = require('readline')
@@ -428,7 +428,7 @@ DB.initPool(( err, db ) => {
 
 						socket.request = req
 
-						HOTELIER.init_player( socket )
+						GALAXY.init_player( socket )
 						.then( res => {
 							log('routing', 'player initiated: ', socket.id )
 						}).catch( err => {
@@ -438,6 +438,17 @@ DB.initPool(( err, db ) => {
 							}))
 							log('flag', 'err init_player: ', err ) 
 						})
+
+						// HOTELIER.init_player( socket )
+						// .then( res => {
+						// 	log('routing', 'player initiated: ', socket.id )
+						// }).catch( err => {
+						// 	socket.send(JSON.stringify({
+						// 		type: 'error',
+						// 		msg: 'error initializing player'
+						// 	}))
+						// 	log('flag', 'err init_player: ', err ) 
+						// })
 
 					}
 

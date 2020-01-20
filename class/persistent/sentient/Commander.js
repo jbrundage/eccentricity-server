@@ -4,7 +4,6 @@ const lib = require('../../../lib.js')
 const Station = require('../entropic/Station.js')
 const Sentient = require('./_PersistentSentient.js')
 
-const GALAXY = require('../../../single/Galaxy.js')()
 
 class Commander extends Sentient {
 

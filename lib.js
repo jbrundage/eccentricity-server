@@ -96,6 +96,9 @@ const lib = {
 			case 'sentient':
 				new_id = '_sen_' + new_id
 				break;
+			// case 'system':
+			// 	new_id = '_sys_' + new_id
+			// 	break;
 			case 'sockets':
 				new_id = '_sck_' + new_id
 				break;

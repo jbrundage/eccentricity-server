@@ -16,6 +16,8 @@ class Sentient {
 
 		this.eid = init.eid
 
+		this.entropic_id = init.entropic_id
+
 		this.entropy = 'negative'
 
 		// this.type // has to come from subclass ...
