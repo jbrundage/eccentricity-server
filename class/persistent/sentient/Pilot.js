@@ -51,7 +51,9 @@ class Pilot extends Sentient {
 
 		if( pilot.SHIP ){
 
-			 return new Ship( pilot.SHIP )
+			let ship = new Ship( pilot.SHIP )
+			ship.uuid = pilot.uuid
+			return ship
 
 		}else if( pilot.active_ship ){
 
@@ -63,19 +65,25 @@ class Pilot extends Sentient {
 
 				if( !results ) return false
 
-				return new map[ results[0].type ]( results[0] )  // um yea.. more validation
+				let ship = new map[ results[0].type ]( results[0] )
+				ship.uuid = pilot.uuid
+				return ship  // um yea.. more validation
 
 			}else{
 
 				log('pilot', 'returning default ship, invalid active_ship: ', pilot.active_ship )
-				return new Ship()
+				return new Ship({
+					uuid: pilot.uuid
+				})
 
 			}
 
 		}else{
 
 			log('pilot', 'returning provisional ship')
-			return new Ship()
+			return new Ship({
+				uuid: pilot.uuid
+			})
 
 		}
 

@@ -31,15 +31,14 @@ const config = {
 
 
 
-// only enable on local builds
-if( env.PORT != 8082 ){ 
+if( env.ACTIVE.serverlog ){ 
 
 	const readline = require('readline');
 	
 	const rl = readline.createInterface({
 		input: process.stdin,
 		output: process.stdout,
-		prompt: 'serverlog> '
+		prompt: 'serverlog> \n'
 	});
 	
 	setTimeout(function(){
@@ -65,7 +64,7 @@ if( env.PORT != 8082 ){
 
 	function try_readline(msg){
 		try{ 
-			log('serverlog', ( eval(`${msg}`) ) ) 
+			eval(`${msg}`)
 		}catch(e){
 			log('serverlog', 'fail: ', e)
 		}

@@ -64,7 +64,7 @@ class User extends Persistent {
 			if( !user.active_pilot ) {
 
 				user.PILOT = new Pilot({
-					user_id: user.uuid
+					uuid: user.uuid
 				}) // builds provisional Pilot
 
 				// user.active_pilot // active_pilot is a lookup key - only saved pilots get this

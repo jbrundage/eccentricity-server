@@ -1,4 +1,5 @@
 // const util = require('util')
+const log = require('./log.js')
 
 const env = require('./env.js')
 const mysql = require('mysql')
@@ -49,6 +50,7 @@ function initPool( callback ) {
 	_pool.queryPromise = queryPromise
 
 	// util.promisify( _pool.query )
+	if( _pool ) log('db', 'pool init')
 
 	return callback( null, _pool )
 

@@ -11,6 +11,14 @@ const http = require('http')
 // const cors = require('cors')
 
 
+// LOCAL PACKAGES
+const log = require('./log.js')
+const DB = require('./db.js')
+// const config = require('./config.js')
+const env = require('./env.js')
+// const env = require(!fs.existsSync("env.js") ? './default_env.js' : './env.js')
+
+
 
 // NPM 
 const bodyParser = require('body-parser')
@@ -22,12 +30,6 @@ const MemoryStore = require('memorystore')(session)
 
 
 
-// LOCAL PACKAGES
-const log = require('./log.js')
-const DB = require('./db.js')
-// const config = require('./config.js')
-const env = require('./env.js')
-// const env = require(!fs.existsSync("env.js") ? './default_env.js' : './env.js')
 
 // const lib = require('./lib.js')
 
@@ -77,9 +79,11 @@ const gatekeep = function(req, res, next) {
 
 	}else{
 
+
 		// AVAST YE MATEYS
+		req.session.user = new User( req.session.user )
 		// any validation on req object here passes through serializer before added to WSS
-		// ( functions lost )
+			// ( functions lost - WSS only though )
 
 		next()
 
@@ -172,6 +176,8 @@ exp.get('/robots.txt', function(request, response){
 exp.get('/touch_user', function( request, response ){
 
 	(async() => {
+
+		// request.session.user = new User( request.session.user )
 
 		request.session.user.PILOT = await request.session.user.touch_pilot()
 		request.session.user.SHIP = await request.session.user.PILOT.touch_ship()
@@ -368,7 +374,7 @@ DB.initPool(( err, db ) => {
 
 	if(err) return console.error( 'no db: ', err )
 	
-	console.log('boot', 'DB init:', Date.now())
+	log('db', 'init:', Date.now())
   
 	server.listen( env.PORT, function() {
 
@@ -461,47 +467,3 @@ DB.initPool(( err, db ) => {
 
 
 
-
-
-// SERVERLOG
-
-if( env.port != 8080 ){ 
-		
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-		prompt: 'serverlog> '
-	})
-	
-	setTimeout(function(){
-		rl.prompt()
-	}, 500)
-
-	let readline_last = []
-	
-	rl.on('line', (line) => {
-		switch (line.trim()) {
-		case '^[[A':
-			try_readline(readline_last[0])
-			break
-			// case '^[[A^[[A':
-			// 	try_readline(readline_last[1])
-			// 	break;
-			// case '^[[A^[[A^[[A':
-			// 	try_readline(readline_last[2])
-			// 	break;
-		default:
-			readline_last.unshift(line.trim())
-			try_readline(line.trim())
-			break
-		}
-		rl.prompt()
-	}).on('close', () => {
-		process.exit(0)
-	})
-
-}
-
-function try_readline( msg ){
-	try{ log('serverlog', ( eval(`${msg}`) ) ) }catch(e){ console.log(e) }
-}
