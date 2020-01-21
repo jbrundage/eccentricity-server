@@ -14,8 +14,6 @@ class Persistent {
 
 		this.id = init.id
 
-		this.eid = init.eid
-
 		this.temporality = 'persistent'
 
 	}
@@ -34,7 +32,7 @@ class Persistent {
 	}
 
 
-	updateOne(){
+	updateOne( update_query, update_arguments ){
 
 		if( !this.table ) return false
 

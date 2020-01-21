@@ -420,6 +420,10 @@ DB.initPool(( err, db ) => {
 
 					if( !ss ) {
 
+						socket.send(JSON.stringify({
+							type: 'error',
+							msg: 'no session found - try reloading the page'
+						}))
 						log('flag', 'no session found')
 						// return false 
 					}else{
@@ -428,15 +432,15 @@ DB.initPool(( err, db ) => {
 
 						socket.request = req
 
-						GALAXY.init_player( socket )
+						GALAXY.init_connection( socket )
 						.then( res => {
-							log('routing', 'player initiated: ', socket.id )
+							log('routing', 'connection initiated: ', socket.id )
 						}).catch( err => {
 							socket.send(JSON.stringify({
 								type: 'error',
-								msg: 'error initializing player'
+								msg: 'error initializing connection'
 							}))
-							log('flag', 'err init_player: ', err ) 
+							log('flag', 'err init_connection: ', err ) 
 						})
 
 						// HOTELIER.init_player( socket )

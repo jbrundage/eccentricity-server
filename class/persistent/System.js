@@ -497,25 +497,7 @@ class System extends Persistent {
 
 
 
-	close(){
 
-		this.entropic = {}
-		this.sentient = {}
-
-		// TEMP !  -  re-enable this:
-		// this.updateOne()
-		// .then( res => {
-
-		// 	log('system', 'closed')
-
-		// }).catch( err => { console.log( 'save System err: ', err ) })
-
-		log('flag', 'recode CLOSE function')
-
-		// delete GALAXY.systems[ this.id ] // seems to work...
-
-
-	}
 
 	
 

@@ -10,6 +10,8 @@ class PersistentEntropic extends Entropic {
 
 		init = init || {}
 
+		this.eid = init.eid
+
 		this.temporality = 'persistent'
 
 	}
