@@ -51,26 +51,26 @@ class Pilot extends Sentient {
 
 		if( pilot.SHIP ){
 
-			if( typeof( pilot.SHIP.id ) !== 'number' ){
+			 return new Ship( pilot.SHIP )
 
-				log('flag', 'invalid pilot ship id: ', pilot.SHIP )
-				return false
+		}else if( pilot.active_ship ){
 
-			}else if( pilot.SHIP.id ){
+			if( typeof( pilot.active_ship ) == 'number' && pilot.active_ship > 0 ){
 
-				 return new Ship( pilot.SHIP )
+				const pool = db.getPool()
+
+				const { results, fields } = await pool.queryPromise(`SELECT * FROM \`ships\` WHERE id = ? LIMIT 1`, [ pilot.ship_id ] )   //, {
+
+				if( !results ) return false
+
+				return new map[ results[0].type ]( results[0] )  // um yea.. more validation
+
+			}else{
+
+				log('pilot', 'returning default ship, invalid active_ship: ', pilot.active_ship )
+				return new Ship()
 
 			}
-
-		}else if( pilot.active_ship && typeof( pilot.active_ship ) == 'number' ){
-
-			const pool = db.getPool()
-
-			const { results, fields } = await pool.queryPromise(`SELECT * FROM \`ships\` WHERE id = ? LIMIT 1`, [ pilot.ship_id ] )   //, {
-
-			if( !results ) return false
-
-			return new map[ results[0].type ]( results[0] )  // um yea.. more validation
 
 		}else{
 

@@ -8,26 +8,26 @@ let d
 let dstring = ''
 
 
-const log = function(type, msg, data){
+const log = function( type, msg, ...data ){
 	
-	if(timestamp) {
+	if( timestamp ) {
 		d = new Date()
 		dstring = '(' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds() + ')'
 	}
 
 	data = data || ''
 	let c = 0
-	if(active[type]){
+	if( active[ type ] ){
 		let color = ''
 		let pre = ''
-		for(t in active) {
+		for( t in active ) {
 			c++
-			if(t==type){
-				color=colors_fg[c % colors_fg.length]
+			if( t == type ){
+				color = colors_fg[ c % colors_fg.length ]
 			}
 		}
-		if(type=='flag') pre = '!!! '
-		console.log('\x1b[100m\x1b[30mlog\x1b[0m@' + color + type + '\x1b[0m' + ': ' + pre + dstring, msg, data)
+		if( type == 'flag' ) pre = '!!! '
+		console.log( '\x1b[100m\x1b[30mlog\x1b[0m@' + color + type + '\x1b[0m' + ': ' + pre + dstring, msg, ...data )
 	}
 }
 

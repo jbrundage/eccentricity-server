@@ -12,7 +12,7 @@ const http = require('http')
 
 
 
-// MIDDLEWARE
+// NPM 
 const bodyParser = require('body-parser')
 const session = require('express-session')
 const cookie = require('cookie')
@@ -65,7 +65,7 @@ const lru_session = session({
 })
 
 
-const version = 13
+const version = 14
 
 const gatekeep = function(req, res, next) {
 
@@ -77,33 +77,11 @@ const gatekeep = function(req, res, next) {
 
 	}else{
 
-		if( !req.session.user || !req.session.user.PILOT || !req.session.user.version || req.session.user.version != version ){
+		// AVAST YE MATEYS
+		// any validation on req object here passes through serializer before added to WSS
+		// ( functions lost )
 
-			// ^^ vv only destroys session user, doesn't destroy session
-
-			(async() => {
-
-				req.session.user = new User({
-					version: version
-				})		
-				req.session.user.PILOT = await req.session.user.touch_pilot()
-				req.session.user.PILOT.SHIP = await req.session.user.PILOT.touch_ship()
-
-				if( !req.session.user.PILOT || !req.session.user.PILOT.SHIP) {
-					log('flag', 'invalid user init' )
-				}
-
-				next()
-
-			})()
-
-		}else{
-
-			req.session.user = new User( req.session.user )
-			next()
-
-		}
-
+		next()
 
 	}
 
@@ -222,6 +200,8 @@ exp.get('/touch_user', function( request, response ){
 	// 	})
 
 })
+
+
 
 
 exp.get('/fetch_pilots', function( request, response ){
@@ -401,7 +381,7 @@ DB.initPool(( err, db ) => {
 			const cookies = cookie.parse( req.headers.cookie )
 			const sid = cookieParser.signedCookie( cookies['connect.sid'], env.SECRET )
 
-			STORE.get( sid, function (err, ss) {
+			STORE.get( sid, function ( err, session ) {
 
 				if( err ){
 
@@ -418,7 +398,7 @@ DB.initPool(( err, db ) => {
 
 				}else {
 
-					if( !ss ) {
+					if( !session ) {
 
 						socket.send(JSON.stringify({
 							type: 'error',
@@ -428,13 +408,13 @@ DB.initPool(( err, db ) => {
 						// return false 
 					}else{
 
-						STORE.createSession( req, ss ) //creates the session object and APPEND on req (!)
+						STORE.createSession( req, session ) //creates the session object and APPEND on req (!)
 
 						socket.request = req
 
 						GALAXY.init_connection( socket )
 						.then( res => {
-							log('routing', 'connection initiated: ', socket.id )
+							log('routing', 'connection initiated: ', socket.uuid )
 						}).catch( err => {
 							socket.send(JSON.stringify({
 								type: 'error',
@@ -442,17 +422,6 @@ DB.initPool(( err, db ) => {
 							}))
 							log('flag', 'err init_connection: ', err ) 
 						})
-
-						// HOTELIER.init_player( socket )
-						// .then( res => {
-						// 	log('routing', 'player initiated: ', socket.id )
-						// }).catch( err => {
-						// 	socket.send(JSON.stringify({
-						// 		type: 'error',
-						// 		msg: 'error initializing player'
-						// 	}))
-						// 	log('flag', 'err init_player: ', err ) 
-						// })
 
 					}
 

@@ -12,7 +12,7 @@ class Persistent {
 
 		init = init || {}
 
-		this.id = init.id
+		this.uuid = init.uuid
 
 		this.temporality = 'persistent'
 
@@ -47,7 +47,7 @@ class Persistent {
 			resolve()
 
 			// db.collection( doc.collection ).updateOne({
-			// 	_id: OID( doc.id )
+			// 	_uuid: OID( doc.id )
 			// }, {
 			// 	$set: doc
 			// },{

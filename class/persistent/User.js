@@ -9,7 +9,7 @@ const Pilot = require('./sentient/Pilot.js')
 
 const Persistent = require('./_Persistent.js')
 
-const GALAXY = require('../../single/Galaxy.js')()
+// const GALAXY = require('../../single/Galaxy.js')()
 
 
 log( 'call', 'User.js' )
@@ -28,8 +28,11 @@ class User extends Persistent {
 		this.table = 'users'
 
 		this.active_pilot = init.active_pilot
+		this.PILOT = init.PILOT 
+
 		this.pilots = init.pilots || []
-		// this.PILOT = init.PILOT || new Pilot()
+
+		//|| new Pilot()
 		// init.PILOT = init.PILOT || {}
 		// init.PILOT.id = this.id
 		// this.PILOT = new Pilot( init.PILOT )
@@ -60,7 +63,11 @@ class User extends Persistent {
 
 			if( !user.active_pilot ) {
 
-				user.PILOT = new Pilot() // builds provisional Pilot
+				user.PILOT = new Pilot({
+					user_id: user.uuid
+				}) // builds provisional Pilot
+
+				// user.active_pilot // active_pilot is a lookup key - only saved pilots get this
 
 				resolve( user.PILOT ) // already instantiated by gatekeeper()
 
@@ -82,6 +89,11 @@ class User extends Persistent {
 
 						user.PILOT = new Pilot( user.PILOT )
 
+						if( !user.PILOT.uuid ){
+							reject('should already have pilot uuid')
+							return false
+						}
+
 						resolve({
 							success: true,
 							pilot: user.PILOT
@@ -89,6 +101,8 @@ class User extends Persistent {
 						return true
 
 					}else{
+
+						log('flag', 'discarding PILOT in favor of discrepant active_pilot')
 
 						needs_query = true
 

@@ -12,9 +12,7 @@ class Entropic {
 
 		this.id = init.id
 
-		this.eid = init.eid
-
-		this.sentient_id = init.sentient_id
+		this.uuid = init.uuid
 
 		this.clickable = true
 

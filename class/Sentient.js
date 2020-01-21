@@ -14,9 +14,7 @@ class Sentient {
 
 		this.id = init.id
 
-		this.eid = init.eid
-
-		this.entropic_id = init.entropic_id
+		this.uuid = init.uuid
 
 		this.entropy = 'negative'
 

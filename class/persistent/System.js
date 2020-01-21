@@ -2,6 +2,8 @@ const env = require('../../env.js')
 const log = require('../../log.js')
 const lib = require('../../lib.js')
 
+const uuid = require('uuid')
+
 const Station = require('./entropic/Station.js')
 const Commander = require('./sentient/Commander.js')
 const Pilot = require('./sentient/Pilot.js')
@@ -44,8 +46,8 @@ class System extends Persistent {
 
 		this.table = 'system'
 
-		// this.id = lib.glean_ID( [init._id, init.id] )
-		this.id = init.id
+		// this.uuid = lib.glean_ID( [init._id, init.uuid] )
+		this.uuid = init.uuid
 
 		this.reputation = init.reputation || {} 
 		// this.faction // only access through get_faction()
@@ -73,7 +75,9 @@ class System extends Persistent {
 
 		if( this.initialized ) {
 
-			// this.hydrate_commanders_with_stations() // still need to init with eid here
+			log('flag', 'pre exists')
+
+			// this.hydrate_commanders_with_stations() // still need to init with uuid here
 			await this.hydrate_sentient()
 
 			await this.hydrate_entropics()
@@ -82,27 +86,46 @@ class System extends Persistent {
 
 		}else{
 
-			const p = this.simple_station('primary')
-			this.entropic[ p.eid ] = p
-
-			const d = this.simple_station('docking')
-			this.entropic[ d.eid ] = d
-
-			const c1 = new Commander({
-				eid: lib.unique_id('sentient', this.sentient )
+			const p = new Station({
+				subtype: 'primary',
+				ref: {
+					position: {
+						x: lib.tables.position.station[ 'primary' ].x,
+						y: lib.tables.position.station[ 'primary' ].y,
+						z: lib.tables.position.station[ 'primary' ].z
+					}
+				}
 			})
-			this.sentient[ c1.eid ] = c1
+			this.add_entity( 'entropic', p )
 
-			const c2 = new Commander({
-				eid: lib.unique_id('sentient', this.sentient )
+			const d = new Station({
+				subtype: 'primary',
+				ref: {
+					position: {
+						x: lib.tables.position.station[ 'primary' ].x,
+						y: lib.tables.position.station[ 'primary' ].y,
+						z: lib.tables.position.station[ 'primary' ].z
+					}
+				}
 			})
-			this.sentient[ c2.eid ] = c2
+			this.add_entity( 'entropic', d )
 
-			p.commander_id = c1.eid
-			d.commander_id = c2.eid
+			const c1 = new Commander()
+			this.add_entity( 'sentient', c1 )
 
-			c1.station_id = p.eid
-			c2.station_id = d.eid
+			const c2 = new Commander()
+			this.add_entity( 'sentient', c2 )
+
+			if( typeof( c1.uuid ) != 'string' ){
+				log('flag', 'o no the instantiation objects do not actually deep link to the system entity objects!!')
+				return false
+			}
+
+			p.commander_id = c1.uuid
+			d.commander_id = c2.uuid
+
+			c1.station_id = p.uuid
+			c2.station_id = d.uuid
 
 			this.initialized = true
 
@@ -118,28 +141,53 @@ class System extends Persistent {
 
 
 
-	simple_station( subtype ){
 
-		if( !subtype ) {
-			log('flag', 'station must have type' )
-			return false
-		}
+	add_entity( type, obj ){
 
-		const station = new Station({
-			subtype: subtype,
-			eid: lib.unique_id( 'entropic', this.entropic ),
-			ref: {
-				position: {
-					x: lib.tables.position.station[ subtype ].x,
-					y: lib.tables.position.station[ subtype ].y,
-					z: lib.tables.position.station[ subtype ].z
+		if( obj.uuid ){
+			for( const key of Object.keys( this[ type ])){
+				if( this[ type ][ key ].uuid === obj.uuid ){
+					log('flag', 'overlapping add uuid')
+					return false
 				}
 			}
-		})
-		
-		return station
+		}
+
+		obj.uuid = uuid() // lib.unique_id( type, this[ type ] )
+
+		this[ type ][ obj.uuid ] = obj
 
 	}
+
+
+
+	remove_entity( type, uuid ){
+
+		if( !this[ type ].uuid ){
+			log('flag', 'could not find entity to remove: ', uuid)
+		}
+
+		delete this[ type ][ uuid ]
+
+	}
+
+
+
+
+
+
+	// simple_station( subtype ){
+
+	// 	if( !subtype ) {
+	// 		log('flag', 'station must have type' )
+	// 		return false
+	// 	}
+
+	// 	const station = )
+		
+	// 	return station
+
+	// }
 
 
 
@@ -154,22 +202,22 @@ class System extends Persistent {
 	// 	let p = false
 	// 	let d = false
 
-	// 	for( const eid of Object.keys( system.sentient ) ){
+	// 	for( const uuid of Object.keys( system.sentient ) ){
 
-	// 		if( eid && eid != 'undefined' ){
+	// 		if( uuid && uuid != 'undefined' ){
 
-	// 			if( system.sentient[ eid ].type == 'commander' ) {
+	// 			if( system.sentient[ uuid ].type == 'commander' ) {
 
-	// 				system.sentient[ eid ] = new Commander( system.sentient[ eid ] )
+	// 				system.sentient[ uuid ] = new Commander( system.sentient[ uuid ] )
 
-	// 				if( system.sentient[ eid ].STATION.subtype == 'primary' ) p = true
-	// 				if( system.sentient[ eid ].STATION.subtype == 'docking' ) d = true
+	// 				if( system.sentient[ uuid ].STATION.subtype == 'primary' ) p = true
+	// 				if( system.sentient[ uuid ].STATION.subtype == 'docking' ) d = true
 
 	// 			}
 
 	// 		}else{
 
-	// 			log('system', 'invalid sentient: ', system.sentient[ eid ] )
+	// 			log('system', 'invalid sentient: ', system.sentient[ uuid ] )
 
 	// 		}
 
@@ -186,7 +234,7 @@ class System extends Persistent {
 	// 		p.STATION.ref.position.x = lib.tables.position.station.primary.x
 	// 		p.STATION.ref.position.y = lib.tables.position.station.primary.y
 	// 		p.STATION.ref.position.z = lib.tables.position.station.primary.z
-	// 		system.entropic[ p.eid ] = p.STATION
+	// 		system.entropic[ p.uuid ] = p.STATION
 	// 	} 
 
 	// 	if( !d ){
@@ -198,7 +246,7 @@ class System extends Persistent {
 	// 		d.STATION.ref.position.x = lib.tables.position.station.docking.x
 	// 		d.STATION.ref.position.y = lib.tables.position.station.docking.y
 	// 		d.STATION.ref.position.z = lib.tables.position.station.docking.z
-	// 		system.entropic[ d.eid ] = d.STATION
+	// 		system.entropic[ d.uuid ] = d.STATION
 	// 	}
 
 	// }
