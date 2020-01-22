@@ -41,6 +41,8 @@ const User = require('./class/persistent/User.js')
 
 const WSS = require('./single/Server.js')()
 const GALAXY = require('./single/Galaxy.js')()
+
+const SOCKET = require('./single/Sockets.js')
 // const HOTELIER = require('./single/Hotelier.js')()
 
 // const ecc_read = require('./_ecc-readline.js')

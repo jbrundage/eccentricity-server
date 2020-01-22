@@ -482,8 +482,12 @@ class System extends Persistent {
 
 		for( const uuid of Object.keys( this.sentient.pc ) ){
 			// skip sender
-			if( !sender_uuid || sender_uuid != uuid && SOCKETS[ uuid ] ){ 
-				SOCKETS[ uuid ].send( string )
+			if( !sender_uuid || sender_uuid != uuid ){ 
+				if( SOCKETS[ uuid ] ){
+					SOCKETS[ uuid ].send( string )
+				}else{
+					log('flag', 'sending to void socket: ', uuid )
+				}
 			}
 		}
 
@@ -589,9 +593,9 @@ class System extends Persistent {
 					uuid: new_uuid,
 					ref: {
 						position: {
-							x: Math.random() * 500,
-							y: Math.random() * 500,
-							z: Math.random() * 500
+							x: Math.random() * 100,
+							y: Math.random() * 100,
+							z: Math.random() * 100
 						}
 					}
 				})
@@ -611,9 +615,9 @@ class System extends Persistent {
 					uuid: new_uuid,
 					ref: {
 						position: {
-							x: Math.random() * 500,
-							y: Math.random() * 500,
-							z: Math.random() * 500
+							x: Math.random() * 100,
+							y: Math.random() * 100,
+							z: Math.random() * 100
 						}
 					}
 				})
@@ -633,9 +637,9 @@ class System extends Persistent {
 					uuid: new_uuid,
 					ref: {
 						position: {
-							x: Math.random() * 500,
-							y: Math.random() * 500,
-							z: Math.random() * 500
+							x: Math.random() * 100,
+							y: Math.random() * 100,
+							z: Math.random() * 100
 						}
 					}
 				})

@@ -229,6 +229,18 @@ class Galaxy {
 					}
 
 					break;
+
+				case 'ping_entropic':
+
+					log('flag', 'client is requesting: ', packet )
+
+					SOCKETS[ uuid ].send(JSON.stringify({
+						type: 'pong_entropic',
+						sentient: system.sentient.pc[ packet.uuid ] || system.sentient.npc[ packet.uuid ],
+						entropic: system.entropic[ packet.uuid ]
+					}))
+					break;
+
 				case 'combat':
 					console.log(packet)
 					break;
