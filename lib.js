@@ -20,9 +20,11 @@ schema
 const lib = {
 
 	tables: {
+
 		accounts:{
 			pilot: [1, 2, 3]
 		},
+
 		names: {
 			pilots:{
 				fname: ['Otker','Ansovald','Bosco','Thierry','Fastolph','Grimald','Meginhurd','Erenfried','Tolman','Flodoard','Mentha','Calamity','Melba','Adaltrude','Liutgarde','Lanthechilde','Chunsina','Brianna','Tara','Tasha','Garivald','Lothar','Brutus','Giseler','Isengrim','Iago','Filibert','Theodebert','Tassilo','Amand','Bertha','Ruby','Theudechild','Alexsta','Brunhilda','Ellinrat','Fiona','Ruothilde','Erica','Theodelinda'],
@@ -30,6 +32,7 @@ const lib = {
 			},
 			ships: ['Clipper', 'Bertha', 'Tequila Sunrise', 'Margaritaville', 'Star Hopper', 'Void Crosser']
 		},
+
 		position: {
 			station: {
 				base: { x: Math.random() * 10000, y: Math.random() * 10000, z: Math.random() * 10000 },
@@ -40,11 +43,46 @@ const lib = {
 			// ship: { x: 0, y: 0, z: 1000 }
 		},
 		minimum_station_dist: 1000,
+
 		momentum: {
 			ship: { x: 0, y: 0, z: .1 },
 			entropic: { x: 0, y: 0, z: .1 }
 		},
-		verboten: ['fuck', 'shit', 'cunt', 'damn', 'nigger', 'kike', 'chink', 'bitch']
+
+		verboten: ['fuck', 'shit', 'cunt', 'damn', 'nigger', 'kike', 'chink', 'bitch'],
+
+		pulse: {
+			npc: {
+				spawn: 10000,
+				think: 5000
+			},
+			entropic: {
+				spawn: 9000,
+				move: 9000
+			}
+		}
+
+	},
+
+	json_hydrate: function( data ){
+
+		if( typeof( data ) == 'string' ){
+			let r = {}
+			try{
+				r = JSON.parse( data )
+			}catch( e ){
+				log('flag', 'invalid json parse: ', data )
+			}
+
+			return r
+
+		}else if( typeof( data ) === 'object' ){
+
+			return data
+			
+		}
+
+		return false
 
 	},
 
@@ -64,13 +102,23 @@ const lib = {
 
 	random_hex: random_hex,
 
-	is_ecc_id: function( id ){
+	is_uuid: function( data ){
 
-		// if ( id.match(/^[0-9a-fA-F]{24}$/) ) return true
-		if ( id.match(/^\_[0-9a-zA-Z]{3}\_.*/) ) return true
+		if( typeof( data === 'string' ) && data.length > 10 ) return true
 		return false
 
 	},
+
+	// is_ecc_id: function( id ){
+
+	// 	// log('flag', 'should')
+	// 	// return false
+
+	// 	// if ( id.match(/^[0-9a-fA-F]{24}$/) ) return true
+	// 	if ( id.match(/^\_[0-9a-zA-Z]{3}\_.*/) ) return true
+	// 	return false
+
+	// },
 
 	unique_id: function( type, group ){
 

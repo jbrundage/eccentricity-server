@@ -14,8 +14,7 @@ const Freighter = require('./entropic/ShipFreighter.js')
 
 const Persistent = require('./_Persistent.js')
 
-// const GALAXY = require('../../single/Galaxy.js')()
-
+const SOCKETS = require('../../single/Sockets.js')
 
 
 const maps = {
@@ -33,6 +32,21 @@ const maps = {
 // const WSS = require('../Server.js')()
 log( 'call', 'System.js' )
 
+
+const system_pulse = { // avoids circular ref
+
+	npc: {
+		spawn: false,
+		think: false
+	},
+
+	entropic: {
+		spawn: false,
+		move: false
+	}
+
+}
+
 class System extends Persistent {
 
 
@@ -44,26 +58,35 @@ class System extends Persistent {
 
 		this.initialized = init.initialized
 
-		this.table = 'system'
+		this.table = 'systems'
+
+		this.name = init.name
 
 		// this.uuid = lib.glean_ID( [init._id, init.uuid] )
-		this.uuid = init.uuid
+		// this.uuid = init.uuid
 
-		this.reputation = init.reputation || {} 
+		this.reputation = lib.json_hydrate( init.reputation )
+		// typeof( init.reputation ) === 'string' ? JSON.parse( init.reputation ) : {} 
 		// this.faction // only access through get_faction()
 
 		this.planet = init.planet
 		this.traffic = init.traffic || 5
-
+		this.volatility = init.volatility === 0 ? 0 : 5
 
 		// instantiated
-
-		this.sentient = this.validate_ids( init.sentient )
-		this.entropic = this.validate_ids( init.entropic )
-
-		this.pulses = {
-			npc: false
+		if( init.sentient ){
+			this.sentient = {
+				pc: this.validate_uuids( init.sentient.pc ),
+				npc: this.validate_uuids( init.sentient.npc )
+			}
+		}else{
+			this.sentient = {
+				pc: {},
+				npc: {}
+			}
 		}
+
+		this.entropic = this.validate_uuids( init.entropic )
 
 	}
 
@@ -71,11 +94,21 @@ class System extends Persistent {
 
 
 
-	async hydrate(){
+
+
+
+
+
+
+
+
+	async bring_online(){
 
 		if( !this.initialized ) {
 
+			let p_uuid = uuid()
 			const primary = new Station({
+				uuid: p_uuid,
 				subtype: 'primary',
 				ref: {
 					position: {
@@ -85,51 +118,45 @@ class System extends Persistent {
 					}
 				}
 			})
-			this.add_entity( 'entropic', primary )
+			const primary_commander = new Commander({
+				uuid: p_uuid
+			})
 
+			let d_uuid = uuid()
 			const docking = new Station({
-				subtype: 'primary',
+				subtype: 'docking',
 				ref: {
 					position: {
-						x: lib.tables.position.station[ 'primary' ].x,
-						y: lib.tables.position.station[ 'primary' ].y,
-						z: lib.tables.position.station[ 'primary' ].z
+						x: lib.tables.position.station[ 'docking' ].x,
+						y: lib.tables.position.station[ 'docking' ].y,
+						z: lib.tables.position.station[ 'docking' ].z
 					}
 				}
 			})
-			this.add_entity( 'entropic', docking )
+			const docking_commander = new Commander({
+				uuid: d_uuid
+			})
+	
+			this.register_entity( 'entropic', false, docking )
+			this.register_entity( 'entropic', false, primary )
 
-			const primary_commander = new Commander()
-			primary_commander.uuid = primary.uuid
-			this.add_entity( 'sentient', primary_commander )
-
-			const docking_commander = new Commander()
-			docking_commander.uuid = docking.uuid
-			this.add_entity( 'sentient', docking_commander )
-
-			if( typeof( primary_commander.uuid ) != 'string' ){
-				log('flag', 'o no the instantiation objects do not actually deep link to the system entity objects!!')
-				return false
-			}
-
-			// primary.uuid = primary_commander.uuid
-			// docking.uuid = docking_commander.uuid
-
-			// primary_commander.uuid = primary.uuid
-			// docking_commander.uuid = docking.uuid
+			this.register_entity( 'sentient', 'npc', primary_commander )
+			this.register_entity( 'sentient', 'npc', docking_commander )
 
 			this.initialized = true
 
 			// await this.updateOne() // dont need .. either it all saves together later or not
 
+		}else{
+
+			await this.hydrate_sentient()
+			await this.hydrate_entropics()			
+
 		}
 
-		// this.hydrate_commanders_with_stations() // still need to init with uuid here
-		await this.hydrate_sentient()
+		this.init_pulse()
 
-		await this.hydrate_entropics()
-
-		return 'hydrated'
+		return 'online'
 
 	}
 
@@ -138,11 +165,25 @@ class System extends Persistent {
 
 
 
-	add_entity( type, obj ){
 
+
+
+
+
+
+
+
+
+
+
+
+	register_entity( type, cgroup, obj ){
+
+		let group = this[ type ]
+		if( cgroup ) group = this[ type ][ cgroup ]
 		if( obj.uuid ){
-			for( const key of Object.keys( this[ type ])){
-				if( this[ type ][ key ].uuid === obj.uuid ){
+			for( const key of Object.keys( group )){
+				if( group[ key ].uuid === obj.uuid ){
 					log('system', 'SKIPPING overlapping add uuid: ', obj.type, obj.uuid )
 					return false
 				}
@@ -151,21 +192,24 @@ class System extends Persistent {
 			obj.uuid = uuid()
 		}
 
-		log('system', 'add_entity: ', obj.type, obj.uuid )
+		log('system', 'register_entity: ', type, obj.type, obj.uuid )
 
-		this[ type ][ obj.uuid ] = obj
+		group[ obj.uuid ] = obj
 
 	}
 
 
 
-	remove_entity( type, uuid ){
+	remove_entity( type, cgroup, uuid ){
 
-		if( !this[ type ].uuid ){
+		let group = this[ type ]
+		if( cgroup ) group = this[ type ][ cgroup ]
+
+		if( !group.uuid ){
 			log('flag', 'could not find entity to remove: ', uuid)
 		}
 
-		delete this[ type ][ uuid ]
+		delete group[ uuid ]
 
 	}
 
@@ -174,18 +218,6 @@ class System extends Persistent {
 
 
 
-	// simple_station( subtype ){
-
-	// 	if( !subtype ) {
-	// 		log('flag', 'station must have type' )
-	// 		return false
-	// 	}
-
-	// 	const station = )
-		
-	// 	return station
-
-	// }
 
 
 
@@ -193,84 +225,62 @@ class System extends Persistent {
 
 
 
-	// hydrate_commanders_with_stations(){
 
-	// 	const system = this
-
-	// 	let p = false
-	// 	let d = false
-
-	// 	for( const uuid of Object.keys( system.sentient ) ){
-
-	// 		if( uuid && uuid != 'undefined' ){
-
-	// 			if( system.sentient[ uuid ].type == 'commander' ) {
-
-	// 				system.sentient[ uuid ] = new Commander( system.sentient[ uuid ] )
-
-	// 				if( system.sentient[ uuid ].STATION.subtype == 'primary' ) p = true
-	// 				if( system.sentient[ uuid ].STATION.subtype == 'docking' ) d = true
-
-	// 			}
-
-	// 		}else{
-
-	// 			log('system', 'invalid sentient: ', system.sentient[ uuid ] )
-
-	// 		}
-
-	// 	}
-
-	// 	// systems should not immediately respawn stations like this...
-
-	// 	if( !p ){
-	// 		p = new Commander({
-	// 			STATION: {
-	// 				subtype: 'primary'
-	// 			}
-	// 		})
-	// 		p.STATION.ref.position.x = lib.tables.position.station.primary.x
-	// 		p.STATION.ref.position.y = lib.tables.position.station.primary.y
-	// 		p.STATION.ref.position.z = lib.tables.position.station.primary.z
-	// 		system.entropic[ p.uuid ] = p.STATION
-	// 	} 
-
-	// 	if( !d ){
-	// 		d = new Commander({
-	// 			STATION: {
-	// 				subtype: 'docking'
-	// 			}
-	// 		})
-	// 		d.STATION.ref.position.x = lib.tables.position.station.docking.x
-	// 		d.STATION.ref.position.y = lib.tables.position.station.docking.y
-	// 		d.STATION.ref.position.z = lib.tables.position.station.docking.z
-	// 		system.entropic[ d.uuid ] = d.STATION
-	// 	}
-
-	// }
 	async hydrate_sentient(){
 
 		const system = this
 
 		let needs_update = false
 
-		for( const uuid of Object.keys( system.sentient ) ){
+		for( const uuid of Object.keys( system.sentient.pc ) ){
 
 			if( uuid && typeof( uuid === 'string' ) && uuid != 'undefined' ){ 
 
-				if( !system.sentient[ uuid ].is_hydrated ){ 
+				if( !system.sentient.pc[ uuid ].is_hydrated ){ 
 
-					let type = system.sentient[ uuid ].subtype || system.sentient[ uuid ].type
+					let type = system.sentient.pc[ uuid ].subtype || system.sentient.pc[ uuid ].type
 
 					if( type && maps.sentient[ type ] ){ 
 
 						const thisClass = maps.sentient[ type ]
 
-						system.sentient[ uuid ] = new thisClass( system.sentient[ uuid ] )
+						system.sentient.pc[ uuid ] = new thisClass( system.sentient.pc[ uuid ] )
 
 					}else{
 
-						log('system', 'missing hydration class map for subtype: ', system.sentient[ uuid ].subtype )
+						log('system', 'missing hydration class map for subtype: ', system.sentient.pc[ uuid ].subtype )
+
+					}
+
+				}
+
+			}else{
+
+				log('system', 'invalid sentient hydrate id: ' + uuid + ' :', uuid )
+
+			}
+
+		}
+
+
+
+		for( const uuid of Object.keys( system.sentient.npc ) ){
+
+			if( uuid && typeof( uuid === 'string' ) && uuid != 'undefined' ){ 
+
+				if( !system.sentient.npc[ uuid ].is_hydrated ){ 
+
+					let type = system.sentient.npc[ uuid ].subtype || system.sentient.npc[ uuid ].type
+
+					if( type && maps.sentient[ type ] ){ 
+
+						const thisClass = maps.sentient[ type ]
+
+						system.sentient.npc[ uuid ] = new thisClass( system.sentient.npc[ uuid ] )
+
+					}else{
+
+						log('system', 'missing hydration class map for subtype: ', system.sentient.npc[ uuid ].subtype )
 
 					}
 
@@ -344,17 +354,15 @@ class System extends Persistent {
 
 
 
-	validate_ids( obj ){
-
-		// console.log( obj )
+	validate_uuids( obj ){
 
 		if( obj ){
 
-			for( const id of Object.keys( obj ) ){
+			for( const uuid of Object.keys( obj ) ){
 
-				if( !lib.is_ecc_id( id ) ){
-					console.log( 'invalid id: ' + id ) 
-					delete obj[ id ]
+				if( !lib.is_uuid( uuid ) ){
+					log('flag', 'invalid id: ' + uuid ) 
+					delete obj[ uuid ]
 				}
 
 			}
@@ -376,91 +384,16 @@ class System extends Persistent {
 
 
 
-
-	pulse_npcs(){
+	get_faction(){
 
 		const system = this
-
-		return new Promise( ( resolve, reject ) => {
-
-			let defense = {
-				current: 0,
-				capacity: 0
-			}
-
-			let misc = {
-				current: 0,
-				capacity: system.traffic
-			}
-
-			let enemies = {
-				current: 0
-			}
-
-			const faction = system.get_faction()
-
-			for( const id of Object.keys( system.entropic ) ){
-
-				// tally desired defenders / misc
-
-				if( system.entropic[ id ].type == 'station' ){
-
-					if( system.entropic[ id ].type == 'primary' || system.entropic[ id ].type == 'station' ){
-
-						defense.capacity += system.entropic[ id ].power
-
-					}
-
-				}else if( system.entropic[ id ].type == 'ship' ){
-
-					if( system.sentient[ id ] ){
-
-						// get current defenders
-						if( system.sentient[ id ].reputations[ faction ] > 0 ){
-
-							defense.current++
-
-						// get current misc
-						}else if( system.sentient[ id ].reputation[ faction ] === 0 ){
-
-							misc.current++
-
-						}else{
-
-							enemies.current++
-
-						}
-
-					}
-
-				}
-
-			}
-
-			// const missing_misc = misc.capacity - misc.current
-			// const missing_defense = defense.capacity - defense.current
-
-			blorb
-
-		})
-
-	}
-
-
-
-
-
-
-
-
-	get_faction(){
 
 		let high = 0
 		let faction = 'none'
 
-		for( const f of Object.keys( this.reputation ) ){
+		for( const f of Object.keys( system.reputation ) ){
 
-			if( this.reputations[ f ] > high ){
+			if( system.reputation[ f ] > high ){
 
 				faction = f
 
@@ -501,15 +434,33 @@ class System extends Persistent {
 
 	get_pilots(){
 
-		let p = {}
+		// let p = {}
 
-		for( const id of Object.keys( this.sentient ) ) {
+		// for( const id of Object.keys( this.sentient ) ) {
 
-			if( this.sentient[ id ].type == 'pilot' ) p[ id ] = this.sentient[ id ]
+		// 	if( this.sentient[ id ].type == 'pilot' ) p[ id ] = this.sentient[ id ]
 
+		// }
+
+		// return p
+
+		return this.sentient.pc
+
+	}
+
+
+	get_sentients(){
+
+		let s = {}
+
+		for( const key of Object.keys( this.sentient.pc )){
+			s[ key ] = this.sentient.pc[ key ]
+		}
+		for( const key of Object.keys( this.sentient.npc )){
+			s[ key ] = this.sentient.npc[ key ]
 		}
 
-		return p
+		return s
 
 	}
 
@@ -525,6 +476,24 @@ class System extends Persistent {
 
 
 
+	broadcast( sender_uuid, string ){
+
+		log('system','broadcast: ', string )
+
+		for( const uuid of Object.keys( this.sentient.pc ) ){
+			// skip sender
+			if( !sender_uuid || sender_uuid != uuid && SOCKETS[ uuid ] ){ 
+				SOCKETS[ uuid ].send( string )
+			}
+		}
+
+	}
+
+
+
+
+
+
 
 
 
@@ -532,7 +501,204 @@ class System extends Persistent {
 
 	
 
+	init_pulse(){
 
+		// npc: { spawn, think }
+		// entropic: { spawn, move }
+
+		const system = this
+
+		system_pulse.npc.spawn = setInterval(function(){
+
+			// get defense
+			// ( traffic - defense ) = remaining
+			// fill defense
+			// fill remaining
+			// fill hostilities
+
+			let defense = {
+				current: 0,
+				capacity: 0
+			}
+
+			let traffic = {
+				current: 0,
+				capacity: system.traffic
+			}
+
+			let enemies = {
+				current: 0,
+				capacity: system.volatility
+			}
+
+			const faction = system.get_faction()
+
+			const sentients = system.get_sentients()
+
+			for( const uuid of Object.keys( system.entropic ) ){
+
+				// tally desired defenders / traffic
+
+				if( system.entropic[ uuid ].type == 'station' ){
+
+					if( system.entropic[ uuid ].subtype == 'primary' || system.entropic[ uuid ].type == 'station' ){
+
+						defense.capacity += system.entropic[ uuid ].hangar
+
+					}
+
+				}else if( system.entropic[ uuid ].type == 'ship' ){
+
+					if( sentients[ uuid ] ){
+
+						if( !faction || faction == 'neutral' ){
+
+							traffic.current++
+
+						}else{
+
+							if( sentients[ uuid ].reputation[ faction ] > 100 ){
+
+								defense.current++
+
+							}else if( sentients[ uuid ].reputation[ faction ] < 0 ){
+
+								enemies.current++
+
+							}else{ // includes null rep
+
+								traffic.current++
+
+							}
+
+						}
+
+					}
+
+				}
+
+			}
+
+			let need_defense = defense.capacity - defense.current
+			let need_traffic = traffic.capacity - traffic.current
+			let need_enemies = enemies.capacity - enemies.current
+
+			for(let i = 0; i < need_defense; i++){
+				let new_uuid = uuid()
+				let ship = new Ship({
+					uuid: new_uuid,
+					ref: {
+						position: {
+							x: Math.random() * 500,
+							y: Math.random() * 500,
+							z: Math.random() * 500
+						}
+					}
+				})
+				let pilot = new Pilot({
+					uuid: new_uuid,
+					reputation: {
+						[ faction ]: 150
+					},
+				})
+				system.register_entity('entropic', false, ship )
+				system.register_entity('sentient', 'npc', pilot )
+			}
+
+			for(let i = 0; i < need_traffic; i++){
+				let new_uuid = uuid()
+				let ship = new Ship({
+					uuid: new_uuid,
+					ref: {
+						position: {
+							x: Math.random() * 500,
+							y: Math.random() * 500,
+							z: Math.random() * 500
+						}
+					}
+				})
+				let pilot = new Pilot({
+					uuid: new_uuid,
+					reputation: {
+						[ faction ]: 10
+					},
+				})
+				system.register_entity('entropic', false, ship )
+				system.register_entity('sentient', 'npc', pilot )
+			}
+
+			for(let i = 0; i < need_enemies; i++){
+				let new_uuid = uuid()
+				let ship = new Ship({
+					uuid: new_uuid,
+					ref: {
+						position: {
+							x: Math.random() * 500,
+							y: Math.random() * 500,
+							z: Math.random() * 500
+						}
+					}
+				})
+				let pilot = new Pilot({
+					uuid: new_uuid,
+					reputation: {
+						[ faction ]: -59
+					},
+				})
+				system.register_entity('entropic', false, ship )
+				system.register_entity('sentient', 'npc', pilot )
+			}
+
+		}, lib.tables.pulse.npc.spawn )
+
+		/////
+
+		system_pulse.npc.think = setInterval(function(){
+
+			log('pulse', 'pulse npc think')
+
+		}, lib.tables.pulse.npc.think )
+
+		/////
+
+		system_pulse.entropic.spawn = setInterval(function(){
+
+			log('pulse', 'pulse entropic spawn')
+
+		}, lib.tables.pulse.entropic.spawn )
+
+		/////
+
+		system_pulse.entropic.move = setInterval(function(){
+
+			const packet = {
+				type: 'move',
+				entropic: {}
+			}
+
+			for( const uuid of Object.keys( system.entropic ) ){
+
+				packet.entropic[ uuid ] = {
+					mom: system.entropic[ uuid ].ref.momentum || { x: 0, y: 0, z: 0 },
+					pos: system.entropic[ uuid ].ref.position || { x: 0, y: 0, z: 0 },
+					quat: system.entropic[ uuid ].ref.quaternion || { x: 0, y: 0, z: 0, w: 0 }
+				}
+
+			}
+
+			system.broadcast( false, JSON.stringify( packet ))
+
+			log('pulse', 'pulse entropic move')
+
+		}, lib.tables.pulse.entropic.move )
+
+
+		/////
+
+
+		log('pulse', 'init_pulse: ', system.id )
+
+	}
 
 	
 
