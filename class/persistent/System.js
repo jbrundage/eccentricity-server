@@ -73,20 +73,9 @@ class System extends Persistent {
 
 	async hydrate(){
 
-		if( this.initialized ) {
+		if( !this.initialized ) {
 
-			log('flag', 'pre exists')
-
-			// this.hydrate_commanders_with_stations() // still need to init with uuid here
-			await this.hydrate_sentient()
-
-			await this.hydrate_entropics()
-
-			return 'hydrated'
-
-		}else{
-
-			const p = new Station({
+			const primary = new Station({
 				subtype: 'primary',
 				ref: {
 					position: {
@@ -96,9 +85,9 @@ class System extends Persistent {
 					}
 				}
 			})
-			this.add_entity( 'entropic', p )
+			this.add_entity( 'entropic', primary )
 
-			const d = new Station({
+			const docking = new Station({
 				subtype: 'primary',
 				ref: {
 					position: {
@@ -108,32 +97,39 @@ class System extends Persistent {
 					}
 				}
 			})
-			this.add_entity( 'entropic', d )
+			this.add_entity( 'entropic', docking )
 
-			const c1 = new Commander()
-			this.add_entity( 'sentient', c1 )
+			const primary_commander = new Commander()
+			primary_commander.uuid = primary.uuid
+			this.add_entity( 'sentient', primary_commander )
 
-			const c2 = new Commander()
-			this.add_entity( 'sentient', c2 )
+			const docking_commander = new Commander()
+			docking_commander.uuid = docking.uuid
+			this.add_entity( 'sentient', docking_commander )
 
-			if( typeof( c1.uuid ) != 'string' ){
+			if( typeof( primary_commander.uuid ) != 'string' ){
 				log('flag', 'o no the instantiation objects do not actually deep link to the system entity objects!!')
 				return false
 			}
 
-			p.commander_id = c1.uuid
-			d.commander_id = c2.uuid
+			// primary.uuid = primary_commander.uuid
+			// docking.uuid = docking_commander.uuid
 
-			c1.station_id = p.uuid
-			c2.station_id = d.uuid
+			// primary_commander.uuid = primary.uuid
+			// docking_commander.uuid = docking.uuid
 
 			this.initialized = true
 
-			await this.updateOne() // ^^ for initialized
-
-			return 'hydrated'
+			// await this.updateOne() // dont need .. either it all saves together later or not
 
 		}
+
+		// this.hydrate_commanders_with_stations() // still need to init with uuid here
+		await this.hydrate_sentient()
+
+		await this.hydrate_entropics()
+
+		return 'hydrated'
 
 	}
 
@@ -147,13 +143,15 @@ class System extends Persistent {
 		if( obj.uuid ){
 			for( const key of Object.keys( this[ type ])){
 				if( this[ type ][ key ].uuid === obj.uuid ){
-					log('flag', 'overlapping add uuid')
+					log('system', 'SKIPPING overlapping add uuid: ', obj.type, obj.uuid )
 					return false
 				}
 			}
+		}else{
+			obj.uuid = uuid()
 		}
 
-		obj.uuid = uuid() // lib.unique_id( type, this[ type ] )
+		log('system', 'add_entity: ', obj.type, obj.uuid )
 
 		this[ type ][ obj.uuid ] = obj
 
@@ -256,23 +254,23 @@ class System extends Persistent {
 
 		let needs_update = false
 
-		for( const id of Object.keys( system.sentient ) ){
+		for( const uuid of Object.keys( system.sentient ) ){
 
-			if( id && id != 'undefined' && lib.is_ecc_id( id ) ){
+			if( uuid && typeof( uuid === 'string' ) && uuid != 'undefined' ){ 
 
-				if( !system.sentient[ id ].is_hydrated ){ 
+				if( !system.sentient[ uuid ].is_hydrated ){ 
 
-					let type = system.sentient[ id ].subtype || system.sentient[ id ].type
+					let type = system.sentient[ uuid ].subtype || system.sentient[ uuid ].type
 
 					if( type && maps.sentient[ type ] ){ 
 
 						const thisClass = maps.sentient[ type ]
 
-						system.sentient[ id ] = new thisClass( system.sentient[ id ] )
+						system.sentient[ uuid ] = new thisClass( system.sentient[ uuid ] )
 
 					}else{
 
-						log('system', 'missing hydration class map for subtype: ', system.sentient[ id ].subtype )
+						log('system', 'missing hydration class map for subtype: ', system.sentient[ uuid ].subtype )
 
 					}
 
@@ -280,7 +278,7 @@ class System extends Persistent {
 
 			}else{
 
-				log('system', 'invalid sentient hydrate id: ' + id + ' :', id )
+				log('system', 'invalid sentient hydrate id: ' + uuid + ' :', uuid )
 
 			}
 
@@ -306,23 +304,23 @@ class System extends Persistent {
 
 		let needs_update = false
 
-		for( const id of Object.keys( system.entropic ) ){
+		for( const uuid of Object.keys( system.entropic ) ){
 
-			if( id && id != 'undefined' && lib.is_ecc_id( id ) ){
+			if( uuid && typeof( uuid ) === 'string' && uuid != 'undefined' ){
 
-				if( !system.entropic[ id ].is_hydrated ){ 
+				if( !system.entropic[ uuid ].is_hydrated ){ 
 
-					let type = system.entropic[ id ].subtype || system.entropic[ id ].type
+					let type = system.entropic[ uuid ].subtype || system.entropic[ uuid ].type
 
 					if( type && maps.entropic[ type ] ){ 
 
 						const thisClass = maps.entropic[ type ]
 
-						system.entropic[ id ] = new thisClass( system.entropic[ id ] )
+						system.entropic[ uuid ] = new thisClass( system.entropic[ uuid ] )
 
 					}else{
 
-						log('system', 'missing hydration class map for subtype: ', system.entropic[ id ].subtype )
+						log('system', 'missing hydration class map for subtype: ', system.entropic[ uuid ].subtype )
 
 					}
 
@@ -330,7 +328,7 @@ class System extends Persistent {
 
 			}else{
 
-				log('system', 'invalid entropic hydrate id: ' + id + ' :', id )
+				log('system', 'invaluuid entropic hydrate uuid: ' + uuid + ' :', uuid )
 
 			}
 

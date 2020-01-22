@@ -10,6 +10,8 @@ class PersistentEntropic extends Sentient {
 
 		init = init || {}
 
+		this.id = init.id
+
 		this.uuid = init.uuid
 
 		this.temporality = 'persistent'

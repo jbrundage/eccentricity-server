@@ -456,14 +456,51 @@ DB.initPool(( err, db ) => {
 
 
 
+if( env.ACTIVE.serverlog ){ 
 
+	const readline = require('readline');
+	
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+		prompt: 'serverlog> \n'
+	});
+	
+	setTimeout(function(){
+		rl.prompt();
+	}, 500)
 
+	let readline_last = []
+	
+	rl.on('line', ( line ) => {
 
+		if( env.READLINE_LITERAL ){	// Mac terminal reads the characters outputted by 'up' literally (?)
+			// switch ( line.trim() ) {
+			// 	case '^[[A':
+			// 		log('flag', 'wut')
+			// 		try_readline( readline_last[0] )
+			// 		break;
+			// 	default:
+			// 		readline_last.unshift( line.trim() )
+		 	//	break;
+			// }
+		}else{
+			try_readline( line.trim() )
+		}
 
+		rl.prompt();
+	}).on('close', () => {
+		process.exit( 0 );
+	});
 
+	function try_readline( msg ){
+		try{ 
+			log( 'serverlog', eval(`${ msg }`) ) //), '\n(command): ' + String( msg ) )
+			log( 'serverlog', String( msg ) )
+		}catch( e ){
+			log('serverlog', 'fail: ', e )
+		}
+	}
 
-
-
-
-
+}
 

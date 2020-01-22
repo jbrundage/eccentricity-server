@@ -51,6 +51,8 @@ class Pilot extends Sentient {
 
 		if( pilot.SHIP ){
 
+			log('flag', 'pilot ship?', pilot.SHIP )
+
 			let ship = new Ship( pilot.SHIP )
 			ship.uuid = pilot.uuid
 			return ship

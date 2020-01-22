@@ -165,7 +165,7 @@ class User extends Persistent {
 					return false
 				}
 
-				console.log(' res:? ', err, res )//, fields )
+				log('User', 'fetch pilots:', res )//, fields )
 
 				const pilots = res
 

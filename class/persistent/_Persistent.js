@@ -12,6 +12,8 @@ class Persistent {
 
 		init = init || {}
 
+		this.id = init.id
+
 		this.uuid = init.uuid
 
 		this.temporality = 'persistent'
@@ -42,7 +44,7 @@ class Persistent {
 
 		return new Promise( ( resolve, reject ) => {
 
-			log('flag', 'skipping _Persistent.updateOne()')
+			log('flag', 'skipping query: ', update_query )
 			
 			resolve()
 
