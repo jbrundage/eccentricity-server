@@ -10,6 +10,8 @@ const log = require('./log.js')
 
 // const System = require('./ecc/class/Entry/System.js')
 
+const SYSTEMS = require('./single/SYSTEMS.js')
+
 const GALAXY = require('./single/Galaxy.js')()
 
 log('call', 'db_query.js')
@@ -24,11 +26,11 @@ const r = {
 
 		return new Promise( (resolve, reject) => {
 
-			if( GALAXY.systems[ sys_id ] ){ // should always be true as SYSTEM is initiated with request; this is ajax
+			if( SYSTEMS[ sys_id ] ){ // should always be true as SYSTEM is initiated with request; this is ajax
 
 				resolve( {
 					success: true,
-					system: GALAXY.systems[ sys_id ]
+					system: SYSTEMS[ sys_id ]
 				})
 
 			}else{  // should only be true for random queries
@@ -52,9 +54,9 @@ const r = {
 						// s.initialize()
 						// .then( res => {
 
-						// 	GALAXY.systems[ sys_id ] = s
+						// 	SYSTEMS[ sys_id ] = s
 
-						log('MONGO', 'db_query: 65')
+						log('flag', 'missing db_query')
 
 							resolve({
 								success: true,

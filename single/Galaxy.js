@@ -10,6 +10,8 @@ const System = require('../class/persistent/System.js')
 const User = require('../class/persistent/User.js')
 
 const SOCKETS = require('./Sockets.js')
+const SYSTEMS = require('./Systems.js')
+const USERS = require('./Users.js')
 
 log( 'call', 'Galaxy.js' )
 
@@ -39,8 +41,8 @@ class Galaxy {
 		this.extant = init.extant
 
 		// this.sockets = init.sockets || {}
-		this.users = init.users || {}
-		this.systems = init.systems || {}
+		// this.users = init.users || {}
+		// SYSTEMS = init.systems || {}
 
 	}
 
@@ -57,7 +59,7 @@ class Galaxy {
 		// send init to player
 		// send init to system players
 
-		if( Object.keys( this.users ).length > env.MAX_PILOTS ) {
+		if( Object.keys( USERS ).length > env.MAX_PILOTS ) {
 			log('galaxy', 'BLOCK LOGIN: max users reached')
 			socket.disconnect()
 			return false
@@ -89,27 +91,27 @@ class Galaxy {
 		SOCKETS[ socket.uuid ] = socket									// boom
 		SOCKETS[ socket.uuid ].uuid = socket.uuid
 
-		this.users[ socket.uuid ] = socket.request.session.user 				// boom 
-		this.users[ socket.uuid ].uuid = socket.uuid
+		USERS[ socket.uuid ] = socket.request.session.user 				// boom 
+		USERS[ socket.uuid ].uuid = socket.uuid
 
 		socket.request.session.user.PILOT.uuid = socket.uuid
 		socket.request.session.user.PILOT.SHIP.uuid = socket.uuid
 
-		SYSTEM.register_entity( 'entropic', false, this.users[ socket.uuid ].PILOT.SHIP ) 	// boom
-		SYSTEM.register_entity( 'sentient', 'pc', this.users[ socket.uuid ].PILOT ) 		// boom 
+		SYSTEM.register_entity( 'entropic', false, USERS[ socket.uuid ].PILOT.SHIP ) 	// boom
+		SYSTEM.register_entity( 'sentient', 'pc', USERS[ socket.uuid ].PILOT ) 		// boom 
 
 		this.bind_player( SYSTEM, socket.uuid )
 
 		SOCKETS[ socket.uuid ].send( JSON.stringify( {
 			type: 'init_session',
 			system: SYSTEM,
-			user: this.users[ socket.uuid ],
+			user: USERS[ socket.uuid ],
 			uuid: socket.uuid
 		}) )
 
 		SYSTEM.broadcast( socket.uuid, JSON.stringify( { 
 			type: 'init_pilot',
-			pilot: this.users[ socket.uuid ].PILOT  //.core()
+			pilot: USERS[ socket.uuid ].PILOT  //.core()
 		} ) )
 
 	}
@@ -132,13 +134,13 @@ class Galaxy {
 			return false
 		}
 
-		if( this.systems[ id ] ) { 
+		if( SYSTEMS[ id ] ) { 
 
-			// this.systems[ id ] = new System( this.systems[ id ] ) // every player arrival could be way overkill
+			// SYSTEMS[ id ] = new System( SYSTEMS[ id ] ) // every player arrival could be way overkill
 
 			if( !this.extant ) this.bigbang()  // should never be the case
 
-			return this.systems[ id ]
+			return SYSTEMS[ id ]
 
 		}
 
@@ -158,15 +160,15 @@ class Galaxy {
 
 		if( !this.extant ) this.bigbang()
 
-		this.systems[ id ] = new System( results[0] )
+		SYSTEMS[ id ] = new System( results[0] )
 
-		// this.systems[ id ].tick( 'on' )
+		// SYSTEMS[ id ].tick( 'on' )
 
-		// log('galaxy', 'SYSTEM post hydrate: ', this.systems[ id ] )
+		// log('galaxy', 'SYSTEM post hydrate: ', SYSTEMS[ id ] )
 
-		await this.systems[ id ].bring_online() // HERE all should have eid's
+		await SYSTEMS[ id ].bring_online() // HERE all should have eid's
 
-		return this.systems[ id ]
+		return SYSTEMS[ id ]
 
 	}
 
@@ -183,7 +185,7 @@ class Galaxy {
 
 		let packet = {}
 
-		const USER  = galaxy.users[ uuid ]
+		const USER  = USERS[ uuid ]
 
 		SOCKETS[ uuid ].on('message', function( data ){
 
@@ -215,7 +217,7 @@ class Galaxy {
 									type: 'chat',
 									uuid: uuid,
 									speaker: 'blorb',
-									// speaker: GALAXY.users[ uuid ].PILOT.fname,
+									// speaker: USERS[ uuid ].PILOT.fname,
 									method: packet.method,
 									chat: chat,
 								}) )
@@ -264,7 +266,7 @@ class Galaxy {
 
 			// log('flag', 'got close:?', uuid )
 
-			delete galaxy.users[ uuid ]
+			delete USERS[ uuid ]
 			delete SOCKETS[ uuid ]
 			delete system.entropic[ uuid ]
 			delete system.sentient[ uuid ]
@@ -329,15 +331,15 @@ class Galaxy {
 
 		log('system', 'close_system: ', id )
 
-		this.systems[ id ].entropic = {}
-		this.systems[ id ].sentient = {}
+		SYSTEMS[ id ].entropic = {}
+		SYSTEMS[ id ].sentient = {}
 
-		this.systems[ id ].updateOne()
+		SYSTEMS[ id ].updateOne()
 		.then( res => {
 			log('system', 'saved system: ', id )
 		}).catch( err => { log('flag', 'failed to save system: ', err ) })
 
-		delete this.systems[ id ] // seems to work...
+		delete SYSTEMS[ id ] // seems to work...
 
 	}
 
@@ -350,36 +352,11 @@ class Galaxy {
 
 	bigbang(){
 
-		const galaxy = this
-
 		log('galaxy', 'bigbang')
 
-		// galaxy.pulse = setInterval( function(){
-
-		// 	Object.keys( galaxy.systems ).forEach( function( id ){
-
-		// 		const packet = {
-		// 			type: 'move',
-		// 			entropic: {}
-		// 		}
-
-		// 		for( const uuid of Object.keys( galaxy.systems[ id ].entropic ) ){
-
-		// 			packet.entropic[ uuid ] = {
-		// 				mom: galaxy.systems[ id ].entropic[ uuid ].ref.momentum || { x: 0, y: 0, z: 0 },
-		// 				pos: galaxy.systems[ id ].entropic[ uuid ].ref.position || { x: 0, y: 0, z: 0 },
-		// 				quat: galaxy.systems[ id ].entropic[ uuid ].ref.quaternion || { x: 0, y: 0, z: 0, w: 0 }
-		// 			}
-
-		// 		}
-
-		// 		galaxy.emit('broadcast', id, false, JSON.stringify( packet ))
-
-		// 	})
-
-		// }, 2000 )
-
 	}
+
+
 
 }
 
