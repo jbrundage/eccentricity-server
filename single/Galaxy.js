@@ -105,10 +105,10 @@ class Galaxy {
 			uuid: socket.uuid
 		}) )
 
-		SYSTEM.broadcast( socket.uuid, JSON.stringify( { 
+		SYSTEM.broadcast( socket.uuid, { 
 			type: 'init_pilot',
 			pilot: USERS[ socket.uuid ].PILOT  //.core()
-		} ) )
+		})
 
 	}
 
@@ -206,17 +206,19 @@ class Galaxy {
 				case 'chat':
 
 					switch( packet.method ){
+						
 						case 'say':
+
 							const chat = lib.sanitize_chat( packet.chat )
 							if( chat ){
-								system.broadcast( uuid, JSON.stringify({
+								system.broadcast( uuid, {
 									type: 'chat',
 									uuid: uuid,
-									speaker: 'blorb',
-									// speaker: USERS[ uuid ].PILOT.fname,
+									// speaker: 'blorb',
+									speaker: USERS[ uuid ].PILOT.fname,
 									method: packet.method,
 									chat: chat,
-								}) )
+								})
 							}else{
 								log('flag', 'invalid chat received ', packet.chat )
 							}

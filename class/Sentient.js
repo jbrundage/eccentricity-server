@@ -21,13 +21,14 @@ class Sentient {
 		// this.type // has to come from subclass ...
 
 		this.faction = init.faction || 'neutral'
-		this.reputation = init.reputation || {}
+		this.reputation = init.reputation || {} // factions
+		this.relationships = init.relationships || {} // uuids
 
-		this.fname = init.fname || lib.tables.names.pilots.fname[ Math.floor(Math.random() * lib.tables.names.pilots.fname.length) ]
-		this.lname = init.lname ||  lib.tables.names.pilots.lname[ Math.floor(Math.random() * lib.tables.names.pilots.lname.length) ]
+		this.fname = init.fname || lib.tables.names.pilots.fname[ Math.floor( Math.random() * lib.tables.names.pilots.fname.length ) ]
+		this.lname = init.lname ||  lib.tables.names.pilots.lname[ Math.floor( Math.random() * lib.tables.names.pilots.lname.length ) ]
 		this.title = init.title || 'the Innocent'
 		this.color = init.color || 'rgb(150, 150, 150)'
-		this.portrait = init.portrait || (Math.random() > .5 ? 'anon-male.jpg' : 'anon-female.jpg')
+		this.portrait = init.portrait || ( Math.random() > .5 ? 'anon-male.jpg' : 'anon-female.jpg' )
 
 		this.coin = (function(){
 			if( init.coin === 0 ) return 0

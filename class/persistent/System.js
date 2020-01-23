@@ -89,6 +89,8 @@ class System extends Persistent {
 
 		this.entropic = this.validate_uuids( init.entropic )
 
+		this.private = this.private || []
+
 	}
 
 
@@ -385,6 +387,11 @@ class System extends Persistent {
 
 
 
+
+
+
+
+
 	get_faction(){
 
 		const system = this
@@ -460,13 +467,66 @@ class System extends Persistent {
 
 
 
-	broadcast( sender_uuid, string ){
 
-		log('system','broadcast: ', string )
+	get_enemy_target( uuid ){
+
+		const system = this
+
+		let relationships = this.sentient.npc[ uuid ].relationships
+
+		// find nemesis
+
+		let enemy_target = {
+			uuid: false,
+			score: 0
+		}
+
+		let max_dist = 0
+
+		for( const other_uuid of Object.keys( relationships )){
+			if( relationships[ other_uuid ].score < -100 && relationships[ other_uuid ].score < enemy_target.score ){ 
+				relationships[ other_uuid ].dist = lib.THREE.distanceTo( system.entropic[ uuid ].ref.position, system.entropic[ other_uuid ].ref.position )
+				log('flag', relationships[ other_uuid ].dist + ' units away from supposed enemy')
+				if( relationships[ other_uuid ].dist > max_dist )  max_dist = relationships[ other_uuid ].dist
+				// if( system.entropics[ uuid ] )  enemy_target.uuid = uuid
+			}
+		}
+
+		let low_score = 0
+		for( const other_uuid of Object.keys( relationships )){
+			let distance_adjusted = relationships[ other_uuid ].score * ( relationships[ other_uuid ].dist / max_dist )
+			if( distance_adjusted < low_score ){
+				enemy_target.uuid = other_uuid
+			}
+		}
+
+		if( enemy_target.uuid < env.MAX_PURSUIT ) return enemy_target.uuid
+		return false
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	broadcast( sender_uuid, packet ){
+
+		const string = JSON.stringify( packet )
+
+		log('wss', string )
 
 		for( const uuid of Object.keys( this.sentient.pc ) ){
-			// skip sender
-			if( !sender_uuid || sender_uuid != uuid ){ 
+			// chats you DO want sender
+			if( packet.type != 'chat' && ( !sender_uuid || sender_uuid != uuid ) ){ 
 
 				if( SOCKETS[ uuid ] ){
 
@@ -504,6 +564,8 @@ class System extends Persistent {
 		// entropic: { spawn, move }
 
 		const system = this
+
+		/////////////////////////////////////////////////////////////////////////////////////////////// npc spawn
 
 		system_pulse.npc.spawn = setInterval(function(){
 
@@ -558,7 +620,7 @@ class System extends Persistent {
 
 								defense.current++
 
-							}else if( sentients[ uuid ].reputation[ faction ] < 0 ){
+							}else if( sentients[ uuid ].reputation[ faction ] < -100 ){
 
 								enemies.current++
 
@@ -617,7 +679,7 @@ class System extends Persistent {
 				let pilot = new Pilot({
 					uuid: new_uuid,
 					reputation: {
-						[ faction ]: 10
+						[ faction ]: 0
 					},
 				})
 				system.register_entity('entropic', false, ship )
@@ -639,7 +701,7 @@ class System extends Persistent {
 				let pilot = new Pilot({
 					uuid: new_uuid,
 					reputation: {
-						[ faction ]: -59
+						[ faction ]: -150
 					},
 				})
 				system.register_entity('entropic', false, ship )
@@ -648,15 +710,23 @@ class System extends Persistent {
 
 		}, lib.tables.pulse.npc.spawn )
 
-		/////
+		/////////////////////////////////////////////////////////////////////////////////////////////// npc think
 
 		system_pulse.npc.think = setInterval(function(){
+
+			// set ref.position, ref.momentum, ref.quaternion - these are DESIRED locations that will be lerped to client side
+			for( const uuid of Object.keys( system.sentient.npc )){
+				if( system.entropic[ uuid ])  {
+					const enemy_uuid = system.get_enemy_target( uuid )
+					if( enemy_uuid ) log('flag', 'found enemy for ' + uuid + '>\n' + enemy_uuid )
+				}
+			}
 
 			log('pulse', 'pulse npc think')
 
 		}, lib.tables.pulse.npc.think )
 
-		/////
+		/////////////////////////////////////////////////////////////////////////////////////////////// entropic spawn
 
 		system_pulse.entropic.spawn = setInterval(function(){
 
@@ -664,7 +734,7 @@ class System extends Persistent {
 
 		}, lib.tables.pulse.entropic.spawn )
 
-		/////
+		/////////////////////////////////////////////////////////////////////////////////////////////// entropic move
 
 		system_pulse.entropic.move = setInterval(function(){
 
@@ -675,6 +745,7 @@ class System extends Persistent {
 
 			for( const uuid of Object.keys( system.entropic ) ){
 
+				// add pos to packet
 				packet.entropic[ uuid ] = {
 					mom: system.entropic[ uuid ].ref.momentum || { x: 0, y: 0, z: 0 },
 					pos: system.entropic[ uuid ].ref.position || { x: 0, y: 0, z: 0 },
@@ -683,15 +754,13 @@ class System extends Persistent {
 
 			}
 
-			system.broadcast( false, JSON.stringify( packet ))
+			system.broadcast( false, packet )
 
 			log('pulse', 'pulse entropic move')
 
 		}, lib.tables.pulse.entropic.move )
 
-
-		/////
-
+		/////////////////////////////////////////////////////////////////////////////////////////////// end
 
 		log('pulse', 'init_pulse: ', system.id )
 
