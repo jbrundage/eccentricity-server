@@ -27,7 +27,8 @@ class Entropic {
 			z: lib.tables.momentum.entropic.z
 		}
 
-		this.private = ['private', 'uuid', 'clickable', 'type', 'table', 'previous', 'entropy', 'model_url', 'temporality']
+		this.private = init.private || []
+		this.private.push('private', 'uuid', 'ref', 'model', 'clickable', 'type', 'table', 'previous', 'entropy', 'model_url', 'temporality')
 
 	}
 

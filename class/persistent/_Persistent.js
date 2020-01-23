@@ -18,6 +18,9 @@ class Persistent {
 
 		this.temporality = 'persistent'
 
+		this.private = init.private || []
+		this.private.push('id', 'private', 'table')
+
 	}
 
 	is_hydrated(){

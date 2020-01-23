@@ -32,14 +32,15 @@ class Pilot extends Sentient {
 		this.licensed = init.licensed || Date.now()
 		
 		this.reputation = init.reputation || {}
+		
+		this.private = this.private || []
+		this.private.push('active_ship', 'SHIP')
 
 		this.active_ship = init.active_ship
 
 		this.SHIP = init.SHIP 
 
 		this.ships = init.ships || []
-		
-		// server only:
 
 	}
 

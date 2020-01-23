@@ -197,7 +197,7 @@ class Galaxy {
 			switch( packet.type ){
 
 				case 'move':
-``
+
 					USER.PILOT.SHIP.ref.position = packet.pos || USER.PILOT.SHIP.ref.position
 					USER.PILOT.SHIP.ref.quaternion = packet.quat || USER.PILOT.SHIP.ref.quaternion 
 					USER.PILOT.SHIP.ref.momentum = packet.mom || USER.PILOT.SHIP.ref.momentum
@@ -230,7 +230,7 @@ class Galaxy {
 
 				case 'ping_entropic':
 
-					log('wss', 'client is requesting: ', packet )
+					log('wss', 'client is requesting: ', packet.uuid )
 
 					SOCKETS[ uuid ].send(JSON.stringify({
 						type: 'pong_entropic',

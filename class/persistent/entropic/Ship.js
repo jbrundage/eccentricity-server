@@ -68,7 +68,7 @@ class Ship extends Entropic {
 
 		
 
-		this.private = init.private || []
+		this.private = this.private || []
 		this.private.push( 'equipped' )
 
 	}

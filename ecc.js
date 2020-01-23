@@ -41,6 +41,9 @@ const User = require('./class/persistent/User.js')
 
 const WSS = require('./single/Server.js')()
 const GALAXY = require('./single/Galaxy.js')()
+const USERS = require('./single/USERS.js')
+const SYSTEMS = require('./single/SYSTEMS.js')
+const SOCKETS = require('./single/SOCKETS.js')
 
 const readline = require('readline')
 

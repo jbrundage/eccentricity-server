@@ -24,14 +24,17 @@ class Commander extends Sentient {
 		
 		this.reputation = init.reputation || {}
 
-		this.active_station = init.active_station
-
-		this.STATION = init.STATION
-
 		this.coin = (function(){
 			if( init.coin === 0 ) return 0
 			return init.coin || 100
 		})()
+
+		this.private = this.private || []
+		this.private.push('active_station', 'STATION')
+
+		this.active_station = init.active_station
+
+		this.STATION = init.STATION
 
 	}
 

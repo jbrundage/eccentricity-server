@@ -61,8 +61,6 @@ const r = {
 							resolve({
 								success: true,
 								system: {}
-								// system: res
-								// system: GALAXY.systems[ sys_id ]
 							})
 
 						// }).catch( err => { console.log( 'err query: ', err )})

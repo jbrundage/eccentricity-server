@@ -41,6 +41,8 @@ class Station extends Entropic {
 			z: Math.random() * 5000//lib.tables.position.station.z
 		}
 
+		this.private = this.private || []
+
 	}
 
 }

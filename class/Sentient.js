@@ -42,7 +42,8 @@ class Sentient {
 
 		this.edited = init.edited || 0
 
-		this.private = ['private', 'uiid', 'temporality', 'edited', 'portrait', 'color', 'entropy', 'SHIP', 'ships']
+		this.private = init.private || []
+		this.private.push('private', 'uuid', 'type', 'temporality', 'entropy')
 		
 	}
 

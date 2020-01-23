@@ -16,6 +16,9 @@ class PersistentEntropic extends Sentient {
 
 		this.temporality = 'persistent'
 
+		this.private = this.private || []
+		this.private.push('edited', 'portrait', 'table', 'color')
+
 	}
 
 	is_hydrated(){
