@@ -14,7 +14,8 @@ const Freighter = require('./entropic/ShipFreighter.js')
 
 const Persistent = require('./_Persistent.js')
 
-const SOCKETS = require('../../single/Sockets.js')
+const SOCKETS = require('../../single/SOCKETS.js')
+const USERS = require('../../single/USERS.js')
 
 
 const maps = {
@@ -432,23 +433,6 @@ class System extends Persistent {
 
 
 
-	get_pilots(){
-
-		// let p = {}
-
-		// for( const id of Object.keys( this.sentient ) ) {
-
-		// 	if( this.sentient[ id ].type == 'pilot' ) p[ id ] = this.sentient[ id ]
-
-		// }
-
-		// return p
-
-		return this.sentient.pc
-
-	}
-
-
 	get_sentients(){
 
 		let s = {}
@@ -483,10 +467,19 @@ class System extends Persistent {
 		for( const uuid of Object.keys( this.sentient.pc ) ){
 			// skip sender
 			if( !sender_uuid || sender_uuid != uuid ){ 
+
 				if( SOCKETS[ uuid ] ){
+
 					SOCKETS[ uuid ].send( string )
-				}else{
-					log('flag', 'sending to void socket: ', uuid )
+
+				}else{  // why are they in sentient but no socket ...
+
+					delete SOCKETS[ uuid ]
+					delete USERS[ uuid ]
+					delete this.sentient.pc[ uuid ]
+
+					log('flag', 'deleting user', uuid )
+
 				}
 			}
 		}
@@ -611,7 +604,7 @@ class System extends Persistent {
 
 			for(let i = 0; i < need_traffic; i++){
 				let new_uuid = uuid()
-				let ship = new Ship({
+				let ship = new Freighter({
 					uuid: new_uuid,
 					ref: {
 						position: {
@@ -701,6 +694,19 @@ class System extends Persistent {
 
 
 		log('pulse', 'init_pulse: ', system.id )
+
+	}
+
+
+	end_pulse(){
+
+		for( const key of Object.keys( system_pulse ) ){
+			for( const type of Object.keys( system_pulse[ key ] ) ){
+				log('system', 'clearing setInt: ', key, type )
+				clearInterval( system_pulse[ key ][ type ] )
+				system_pulse[ key ][ type ] = false
+			}
+		}
 
 	}
 

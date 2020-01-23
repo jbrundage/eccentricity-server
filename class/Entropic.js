@@ -26,8 +26,9 @@ class Entropic {
 			y: lib.tables.momentum.entropic.y,
 			z: lib.tables.momentum.entropic.z
 		}
-		
-		
+
+		this.private = ['private', 'uuid', 'clickable', 'type', 'table', 'previous', 'entropy', 'model_url', 'temporality']
+
 	}
 
 }

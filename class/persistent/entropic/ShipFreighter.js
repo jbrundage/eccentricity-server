@@ -16,7 +16,7 @@ class Freighter extends Ship  {
 
 		init = init || {}
 
-		this.type = 'freighter'
+		this.subtype = 'freighter'
 	
 		this.model_url = init.model_url || 'ships/freighter/ryath/untitled.glb'
 

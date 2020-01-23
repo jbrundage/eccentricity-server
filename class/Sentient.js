@@ -42,7 +42,7 @@ class Sentient {
 
 		this.edited = init.edited || 0
 
-		this.private = ['private', 'id']
+		this.private = ['private', 'uiid', 'temporality', 'edited', 'portrait', 'color', 'entropy', 'SHIP', 'ships']
 		
 	}
 

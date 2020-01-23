@@ -68,7 +68,8 @@ class Ship extends Entropic {
 
 		
 
-		this.private = init.private || ['align_buffer', 'equipped', 'needs_align']
+		this.private = init.private || []
+		this.private.push( 'equipped' )
 
 	}
 

@@ -9,9 +9,9 @@ const DB = require('../db.js')
 const System = require('../class/persistent/System.js')
 const User = require('../class/persistent/User.js')
 
-const SOCKETS = require('./Sockets.js')
-const SYSTEMS = require('./Systems.js')
-const USERS = require('./Users.js')
+const SOCKETS = require('./SOCKETS.js')
+const SYSTEMS = require('./SYSTEMS.js')
+const USERS = require('./USERS.js')
 
 log( 'call', 'Galaxy.js' )
 
@@ -38,11 +38,7 @@ class Galaxy {
 
 		init = init || {}
 
-		this.extant = init.extant
-
-		// this.sockets = init.sockets || {}
-		// this.users = init.users || {}
-		// SYSTEMS = init.systems || {}
+		this.pulse = init.pulse
 
 	}
 
@@ -94,8 +90,8 @@ class Galaxy {
 		USERS[ socket.uuid ] = socket.request.session.user 				// boom 
 		USERS[ socket.uuid ].uuid = socket.uuid
 
-		socket.request.session.user.PILOT.uuid = socket.uuid
-		socket.request.session.user.PILOT.SHIP.uuid = socket.uuid
+		USERS[ socket.uuid ].PILOT.uuid = socket.uuid
+		USERS[ socket.uuid ].PILOT.SHIP.uuid = socket.uuid
 
 		SYSTEM.register_entity( 'entropic', false, USERS[ socket.uuid ].PILOT.SHIP ) 	// boom
 		SYSTEM.register_entity( 'sentient', 'pc', USERS[ socket.uuid ].PILOT ) 		// boom 
@@ -138,7 +134,7 @@ class Galaxy {
 
 			// SYSTEMS[ id ] = new System( SYSTEMS[ id ] ) // every player arrival could be way overkill
 
-			if( !this.extant ) this.bigbang()  // should never be the case
+			if( !this.pulse ) this.bigbang()  // should never be the case
 
 			return SYSTEMS[ id ]
 
@@ -158,7 +154,7 @@ class Galaxy {
 			return false
 		}
 
-		if( !this.extant ) this.bigbang()
+		if( !this.pulse ) this.bigbang()
 
 		SYSTEMS[ id ] = new System( results[0] )
 
@@ -234,7 +230,7 @@ class Galaxy {
 
 				case 'ping_entropic':
 
-					log('flag', 'client is requesting: ', packet )
+					log('wss', 'client is requesting: ', packet )
 
 					SOCKETS[ uuid ].send(JSON.stringify({
 						type: 'pong_entropic',
@@ -269,7 +265,7 @@ class Galaxy {
 			delete USERS[ uuid ]
 			delete SOCKETS[ uuid ]
 			delete system.entropic[ uuid ]
-			delete system.sentient[ uuid ]
+			delete system.sentient.pc[ uuid ]
 
 			// for( const id of Object.keys( system.sentient )){ // ya goof
 			for( const uuid of Object.keys( SOCKETS )){ 
@@ -286,7 +282,7 @@ class Galaxy {
 				}
 			}
 
-			if( Object.keys( system.get_pilots() ).length <= 0 ) {
+			if( Object.keys( system.sentient.pc ).length <= 0 ) {
 				galaxy.close_system( system.id )
 			}
 
@@ -332,12 +328,17 @@ class Galaxy {
 		log('system', 'close_system: ', id )
 
 		SYSTEMS[ id ].entropic = {}
-		SYSTEMS[ id ].sentient = {}
+		SYSTEMS[ id ].sentient.npc = {}
+		SYSTEMS[ id ].sentient.pc = {}
+
+		SYSTEMS[ id ].end_pulse()
 
 		SYSTEMS[ id ].updateOne()
 		.then( res => {
 			log('system', 'saved system: ', id )
 		}).catch( err => { log('flag', 'failed to save system: ', err ) })
+
+		// any setIntervals in System from here are irretrievable !
 
 		delete SYSTEMS[ id ] // seems to work...
 
@@ -351,6 +352,21 @@ class Galaxy {
 
 
 	bigbang(){
+
+		const galaxy = this
+
+		galaxy.pulse = setInterval(function(){
+
+			for(const id of Object.keys( SYSTEMS )){
+				if( !Object.keys( SYSTEMS[ id ].sentient.pc ).length ){
+					log('galaxy', 'closing empty system: ', id )
+					galaxy.close_system( id )
+				}
+			}
+
+		}, 30000)
+
+
 
 		log('galaxy', 'bigbang')
 

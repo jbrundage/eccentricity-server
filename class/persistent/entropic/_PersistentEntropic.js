@@ -10,11 +10,10 @@ class PersistentEntropic extends Entropic {
 
 		init = init || {}
 
-		this.id = init.id
-
-		this.uuid = init.uuid
-
 		this.temporality = 'persistent'
+
+		this.private = init.private || []
+		this.private.push('desired_pos', 'inertia_pos', 'align_buffer')
 
 	}
 
