@@ -65,13 +65,18 @@ class Galaxy {
 		socket.request.session.user.PILOT = await socket.request.session.user.touch_pilot()
 		socket.request.session.user.PILOT.SHIP = await socket.request.session.user.PILOT.touch_ship()
 
+		log('flag', 'pilot: ', socket.request.session.user.PILOT )
 		const station_key = socket.request.session.user.PILOT.station_key
 
 		if( typeof( station_key ) !== 'number' || station_key <= 0 ) {
-			log('galaxy', 'BLOCK LOGIN: invalid station key')
+			log('flag', 'BLOCK LOGIN: invalid station key', station_key )
 			socket.disconnect()
 			return false
 		}
+
+		// wrongggg
+		// need to lookup ---- system WHERE station.id = station_key -----
+		// or better yet store system key on station.....
 
 		const SYSTEM = await this.touch_system( station_key )
 
