@@ -174,7 +174,7 @@ exp.get('/robots.txt', function(request, response){
 
 
 
-exp.get('/touch_user', function( request, response ){
+exp.get('/touch_user', function( request, response ){ // not called from /sky
 
 	(async() => {
 

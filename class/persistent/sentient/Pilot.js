@@ -46,7 +46,7 @@ class Pilot extends Sentient {
 
 
 
-	async touch_ship(){
+	async touch_ship( position ){
 
 		const pilot = this
 
@@ -56,6 +56,8 @@ class Pilot extends Sentient {
 
 			let ship = new Ship( pilot.SHIP )
 			ship.uuid = pilot.uuid
+			ship.ref = ship.ref || {}
+			if( position )  ship.ref.position = position
 			return ship
 
 		}else if( pilot.active_ship ){

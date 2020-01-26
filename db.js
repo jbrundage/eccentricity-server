@@ -37,10 +37,10 @@ function initPool( callback ) {
 
 
 	const queryPromise = ( ...args ) => new Promise( (resolve, reject) => {
-
 		_pool.query( ...args, (error, results, fields) => {
-			if (error) {
-				reject(error)
+			// reject( 'nooooooo' )
+			if ( error ) {
+				reject( error )
 			} else {
 				resolve({ results, fields })
 			}

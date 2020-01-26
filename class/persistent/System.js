@@ -524,24 +524,38 @@ class System extends Persistent {
 
 		log('wss', string )
 
-		for( const uuid of Object.keys( this.sentient.pc ) ){
-			// chats you DO want sender
-			if( packet.type != 'chat' && ( !sender_uuid || sender_uuid != uuid ) ){ 
+		switch( packet.type ){
 
-				if( SOCKETS[ uuid ] ){
+			case 'chat':
+				for( const uuid of Object.keys( this.sentient.pc ) )   this.send_to_socket( uuid, string )
+				break;
 
-					SOCKETS[ uuid ].send( string )
-
-				}else{  // why are they in sentient but no socket ...
-
-					delete SOCKETS[ uuid ]
-					delete USERS[ uuid ]
-					delete this.sentient.pc[ uuid ]
-
-					log('flag', 'deleting user', uuid )
-
+			default: 
+				for( const uuid of Object.keys( this.sentient.pc ) ){
+					if( !sender_uuid || sender_uuid != uuid )  this.send_to_socket( uuid, string )
 				}
-			}
+				break;
+
+		}
+
+	}
+
+
+	send_to_socket( uuid, string ){
+
+		if( SOCKETS[ uuid ] ){
+
+			SOCKETS[ uuid ].send( string )
+
+		}else{  // why are they in sentient but no socket ...
+
+			delete SOCKETS[ uuid ]
+			delete USERS[ uuid ]
+			delete this.sentient.pc[ uuid ]
+			this.dispose( uuid )
+
+			log('flag', 'no socket, deleting user', uuid )
+
 		}
 
 	}
@@ -550,7 +564,12 @@ class System extends Persistent {
 
 
 
+	dispose( uuid ){
 
+		delete this.entropic[ uuid ]
+		log('flag', 'deleting: ', uuid, ' but finish dispose() function..')
+
+	}
 
 
 
@@ -642,7 +661,7 @@ class System extends Persistent {
 			let need_traffic = traffic.capacity - traffic.current
 			let need_enemies = enemies.capacity - enemies.current
 
-			for(let i = 0; i < need_defense; i++){
+			for( let i = 0; i < need_defense; i++ ){
 				let new_uuid = uuid()
 				let ship = new Ship({
 					uuid: new_uuid,
@@ -664,7 +683,7 @@ class System extends Persistent {
 				system.register_entity('sentient', 'npc', pilot )
 			}
 
-			for(let i = 0; i < need_traffic; i++){
+			for( let i = 0; i < need_traffic; i++ ){
 				let new_uuid = uuid()
 				let ship = new Freighter({
 					uuid: new_uuid,
@@ -686,10 +705,11 @@ class System extends Persistent {
 				system.register_entity('sentient', 'npc', pilot )
 			}
 
-			for(let i = 0; i < need_enemies; i++){
+			for( let i = 0; i < need_enemies; i++ ){
 				let new_uuid = uuid()
 				let ship = new Ship({
 					uuid: new_uuid,
+					model_url: 'ships/fighter/spacefighter/spacefighter01.glb',
 					ref: {
 						position: {
 							x: Math.random() * 100,

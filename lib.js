@@ -102,6 +102,12 @@ const lib = {
 
 	random_hex: random_hex,
 
+	random_int: function( start, range ){
+
+		return start + Math.floor( Math.random() * range )
+
+	},
+
 	is_uuid: function( data ){
 
 		if( typeof( data === 'string' ) && data.length > 10 ) return true

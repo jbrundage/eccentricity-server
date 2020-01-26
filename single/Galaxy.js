@@ -55,6 +55,8 @@ class Galaxy {
 		// send init to player
 		// send init to system players
 
+		const pool = DB.getPool()
+
 		if( Object.keys( USERS ).length > env.MAX_PILOTS ) {
 			log('galaxy', 'BLOCK LOGIN: max users reached')
 			socket.disconnect()
@@ -64,21 +66,32 @@ class Galaxy {
 		socket.request.session.user = new User( socket.request.session.user )
 		socket.request.session.user.PILOT = await socket.request.session.user.touch_pilot()
 		socket.request.session.user.PILOT.SHIP = await socket.request.session.user.PILOT.touch_ship()
+		// if( socket.request.session.user.PILOT.SHIP
 
-		log('flag', 'pilot: ', socket.request.session.user.PILOT )
+		// log('flag', 'pilot: ', socket.request.session.user.PILOT )
 		const station_key = socket.request.session.user.PILOT.station_key
+		const system_key = socket.request.session.user.PILOT.system_key
 
-		if( typeof( station_key ) !== 'number' || station_key <= 0 ) {
-			log('flag', 'BLOCK LOGIN: invalid station key', station_key )
+		// we have  at least one valid key
+		if( typeof( station_key ) !== 'number' || station_key <= 0 || typeof( system_key ) != 'number' || system_key <= 0 ) {
+			log('flag', 'BLOCK LOGIN: invalid init keys: ', station_key, system_key )
 			socket.disconnect()
 			return false
 		}
+
+
+		// dont need this at spawn actually...
+		// const { results, fields } = await pool.queryPromise('SELECT * FROM \`stations\` WHERE id = ? LIMIT 1', [ station_key ])
+
+		// const STATION = results[ 0 ]
+
+	
 
 		// wrongggg
 		// need to lookup ---- system WHERE station.id = station_key -----
 		// or better yet store system key on station.....
 
-		const SYSTEM = await this.touch_system( station_key )
+		const SYSTEM = await this.touch_system( system_key )
 
 		if( !SYSTEM ){
 			log( 'galaxy', 'failed to init system' )
@@ -97,6 +110,8 @@ class Galaxy {
 
 		USERS[ socket.uuid ].PILOT.uuid = socket.uuid
 		USERS[ socket.uuid ].PILOT.SHIP.uuid = socket.uuid
+
+		// USERS[ socket.uuid ].PILOT.SHIP		
 
 		SYSTEM.register_entity( 'entropic', false, USERS[ socket.uuid ].PILOT.SHIP ) 	// boom
 		SYSTEM.register_entity( 'sentient', 'pc', USERS[ socket.uuid ].PILOT ) 		// boom 
@@ -215,6 +230,9 @@ class Galaxy {
 						case 'say':
 
 							const chat = lib.sanitize_chat( packet.chat )
+
+							log('flag', 'chat: ', chat )
+
 							if( chat ){
 								system.broadcast( uuid, {
 									type: 'chat',
@@ -222,6 +240,7 @@ class Galaxy {
 									// speaker: 'blorb',
 									speaker: USERS[ uuid ].PILOT.fname,
 									method: packet.method,
+									color: USERS[ uuid ].PILOT.color,
 									chat: chat,
 								})
 							}else{

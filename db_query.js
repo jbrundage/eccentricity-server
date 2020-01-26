@@ -22,7 +22,7 @@ const r = {
 
 		const pool = DB.getPool()
 
-		const sys_id = request.session.user.PILOT.station_key.system
+		const sys_id = request.session.user.PILOT.system_key
 
 		return new Promise( (resolve, reject) => {
 
