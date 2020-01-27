@@ -116,6 +116,8 @@ class Galaxy {
 		SYSTEM.register_entity( 'entropic', false, USERS[ socket.uuid ].PILOT.SHIP ) 	// boom
 		SYSTEM.register_entity( 'sentient', 'pc', USERS[ socket.uuid ].PILOT ) 		// boom 
 
+		log('flag', USERS[ socket.uuid ].PILOT.SHIP.ref )
+
 		this.bind_player( SYSTEM, socket.uuid )
 
 		SOCKETS[ socket.uuid ].send( JSON.stringify( {

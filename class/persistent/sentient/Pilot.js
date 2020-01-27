@@ -52,8 +52,6 @@ class Pilot extends Sentient {
 
 		if( pilot.SHIP ){
 
-			log('flag', 'pilot ship?', pilot.SHIP )
-
 			let ship = new Ship( pilot.SHIP )
 			ship.uuid = pilot.uuid
 			ship.ref = ship.ref || {}
@@ -77,18 +75,30 @@ class Pilot extends Sentient {
 			}else{
 
 				log('pilot', 'returning default ship, invalid active_ship: ', pilot.active_ship )
-				return new Ship({
+				let new_ship = new Ship({
 					uuid: pilot.uuid
 				})
-
+				new_ship.ref.position = {
+					x: 0,
+					y: 0,
+					z: -500
+				}
+				return new_ship
 			}
 
 		}else{
 
 			log('pilot', 'returning provisional ship')
-			return new Ship({
+			let new_ship = new Ship({
 				uuid: pilot.uuid
 			})
+			new_ship.ref.position = {
+				x: 0, 
+				y: 0,
+				z: -1000
+			}
+			return new_ship
+
 
 		}
 
