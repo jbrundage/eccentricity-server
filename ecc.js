@@ -41,11 +41,13 @@ const User = require('./class/persistent/User.js')
 
 const WSS = require('./single/Server.js')()
 const GALAXY = require('./single/Galaxy.js')()
+
+// for logging:
 const USERS = require('./single/USERS.js')
 const SYSTEMS = require('./single/SYSTEMS.js')
 const SOCKETS = require('./single/SOCKETS.js')
 
-const readline = require('readline')
+// const readline = require('readline')
 
 const render = require('./render_html.js')
 
@@ -68,7 +70,7 @@ const lru_session = session({
 })
 
 
-const version = 14
+// const version = 14
 
 const gatekeep = function(req, res, next) {
 
@@ -84,7 +86,7 @@ const gatekeep = function(req, res, next) {
 		// AVAST YE MATEYS
 		req.session.user = new User( req.session.user )
 		// any validation on req object here passes through serializer before added to WSS
-			// ( functions lost - WSS only though )
+		// ( functions lost - WSS only though )
 
 		next()
 
@@ -399,7 +401,7 @@ DB.initPool(( err, db ) => {
 						msg: msg
 					}))
 
-					log('flag', msg)
+					log('flag', 'err: ', msg)
 					
 					return false
 
@@ -420,15 +422,27 @@ DB.initPool(( err, db ) => {
 						socket.request = req
 
 						GALAXY.init_connection( socket )
-						.then( res => {
-							log('routing', 'connection initiated: ', socket.uuid )
-						}).catch( err => {
-							socket.send(JSON.stringify({
-								type: 'error',
-								msg: 'error initializing connection'
-							}))
-							log('flag', 'err init_connection: ', err ) 
-						})
+							.then( res => {
+								if( typeof( res ) == 'string' && res.match(/error connecting/i) ){
+									socket.send(JSON.stringify({
+										type: 'error',
+										msg: res
+									}))
+								}
+								log('routing', 'connection initiated: ', socket.uuid )
+							}).catch( err => {
+								// let msg = 'error initializing connection'
+								// if( typeof( err ) == 'string' && err.match(/max users/i) ){
+								// 	msg += ', too many users logged in'
+								// }
+								socket.send(JSON.stringify({
+									type: 'error',
+									msg: 'error initializing connection'
+								}))
+								// socket.disconnect()
+								log('flag', 'err init_connection: ', err ) 
+
+							})
 
 					}
 
@@ -459,19 +473,19 @@ DB.initPool(( err, db ) => {
 
 if( env.ACTIVE.serverlog ){ 
 
-	const readline = require('readline');
+	const readline = require('readline')
 	
 	const rl = readline.createInterface({
 		input: process.stdin,
 		output: process.stdout,
 		prompt: 'serverlog> \n'
-	});
+	})
 	
 	setTimeout(function(){
-		rl.prompt();
+		rl.prompt()
 	}, 500)
 
-	let readline_last = []
+	// let readline_last = []
 	
 	rl.on('line', ( line ) => {
 
@@ -483,25 +497,24 @@ if( env.ACTIVE.serverlog ){
 			// 		break;
 			// 	default:
 			// 		readline_last.unshift( line.trim() )
-		 	//	break;
+			//	break;
 			// }
 		}else{
 			try_readline( line.trim() )
 		}
 
-		rl.prompt();
+		rl.prompt()
 	}).on('close', () => {
-		process.exit( 0 );
-	});
-
-	function try_readline( msg ){
-		try{ 
-			log( 'serverlog', eval(`${ msg }`) ) //), '\n(command): ' + String( msg ) )
-			log( 'serverlog', String( msg ) )
-		}catch( e ){
-			log('serverlog', 'fail: ', e )
-		}
-	}
+		process.exit( 0 )
+	})
 
 }
 
+function try_readline( msg ){
+	try{ 
+		log( 'serverlog', eval(`${ msg }`) ) //), '\n(command): ' + String( msg ) )
+		log( 'serverlog', String( msg ) )
+	}catch( e ){
+		log('serverlog', 'fail: ', e )
+	}
+}

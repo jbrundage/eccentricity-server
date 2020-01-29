@@ -40,40 +40,40 @@ module.exports = log
 
 var colors_fg = [
 // "\x1b[0m", RESET
-"\x1b[1m",
-"\x1b[2m",
-// "\x1b[4m", UNDERSCORE
-// "\x1b[5m", BLINK
-// "\x1b[7m", REVERSE
-// "\x1b[8m", HIDDEN
-// "\x1b[30m", BLACK FG
-"\x1b[31m",
-"\x1b[32m",
-"\x1b[33m",
-"\x1b[34m",
-"\x1b[35m",
-"\x1b[36m",
-"\x1b[37m"
+	'\x1b[1m',
+	'\x1b[2m',
+	// "\x1b[4m", UNDERSCORE
+	// "\x1b[5m", BLINK
+	// "\x1b[7m", REVERSE
+	// "\x1b[8m", HIDDEN
+	// "\x1b[30m", BLACK FG
+	'\x1b[31m',
+	'\x1b[32m',
+	'\x1b[33m',
+	'\x1b[34m',
+	'\x1b[35m',
+	'\x1b[36m',
+	'\x1b[37m'
 ]
 
 
 var colors_bg = [
-"\x1b[40m",
-// "\x1b[41m", RED bg
-"\x1b[42m",
-"\x1b[43m",
-"\x1b[44m",
-"\x1b[45m",
-"\x1b[46m",
-// "\x1b[47m", LIGHT GREY BG
-"\x1b[100m",
-"\x1b[101m",
-"\x1b[102m",
-"\x1b[103m",
-"\x1b[104m",
-"\x1b[105m",
-"\x1b[106m",
-// "\x1b[107m" WHITE BG
+	'\x1b[40m',
+	// "\x1b[41m", RED bg
+	'\x1b[42m',
+	'\x1b[43m',
+	'\x1b[44m',
+	'\x1b[45m',
+	'\x1b[46m',
+	// "\x1b[47m", LIGHT GREY BG
+	'\x1b[100m',
+	'\x1b[101m',
+	'\x1b[102m',
+	'\x1b[103m',
+	'\x1b[104m',
+	'\x1b[105m',
+	'\x1b[106m',
+	// "\x1b[107m" WHITE BG
 
 ]
 

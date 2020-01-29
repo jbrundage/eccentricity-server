@@ -57,10 +57,10 @@ class Galaxy {
 
 		const pool = DB.getPool()
 
-		if( Object.keys( USERS ).length > env.MAX_PILOTS ) {
-			log('galaxy', 'BLOCK LOGIN: max users reached')
-			socket.disconnect()
-			return false
+		if( Object.keys( USERS ).length >= env.MAX_PILOTS ) {
+			let msg = 'error connecting: air traffic control has put a hold on more pilots, try back later'
+			log('flag', msg)
+			return msg
 		}		
 
 		socket.request.session.user = new User( socket.request.session.user )
@@ -74,9 +74,9 @@ class Galaxy {
 
 		// we have  at least one valid key
 		if( typeof( station_key ) !== 'number' || station_key <= 0 || typeof( system_key ) != 'number' || system_key <= 0 ) {
-			log('flag', 'BLOCK LOGIN: invalid init keys: ', station_key, system_key )
-			socket.disconnect()
-			return false
+			let msg = 'error connecting: invalid init keys'
+			log( 'flag', msg, station_key, system_key )
+			return msg
 		}
 
 
@@ -115,8 +115,6 @@ class Galaxy {
 
 		SYSTEM.register_entity( 'entropic', false, USERS[ socket.uuid ].PILOT.SHIP ) 	// boom
 		SYSTEM.register_entity( 'sentient', 'pc', USERS[ socket.uuid ].PILOT ) 		// boom 
-
-		log('flag', USERS[ socket.uuid ].PILOT.SHIP.ref )
 
 		this.bind_player( SYSTEM, socket.uuid )
 
@@ -219,6 +217,8 @@ class Galaxy {
 			switch( packet.type ){
 
 				case 'move':
+
+					log('wss', 'rcvd packet: ', packet )
 
 					USER.PILOT.SHIP.ref.position = packet.pos || USER.PILOT.SHIP.ref.position
 					USER.PILOT.SHIP.ref.quaternion = packet.quat || USER.PILOT.SHIP.ref.quaternion 

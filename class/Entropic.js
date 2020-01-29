@@ -17,6 +17,8 @@ class Entropic {
 		this.clickable = true
 
 		this.entropy = 'positive'
+
+		this.pc = false
 		
 		this.model_url = init.model_url || 'Entropics/thing.glb'
 

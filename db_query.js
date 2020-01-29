@@ -47,25 +47,25 @@ const r = {
 				// 		return false
 				// 	}
 
-					// let s = new System( res )
+				// let s = new System( res )
 
-					// if( env.INIT_SYSTEM_KEY == sys_id ){
+				// if( env.INIT_SYSTEM_KEY == sys_id ){
 
-						// s.initialize()
-						// .then( res => {
+				// s.initialize()
+				// .then( res => {
 
-						// 	SYSTEMS[ sys_id ] = s
+				// 	SYSTEMS[ sys_id ] = s
 
-						log('flag', 'missing db_query')
+				log('flag', 'missing db_query')
 
-							resolve({
-								success: true,
-								system: {}
-							})
+				resolve({
+					success: true,
+					system: {}
+				})
 
-						// }).catch( err => { console.log( 'err query: ', err )})
+				// }).catch( err => { console.log( 'err query: ', err )})
 
-					// }
+				// }
 
 				// })
 

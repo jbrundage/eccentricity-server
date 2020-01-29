@@ -1,6 +1,6 @@
 const host = require('os').hostname()
-const path = require('path');
-const log = require('./log.js');
+const path = require('path')
+const log = require('./log.js')
 const env = require('./env.js')
 
 
@@ -10,12 +10,12 @@ const config = {
 	public_root: '',
 	// db: {
 		
-		// url: 'mongodb://127.0.0.1:27017/ecc'
+	// url: 'mongodb://127.0.0.1:27017/ecc'
 	// },
 	// for MongoClient:
 	// options: {
-		// useNewUrlParser: true,
-		// useUnifiedTopology: true
+	// useNewUrlParser: true,
+	// useUnifiedTopology: true
 	// },
 	throttle:{
 		user: 3 // 1 signal = ~100

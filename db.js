@@ -9,10 +9,10 @@ let _pool
 
 function initPool( callback ) {
     
-    if ( _pool ) {
-        console.warn("trying to init pool redundantly")
-        return callback(null, _pool)
-    }
+	if ( _pool ) {
+		console.warn('trying to init pool redundantly')
+		return callback(null, _pool)
+	}
 
 	//  _pool = mysql.createConnection({
 	// 	host: env.DB.HOST,
@@ -59,22 +59,22 @@ function initPool( callback ) {
 	//   console.log('The solution is: ', results[0].solution);
 	// })
 
-    // _pool.connect(function(){
+	// _pool.connect(function(){
 
 	   //  return callback(null, _pool)
 	    
-    // })
+	// })
 
 }
 
 function getPool() {
-    assert.ok( _pool, "Pool has not been initialized, call init first" )
-    return _pool
+	assert.ok( _pool, 'Pool has not been initialized, call init first' )
+	return _pool
 }
 
 
 
 module.exports = {
-    getPool,
-    initPool
+	getPool,
+	initPool
 }

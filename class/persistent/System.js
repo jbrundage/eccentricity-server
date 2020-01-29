@@ -522,7 +522,7 @@ class System extends Persistent {
 
 		const string = JSON.stringify( packet )
 
-		log('wss', string )
+		log('wss', 'broadcast: ', string )
 
 		switch( packet.type ){
 
@@ -769,7 +769,8 @@ class System extends Persistent {
 				packet.entropic[ uuid ] = {
 					mom: system.entropic[ uuid ].ref.momentum || { x: 0, y: 0, z: 0 },
 					pos: system.entropic[ uuid ].ref.position || { x: 0, y: 0, z: 0 },
-					quat: system.entropic[ uuid ].ref.quaternion || { x: 0, y: 0, z: 0, w: 0 }
+					quat: system.entropic[ uuid ].ref.quaternion || { x: 0, y: 0, z: 0, w: 0 },
+					pc: system.sentient.pc[ uuid ] ? true : false
 				}
 
 			}

@@ -1,21 +1,21 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs')
 
 // const User = require('../models/User.js');
 // const Avatar = require('../models/Avatar.js');
 
-const log = require('./log.js');
-const lib = require('./lib.js');
+const log = require('./log.js')
+const lib = require('./lib.js')
 
 // const axp = require('./pure.js');
 // const axst = require('./state.js');
-const config = require('./config.js');
+const config = require('./config.js')
 
-const DB = require('./db.js');
+const DB = require('./db.js')
 // const ax_parcel = require('./_parcel.js');
 
-const SALT_ROUNDS = 10;
+const SALT_ROUNDS = 10
 
-const User = require('./class/persistent/User.js');
+const User = require('./class/persistent/User.js')
 
 log('call', 'auth.js')
 
@@ -109,101 +109,101 @@ const auth = {
 
 			if( !request.session.user.id || request.session.user.id.match(/__/) ){ // should always be the case if routing correctly
 
-			const pool = DB.getPool()
+				const pool = DB.getPool()
 
-			const email = request.body.email.toLowerCase().trim()
+				const email = request.body.email.toLowerCase().trim()
 
-			log('MONGO', 'auth.js')
+				log('MONGO', 'auth.js')
 
-			resolve()
+				resolve()
 
-			// db.collection('users').findOne({
+				// db.collection('users').findOne({
 
-			// 		email: { $eq: email }
+				// 		email: { $eq: email }
 
-			// 	}, function(err, res){
+				// 	}, function(err, res){
 
-			// 		if(res){
+				// 		if(res){
 
-			// 			resolve({
-			// 				success: false,
-			// 				msg: 'user exists'
-			// 			})
-			// 			return false
+				// 			resolve({
+				// 				success: false,
+				// 				msg: 'user exists'
+				// 			})
+				// 			return false
 
-			// 		}else{
+				// 		}else{
 
-			// 			if(lib.is_valid_email(email)){
+				// 			if(lib.is_valid_email(email)){
 
-			// 				if( lib.is_valid_password(request.body.password) ){
+				// 				if( lib.is_valid_password(request.body.password) ){
 
-			// 					log('once', 'registering with pw: ', request.body.password)
+				// 					log('once', 'registering with pw: ', request.body.password)
 
-			// 					let salt = bcrypt.genSaltSync(SALT_ROUNDS);
-			// 					let hash = bcrypt.hashSync(request.body.password, salt);
+				// 					let salt = bcrypt.genSaltSync(SALT_ROUNDS);
+				// 					let hash = bcrypt.hashSync(request.body.password, salt);
 
-			// 					log('once', 'is this the pw: ', hash)
+				// 					log('once', 'is this the pw: ', hash)
 
-			// 					db.collection('users').insertOne({
-			// 						email: email,
-			// 						password: hash,
-			// 						confirmed: 'no',
-			// 						level: 1,
-			// 						last_log: Date.now()
-			// 					}, function(err, res){
+				// 					db.collection('users').insertOne({
+				// 						email: email,
+				// 						password: hash,
+				// 						confirmed: 'no',
+				// 						level: 1,
+				// 						last_log: Date.now()
+				// 					}, function(err, res){
 
-			// 						if(err){
-			// 							reject('failed to create user')
-			// 							return false
-			// 						}
+				// 						if(err){
+				// 							reject('failed to create user')
+				// 							return false
+				// 						}
 
-			// 						log('auth', 'user registered: ', email)
+				// 						log('auth', 'user registered: ', email)
 
-			// 						let user = new User(res.ops[0])
+				// 						let user = new User(res.ops[0])
 
-			// 						request.session.user = user
+				// 						request.session.user = user
 
-			// 						resolve({
-			// 							success: true,
-			// 							user: user
-			// 						})
+				// 						resolve({
+				// 							success: true,
+				// 							user: user
+				// 						})
 
-			// 					})
+				// 					})
 
-			// 				}else{
+				// 				}else{
 
-			// 					resolve({
-			// 						success: false,
-			// 						msg: 'invalid password'
-			// 					})
-			// 					return false
+				// 					resolve({
+				// 						success: false,
+				// 						msg: 'invalid password'
+				// 					})
+				// 					return false
 
-			// 				}
+				// 				}
 
-			// 			}else{
+				// 			}else{
 
-			// 				resolve({
-			// 					success: false,
-			// 					msg: 'invalid email'
-			// 				})
-			// 				return false
+				// 				resolve({
+				// 					success: false,
+				// 					msg: 'invalid email'
+				// 				})
+				// 				return false
 
-			// 			}
-			// 		}
-			// 	}
-			// )
+				// 			}
+				// 		}
+				// 	}
+				// )
 
-		}else{
+			}else{
 
-			log('flag', 'bad register attempt: ', request.session.user)
+				log('flag', 'bad register attempt: ', request.session.user)
 
-			resolve({
-				success: false,
-				msg: 'user already logged in'
-			})
-			return false
+				resolve({
+					success: false,
+					msg: 'user already logged in'
+				})
+				return false
 	
-		}
+			}
 
 		})
 	},

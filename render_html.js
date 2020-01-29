@@ -53,13 +53,13 @@ function render( type ){
 
 	switch( type ){
 
-		case 'index':
+	case 'index':
 
-			const css = `<link rel='stylesheet' href='/client/css/splash.css?v=3'>`
+		const css = '<link rel=\'stylesheet\' href=\'/client/css/splash.css?v=3\'>'
 
-			const scripts = `<script type='module' src='/client/js/auth/init.js?v=3'></script>`
+		const scripts = '<script type=\'module\' src=\'/client/js/auth/init.js?v=3\'></script>'
 
-			return header( false, css ) + `
+		return header( false, css ) + `
 
 				<body>
 
@@ -96,11 +96,11 @@ function render( type ){
 
 			` + footer( scripts )
 
-			break;
+		break
 
-		case 'login':
+	case 'login':
 
-			return `<body class='login'>
+		return `<body class='login'>
 
 				<div id='header'>
 					<a href='/' id='logo'>
@@ -128,9 +128,9 @@ function render( type ){
 				<script type='module' src='/client/js/auth/init.js?v=3'></script>
 
 			</body>`
-			break;
+		break
 
-		default: break;
+	default: break
 
 	}
 

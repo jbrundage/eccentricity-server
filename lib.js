@@ -1,21 +1,21 @@
 const validator = require('email-validator')
 const p_validator = require('password-validator')
 
-const schema = new p_validator();
-const log = require('./log.js');
+const schema = new p_validator()
+const log = require('./log.js')
 
 log('call', 'lib.js')
 
  
 // Add properties to it
 schema
-.is().min(6)                                    // Minimum length 8
-.is().max(30)                                   // Maximum length 100
+	.is().min(6)                                    // Minimum length 8
+	.is().max(30)                                   // Maximum length 100
 // .has().uppercase()                           // Must have uppercase letters
 // .has().lowercase()                           // Must have lowercase letters
 // .has().digits()                              // Must have digits
-.has().not().spaces()                           // Should not have spaces
-.is().not().oneOf(['password', 'Passw0rd', 'Password123']);
+	.has().not().spaces()                           // Should not have spaces
+	.is().not().oneOf(['password', 'Passw0rd', 'Password123'])
 
 const lib = {
 
@@ -58,7 +58,7 @@ const lib = {
 			},
 			entropic: {
 				spawn: 9000,
-				move: 9000
+				move: 2000
 			}
 		}
 
@@ -144,24 +144,24 @@ const lib = {
 		// let group = {}
 
 		switch( type ){
-			case 'entropic':
-				new_id = '_ent_' + new_id
-				break;
-			case 'sentient':
-				new_id = '_sen_' + new_id
-				break;
+		case 'entropic':
+			new_id = '_ent_' + new_id
+			break
+		case 'sentient':
+			new_id = '_sen_' + new_id
+			break
 			// case 'system':
 			// 	new_id = '_sys_' + new_id
 			// 	break;
-			case 'sockets':
-				new_id = '_sck_' + new_id
-				break;
-			case 'user': 
-				new_id = '_tmp_' + new_id
-				break;
-			default: 
-				new_id = 'invalid'
-				break;
+		case 'sockets':
+			new_id = '_sck_' + new_id
+			break
+		case 'user': 
+			new_id = '_tmp_' + new_id
+			break
+		default: 
+			new_id = 'invalid'
+			break
 		}
 
 		for( const id of Object.keys( group ) ){
@@ -201,29 +201,29 @@ const lib = {
 		return msg
 	},
 
-	merge_array: function( arr_old, arr_new ){
+	// merge_array: function( arr_old, arr_new ){
 
-		let overlap = []
-		for( let i = 0; i < arr_old.length; i++ ){
-			if( arr_new.includes( arr_old[i] ) ){
-				if( !overlap.includes( arr_old[i] ) ){
-					overlap.push( arr_old[i] )
-				}
-			}
-		}
+	// 	let overlap = []
+	// 	for( let i = 0; i < arr_old.length; i++ ){
+	// 		if( arr_new.includes( arr_old[i] ) ){
+	// 			if( !overlap.includes( arr_old[i] ) ){
+	// 				overlap.push( arr_old[i] )
+	// 			}
+	// 		}
+	// 	}
 
-		for( let i =0; i < overlap.length; i++ ){
-			let oo = arr_old.indexOf( overlap[i] )
-			let io = arr_new.indexOf( overlap[i] )
-			if( io != oo ){
+	// 	for( let i =0; i < overlap.length; i++ ){
+	// 		let oo = arr_old.indexOf( overlap[i] )
+	// 		let io = arr_new.indexOf( overlap[i] )
+	// 		// if( io != oo ){
 	
-			}
-		}
+	// 		// }
+	// 	}
 
-		let r_array
-		// or return arr_old .. ?
-		return arr_new
-	},
+	// 	// let r_array
+	// 	// or return arr_old .. ?
+	// 	return arr_new
+	// },
 
 	sanitize_packet: function( packet ){
 
@@ -288,10 +288,10 @@ function distanceTo( v1, v2 ) {
 function distanceToSquared( v1, v2 ) {
 
 	var dx = v1.x - v2.x, 
-	dy = v1.y - v2.y, 
-	dz = v1.z - v2.z
+		dy = v1.y - v2.y, 
+		dz = v1.z - v2.z
 
-	return dx * dx + dy * dy + dz * dz;
+	return dx * dx + dy * dy + dz * dz
 
 }
 
