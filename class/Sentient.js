@@ -42,6 +42,10 @@ class Sentient {
 
 		this.edited = init.edited || 0
 
+		this.enemy_uuid = init.enemy_uuid
+
+		this.waypoints = init.waypoints
+
 		this.private = init.private || []
 		this.private.push('private', 'uuid', 'type', 'temporality', 'entropy')
 		

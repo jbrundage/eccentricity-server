@@ -36,6 +36,13 @@ class Entropic {
 
 	}
 
+
+	patrol( waypoints ){
+
+		this.ref.position.z += 10
+
+	}
+
 }
 
 

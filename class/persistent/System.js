@@ -492,15 +492,20 @@ class System extends Persistent {
 			}
 		}
 
-		let low_score = 0
-		for( const other_uuid of Object.keys( relationships )){
-			let distance_adjusted = relationships[ other_uuid ].score * ( relationships[ other_uuid ].dist / max_dist )
-			if( distance_adjusted < low_score ){
-				enemy_target.uuid = other_uuid
+		if( max_dist > 0 ){ // otherwise, no enemies were found to begin with ^^
+
+			let low_score = 0
+			for( const other_uuid of Object.keys( relationships )){
+				let distance_adjusted = relationships[ other_uuid ].score * ( relationships[ other_uuid ].dist / max_dist )
+				if( distance_adjusted < low_score ){
+					enemy_target.uuid = other_uuid
+				}
 			}
+
+			if( enemy_target.uuid < env.MAX_PURSUIT ) return enemy_target.uuid
+
 		}
 
-		if( enemy_target.uuid < env.MAX_PURSUIT ) return enemy_target.uuid
 		return false
 
 	}
@@ -736,9 +741,18 @@ class System extends Persistent {
 
 			// set ref.position, ref.momentum, ref.quaternion - these are DESIRED locations that will be lerped to client side
 			for( const uuid of Object.keys( system.sentient.npc )){
-				if( system.entropic[ uuid ])  {
-					const enemy_uuid = system.get_enemy_target( uuid )
-					if( enemy_uuid ) log('flag', 'found enemy for ' + uuid + '>\n' + enemy_uuid )
+				if( system.entropic[ uuid ]){
+					const enm_uuid = system.sentient.npc[ uuid ].enemy_uuid
+
+					blorb
+
+					// define some waypoints and see what happens vv
+
+					if( enm_uuid && system.entropic[ enm_uuid ]){
+						log('flag', 'found enemy for ' + uuid + '>\n' + enemy_uuid )
+					}else if( system.sentient.npc[ uuid ].waypoints ){
+						system.entropic[ uuid ].patrol( system.sentient.npc[ uuid ].waypoints )
+					}
 				}
 			}
 
