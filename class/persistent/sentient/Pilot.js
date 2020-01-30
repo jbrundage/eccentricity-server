@@ -4,6 +4,8 @@ const lib = require('../../../lib.js')
 const log = require('../../../log.js')
 const db =  require('../../../db.js')
 
+const { Vector3 } = require('three')
+
 const Ship = require('../entropic/Ship.js')
 const Freighter = require('../entropic/ShipFreighter.js')
 // const Sentient = require('./Sentient.js')
@@ -78,11 +80,12 @@ class Pilot extends Sentient {
 				let new_ship = new Ship({
 					uuid: pilot.uuid
 				})
-				new_ship.ref.position = {
-					x: 0,
-					y: 0,
-					z: -500
-				}
+				new_ship.ref.position = new Vector3( 0, 0 , -500 )
+				// {
+				// 	x: 0,
+				// 	y: 0,
+				// 	z: -500
+				// }
 				return new_ship
 			}
 

@@ -6,6 +6,11 @@ const uuid = require('uuid')
 
 const DB = require('../db.js')
 
+const { 
+	Vector3,
+	Quaternion
+} = require('three')
+
 const System = require('../class/persistent/System.js')
 const User = require('../class/persistent/User.js')
 
@@ -220,9 +225,9 @@ class Galaxy {
 
 					log('wss', 'rcvd packet: ', packet )
 
-					USER.PILOT.SHIP.ref.position = packet.pos || USER.PILOT.SHIP.ref.position
-					USER.PILOT.SHIP.ref.quaternion = packet.quat || USER.PILOT.SHIP.ref.quaternion 
-					USER.PILOT.SHIP.ref.momentum = packet.mom || USER.PILOT.SHIP.ref.momentum
+					USER.PILOT.SHIP.ref.position = new Vector3( packet.pos.x, packet.pos.y, packet.pos.z ) || USER.PILOT.SHIP.ref.position
+					USER.PILOT.SHIP.ref.quaternion = new Quaternion( packet.quat.x, packet.quat.y, packet.quat.z ) || USER.PILOT.SHIP.ref.quaternion 
+					USER.PILOT.SHIP.ref.momentum = new Vector3( packet.mom.x, packet.mom.y, packet.mom.z ) || USER.PILOT.SHIP.ref.momentum
 					break;
 
 				case 'chat':

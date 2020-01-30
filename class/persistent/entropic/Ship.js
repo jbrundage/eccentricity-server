@@ -3,6 +3,8 @@ const log = require('../../../log.js')
 
 const lib = require('../../../lib.js')
 
+const { Vector3 } = require('three')
+
 // const Entry = require('../_Entry.js');
 
 const Entropic  = require('./_PersistentEntropic.js')
@@ -41,10 +43,11 @@ class Ship extends Entropic {
 		this.name = init.name || lib.tables.names.ships[ Math.floor( Math.random() * lib.tables.names.ships.length ) ]
 
 		// stats
-		this.turrets = init.turrets || 0
+		this.health = init.health || 100
 		this.shields = init.shields || 0
 		this.stealth = init.stealth || 0
 
+		this.turrets = init.turrets || 0
 		this.equipped = init.equipped || ['pulse_canister', '', '', '']
 
 		// movement
@@ -54,7 +57,7 @@ class Ship extends Entropic {
 		this.speed_limit = init.speed_limit || 5
 
 		this.ref = init.ref || {}
-		this.ref.position = this.ref.position || {x: 0, y: 0, z: 0}
+		this.ref.position = this.ref.position || new Vector3() //{x: 0, y: 0, z: 0}
 		// {
 		// 	x: lib.tables.position.ship.x,
 		// 	y: lib.tables.position.ship.y,

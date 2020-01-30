@@ -13,7 +13,7 @@ class Settings {
 			look_speed: .002
 		}
 
-		this.camera_vertical_offset = init.camera_vertical_offset || 25
+		this.camera_vertical_offset = init.camera_vertical_offset || 10
 
 		this.camera_horizontal_offset = init.camera_horizontal_offset || 80
 

@@ -4,6 +4,11 @@ const lib = require('../../lib.js')
 
 const uuid = require('uuid')
 
+const {
+	Vector3,
+	Quaternion
+} = require('three')
+
 const Station = require('./entropic/Station.js')
 const Commander = require('./sentient/Commander.js')
 const Pilot = require('./sentient/Pilot.js')
@@ -38,7 +43,8 @@ const system_pulse = { // avoids circular ref
 
 	npc: {
 		spawn: false,
-		think: false
+		decide_move: false,
+		// think: false ----- event based actually
 	},
 
 	entropic: {
@@ -114,11 +120,12 @@ class System extends Persistent {
 				uuid: p_uuid,
 				subtype: 'primary',
 				ref: {
-					position: {
-						x: lib.tables.position.station[ 'primary' ].x,
-						y: lib.tables.position.station[ 'primary' ].y,
-						z: lib.tables.position.station[ 'primary' ].z
-					}
+					position: new Vector3( lib.tables.position.station[ 'primary' ].x, lib.tables.position.station[ 'primary' ].y, lib.tables.position.station[ 'primary' ].z )
+					// {
+					// 	x: lib.tables.position.station[ 'primary' ].x,
+					// 	y: lib.tables.position.station[ 'primary' ].y,
+					// 	z: lib.tables.position.station[ 'primary' ].z
+					// }
 				}
 			})
 			const primary_commander = new Commander({
@@ -129,11 +136,12 @@ class System extends Persistent {
 			const docking = new Station({
 				subtype: 'docking',
 				ref: {
-					position: {
-						x: lib.tables.position.station[ 'docking' ].x,
-						y: lib.tables.position.station[ 'docking' ].y,
-						z: lib.tables.position.station[ 'docking' ].z
-					}
+					position: new Vector3( lib.tables.position.station[ 'primary' ].x, lib.tables.position.station[ 'primary' ].y, lib.tables.position.station[ 'primary' ].z )
+					// {
+					// 	x: lib.tables.position.station[ 'docking' ].x,
+					// 	y: lib.tables.position.station[ 'docking' ].y,
+					// 	z: lib.tables.position.station[ 'docking' ].z
+					// }
 				}
 			})
 			const docking_commander = new Commander({
@@ -416,25 +424,23 @@ class System extends Persistent {
 
 
 
-	get_station_by_type( type ){ // primary, docking
+	get_by_subtype( type, subtype, amount ){ 
 
-		let search = false
+		const r = []
 
-		for( const id of Object.keys( this.entropic )){
+		for( const uuid of Object.keys( this[ type ] )){
 
-			if( search ){
+			if( this[ type ][ uuid ].subtype == subtype )  r.push( this[ type ][ uuid ] )
 
-				log('system', 'duplicate ' + type + ' found' )
-
-			}else if( this.entropic[ id ].type === type ){
-
-				search = this.entropic[ id ]
-
-			}
+			if( r.length >= amount ) return r
 
 		}
 
-		return search
+		if( r.length ){
+			return r
+		}else{
+			return false
+		}
 
 	}
 
@@ -584,7 +590,7 @@ class System extends Persistent {
 
 	init_pulse(){
 
-		// npc: { spawn, think }
+		// npc: { spawn }
 		// entropic: { spawn, move }
 
 		const system = this
@@ -617,6 +623,8 @@ class System extends Persistent {
 			const faction = system.get_faction()
 
 			const sentients = system.get_sentients()
+
+			const primary = system.get_by_subtype( 'entropic', 'primary', 1 )[0]
 
 			for( const uuid of Object.keys( system.entropic ) ){
 
@@ -666,38 +674,45 @@ class System extends Persistent {
 			let need_traffic = traffic.capacity - traffic.current
 			let need_enemies = enemies.capacity - enemies.current
 
+			// defense
+
 			for( let i = 0; i < need_defense; i++ ){
 				let new_uuid = uuid()
 				let ship = new Ship({
 					uuid: new_uuid,
 					ref: {
-						position: {
-							x: Math.random() * 100,
-							y: Math.random() * 100,
-							z: Math.random() * 100
-						}
+						position: new Vector3( Math.random() * 100, Math.random() * 100, Math.random() * 100 )
+						// {
+							// x: Math.random() * 100,
+							// y: Math.random() * 100,
+							// z: Math.random() * 100
+						// }
 					}
 				})
 				let pilot = new Pilot({
 					uuid: new_uuid,
 					reputation: {
 						[ faction ]: 150
-					},
+					}
 				})
+
 				system.register_entity('entropic', false, ship )
 				system.register_entity('sentient', 'npc', pilot )
 			}
+
+			// misc
 
 			for( let i = 0; i < need_traffic; i++ ){
 				let new_uuid = uuid()
 				let ship = new Freighter({
 					uuid: new_uuid,
 					ref: {
-						position: {
-							x: Math.random() * 100,
-							y: Math.random() * 100,
-							z: Math.random() * 100
-						}
+						position: new Vector3( Math.random() * 100, Math.random() * 100, Math.random() * 100 )
+						// {
+						// 	x: Math.random() * 100,
+						// 	y: Math.random() * 100,
+						// 	z: Math.random() * 100
+						// }
 					}
 				})
 				let pilot = new Pilot({
@@ -710,17 +725,20 @@ class System extends Persistent {
 				system.register_entity('sentient', 'npc', pilot )
 			}
 
+			// enemies
+
 			for( let i = 0; i < need_enemies; i++ ){
 				let new_uuid = uuid()
 				let ship = new Ship({
 					uuid: new_uuid,
 					model_url: 'ships/fighter/spacefighter/spacefighter01.glb',
 					ref: {
-						position: {
-							x: Math.random() * 100,
-							y: Math.random() * 100,
-							z: Math.random() * 100
-						}
+						position: new Vector3( Math.random() * 100, Math.random() * 100, Math.random() * 100 )
+						// {
+						// 	x: Math.random() * 100,
+						// 	y: Math.random() * 100,
+						// 	z: Math.random() * 100
+						// }
 					}
 				})
 				let pilot = new Pilot({
@@ -737,38 +755,59 @@ class System extends Persistent {
 
 		/////////////////////////////////////////////////////////////////////////////////////////////// npc think
 
-		system_pulse.npc.think = setInterval(function(){
+		// ----- thinking should be event based, not timer
+
+		system_pulse.npc.decide_move = setInterval(function(){
+
+			// let drifted = 0
 
 			// set ref.position, ref.momentum, ref.quaternion - these are DESIRED locations that will be lerped to client side
 			for( const uuid of Object.keys( system.sentient.npc )){
+
 				if( system.entropic[ uuid ]){
-					const enm_uuid = system.sentient.npc[ uuid ].enemy_uuid
 
-					blorb
+					const move = system.sentient.npc[ uuid ].decide_move()
 
-					// define some waypoints and see what happens vv
+					switch( move.type ){
+						case 'engage':
+						log('flag', 'sentient engage: ', move.e_uuid )
+						systems.entropic[ uuid ].move_towards( system.entropic[ move.e_uuid ].ref.position )
+						// move.e_uuid
+						break;
+						case 'waypoint':
+						system.entropic[ uuid ].move_towards( move.waypoint )
+						// move.waypoint
+						break;
+						case 'drift':
+						// alright then
+						// the rrrrreal physics
+						// drifted = system.entropic[ uuid ].ref.momentum * lib.tables.pulse.npc.decide_move
+						system.entropic[ uuid ].ref.position.add( system.entropic[ uuid ].ref.momentum )
 
-					if( enm_uuid && system.entropic[ enm_uuid ]){
-						log('flag', 'found enemy for ' + uuid + '>\n' + enemy_uuid )
-					}else if( system.sentient.npc[ uuid ].waypoints ){
-						system.entropic[ uuid ].patrol( system.sentient.npc[ uuid ].waypoints )
+						break;
+						default:
+						break;
 					}
+
 				}
 			}
 
+
 			log('pulse', 'pulse npc think')
 
-		}, lib.tables.pulse.npc.think )
+		}, lib.tables.pulse.npc.decide_move )
 
 		/////////////////////////////////////////////////////////////////////////////////////////////// entropic spawn
 
 		system_pulse.entropic.spawn = setInterval(function(){
 
+			// minerals, resources, etc
+
 			log('pulse', 'pulse entropic spawn')
 
 		}, lib.tables.pulse.entropic.spawn )
 
-		/////////////////////////////////////////////////////////////////////////////////////////////// entropic move
+		/////////////////////////////////////////////////////////////////////////////////////////////// entropic broadcast move
 
 		system_pulse.entropic.move = setInterval(function(){
 
@@ -781,9 +820,9 @@ class System extends Persistent {
 
 				// add pos to packet
 				packet.entropic[ uuid ] = {
-					mom: system.entropic[ uuid ].ref.momentum || { x: 0, y: 0, z: 0 },
-					pos: system.entropic[ uuid ].ref.position || { x: 0, y: 0, z: 0 },
-					quat: system.entropic[ uuid ].ref.quaternion || { x: 0, y: 0, z: 0, w: 0 },
+					mom: system.entropic[ uuid ].ref.momentum || new Vector3(), ///{ x: 0, y: 0, z: 0 },
+					pos: system.entropic[ uuid ].ref.position || new Vector3(), //{ x: 0, y: 0, z: 0 },
+					quat: system.entropic[ uuid ].ref.quaternion || new Quaternion(), //{ x: 0, y: 0, z: 0, w: 0 },
 					pc: system.sentient.pc[ uuid ] ? true : false
 				}
 

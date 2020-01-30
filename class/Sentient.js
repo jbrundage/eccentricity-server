@@ -3,6 +3,8 @@ const lib = require('../lib.js')
 const log = require('../log.js')
 const env = require('../env.js')
 
+const { Vector3 } = require('three')
+
 log('call', 'Sentient.js')
 
 
@@ -38,17 +40,46 @@ class Sentient {
 		this.system_key = init.system_key || env.INIT_SYSTEM_KEY 
 		this.station_key = init.station_key || env.INIT_STATION_KEY 
 
-		this.last_pos = init.last_pos || { x: 0, y: 0, z: 0 }
+		this.last_pos = init.last_pos || new Vector3()
+		// { x: 0, y: 0, z: 0 }
 
 		this.edited = init.edited || 0
 
-		this.enemy_uuid = init.enemy_uuid
+		this.e_uuid = init.e_uuid
 
-		this.waypoints = init.waypoints
+		this.waypoint = init.waypoint
 
 		this.private = init.private || []
 		this.private.push('private', 'uuid', 'type', 'temporality', 'entropy')
 		
+	}
+
+
+
+	decide_move(){
+
+		let r = {
+			type: false
+		}
+
+		if( this.e_uuid ){
+
+			r.type = 'engage'
+			r.e_uuid = this.e_uuid
+
+		}else if( this.waypoint ){
+
+			r.type = 'waypoint'
+			r.waypoint = this.waypoint
+
+		}else{
+
+			r.type = 'drift'
+
+		}
+
+		return r
+
 	}
 
 }

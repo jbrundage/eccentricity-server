@@ -1,6 +1,8 @@
 const validator = require('email-validator')
 const p_validator = require('password-validator')
 
+const { Vector3 } = require('three')
+
 const schema = new p_validator()
 const log = require('./log.js')
 
@@ -35,18 +37,17 @@ const lib = {
 
 		position: {
 			station: {
-				base: { x: Math.random() * 10000, y: Math.random() * 10000, z: Math.random() * 10000 },
-				primary: { x: 500, y: 0, z: 0 },
-				mining: { x: -500, y: 0, z: 0 },
-				docking: { x: 0, y: 0, z: 99000 }
+				base: new Vector3( Math.random() * 10000, Math.random() * 10000, Math.random() * 10000 ),
+				primary: new Vector3( 500, 0, 0 ),
+				mining: new Vector3( -500, 0, 0 ),
+				docking: new Vector3( 0, 0, 99000 )
 			},
-			// ship: { x: 0, y: 0, z: 1000 }
 		},
 		minimum_station_dist: 1000,
 
 		momentum: {
-			ship: { x: 0, y: 0, z: .1 },
-			entropic: { x: 0, y: 0, z: .1 }
+			ship: new Vector3( 0, 0, .1 ),
+			entropic: new Vector3( 0, 0, .1 )
 		},
 
 		verboten: ['fuck', 'shit', 'cunt', 'damn', 'nigger', 'kike', 'chink', 'bitch'],
@@ -54,7 +55,7 @@ const lib = {
 		pulse: {
 			npc: {
 				spawn: 10000,
-				think: 5000
+				decide_move: 5000
 			},
 			entropic: {
 				spawn: 9000,

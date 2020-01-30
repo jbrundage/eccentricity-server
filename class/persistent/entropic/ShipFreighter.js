@@ -22,10 +22,10 @@ class Freighter extends Ship  {
 
 		// stats
 		this.sections = init.sections || 3
-		this.turrets = init.turrets || 0
 		this.shields = init.shields || 0
 		this.stealth = init.stealth || 0
 
+		this.turrets = init.turrets || 0
 		this.equipped = init.equipped || ['pulse_canister', '', '', '']
 
 		// movement

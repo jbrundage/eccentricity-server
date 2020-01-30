@@ -1,3 +1,4 @@
+const { Vector3 } = require('three')
 
 const log = require('../../../log.js')
 const lib = require('../../../lib.js')
@@ -31,15 +32,17 @@ class Station extends Entropic {
 		this.hangar = init.hangar || 1 // defense ships
 
 		this.turrets = init.turrets || 0
+		this.health = init.health || 500
 		this.shields = init.shields || 0
 		this.stealth = init.stealth || 0
 
 		this.ref = init.ref || {}
-		this.ref.position = this.ref.position || {
-			x: Math.random() * 5000,//lib.tables.position.station.x,
-			y: Math.random() * 5000,//lib.tables.position.station.y,
-			z: Math.random() * 5000//lib.tables.position.station.z
-		}
+		this.ref.position = this.ref.position || new Vector3( Math.random() * 5000, Math.random() * 5000, Math.random() * 5000 )
+		// {
+		// 	x: Math.random() * 5000,//lib.tables.position.station.x,
+		// 	y: Math.random() * 5000,//lib.tables.position.station.y,
+		// 	z: Math.random() * 5000//lib.tables.position.station.z
+		// }
 
 		this.private = this.private || []
 
