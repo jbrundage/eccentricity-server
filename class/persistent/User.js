@@ -1,7 +1,7 @@
 const log = require('../../log.js')
 const lib = require('../../lib.js')
 
-const Settings = require('../aux/Settings.js')
+// const Settings = require('../aux/Settings.js')
 
 const DB = require('../../db.js')
 
@@ -41,7 +41,7 @@ class User extends Persistent {
 		this.level = init.level || 0
 		this.confirmed = init.confirmed || 'no'
 
-		this.settings = new Settings( init.settings ) 
+		// this.settings = new Settings( init.settings ) 
 
 		this.last_log = init.last_log || false
 

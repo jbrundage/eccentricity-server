@@ -19,8 +19,6 @@ class Settings {
 
 		this.bindings = init.bindings || {}
 
-		this.FRAMERATE = init.FRAMERATE || 15
-
 		this.RESOLUTION = init.RESOLUTION || 1
 
 	}
