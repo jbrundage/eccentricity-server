@@ -225,10 +225,10 @@ class Galaxy {
 
 					log('wss', 'rcvd packet: ', packet )
 
-					USER.PILOT.SHIP.ref.position = new Vector3( packet.pos.x, packet.pos.y, packet.pos.z ) || USER.PILOT.SHIP.ref.position
-					USER.PILOT.SHIP.ref.model.quaternion = new Quaternion( packet.quat.x, packet.quat.y, packet.quat.z, packet.quat.w ) || USER.PILOT.SHIP.ref.model.quaternion
+					USER.PILOT.SHIP.ref.position = new Vector3( packet.pos.x, packet.pos.y, packet.pos.z ) // || USER.PILOT.SHIP.ref.position
+					USER.PILOT.SHIP.ref.model.quaternion.copy( new Quaternion( packet.quat.x, packet.quat.y, packet.quat.z, packet.quat.w ) )//|| USER.PILOT.SHIP.ref.model.quaternion
 					// USER.PILOT.SHIP.ref.quaternion = new Quaternion( packet.quat.x, packet.quat.y, packet.quat.z ) || USER.PILOT.SHIP.ref.quaternion 
-					USER.PILOT.SHIP.ref.momentum = new Vector3( packet.mom.x, packet.mom.y, packet.mom.z ) || USER.PILOT.SHIP.ref.momentum
+					USER.PILOT.SHIP.ref.momentum = new Vector3( packet.mom.x, packet.mom.y, packet.mom.z ) // || USER.PILOT.SHIP.ref.momentum
 					break;
 
 				case 'chat':

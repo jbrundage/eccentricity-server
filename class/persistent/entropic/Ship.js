@@ -103,20 +103,20 @@ class Ship extends Entropic {
 
 			this.ref.momentum.copy( M.projection )
 
-			log('flag', 'safe speed', M.projection )
+			// log('flag', 'safe speed', M.projection )
 
 			// .add( M.acceleration )
 
 		}else{
 
-			log('flag', 'too fast')
+			// log('flag', 'too fast')
 
 			this.ref.momentum.copy( M.projection.multiplyScalar( this.speed_limit / M.crowfly ) )
 
 		}
 
-		log('flag', 'momentum: ', this.ref.momentum )
-		log('flag', 'crowfly: ', M.crowfly )
+		// log('flag', 'momentum: ', this.ref.momentum )
+		// log('flag', 'crowfly: ', M.crowfly )
 
 		this.ref.position.add( this.ref.momentum )
 

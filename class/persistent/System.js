@@ -724,6 +724,7 @@ class System extends Persistent {
 				})
 				system.register_entity('entropic', false, ship )
 				system.register_entity('sentient', 'npc', pilot )
+
 			}
 
 			// enemies
