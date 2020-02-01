@@ -53,7 +53,7 @@ const render = require('./render_html.js')
 
 
 
-log('call', 'index-ecc.js')
+log('call', 'ecc.js')
 
 
 const STORE = new MemoryStore({

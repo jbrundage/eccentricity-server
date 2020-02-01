@@ -13,7 +13,7 @@ class PersistentEntropic extends Entropic {
 		this.temporality = 'persistent'
 
 		this.private = this.private || []
-		this.private.push('desired_pos', 'inertia_pos', 'align_buffer')
+		this.private.push('inertia_pos', 'align_buffer')
 
 	}
 
