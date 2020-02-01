@@ -720,6 +720,7 @@ class System extends Persistent {
 					reputation: {
 						[ faction ]: 0
 					},
+					waypoint: new Vector3( 500, 500, 500 )
 				})
 				system.register_entity('entropic', false, ship )
 				system.register_entity('sentient', 'npc', pilot )
@@ -818,11 +819,14 @@ class System extends Persistent {
 
 			for( const uuid of Object.keys( system.entropic ) ){
 
+				if( !system.entropic[ uuid ].ref.model ) log('flag', 'missing: ', system.entropic[ uuid ] )
+
 				// add pos to packet
 				packet.entropic[ uuid ] = {
 					mom: system.entropic[ uuid ].ref.momentum || new Vector3(), ///{ x: 0, y: 0, z: 0 },
 					pos: system.entropic[ uuid ].ref.position || new Vector3(), //{ x: 0, y: 0, z: 0 },
-					quat: system.entropic[ uuid ].ref.quaternion || new Quaternion(), //{ x: 0, y: 0, z: 0, w: 0 },
+					// quat: system.entropic[ uuid ].ref.quaternion || new Quaternion(), //{ x: 0, y: 0, z: 0, w: 0 },
+					quat: system.entropic[ uuid ].ref.model.quaternion || new Quaternion(), //{ x: 0, y: 0, z: 0, w: 0 },
 					pc: system.sentient.pc[ uuid ] ? true : false
 				}
 
