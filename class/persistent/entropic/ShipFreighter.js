@@ -33,6 +33,10 @@ class Freighter extends Ship  {
 		this.turn_speed = init.turn_speed || .1
 		this.align_buffer = init.align_buffer || 20
 
+		this.sound = init.sound || {
+			boost: 'boost_heavy'
+		}
+
 	}
 
 

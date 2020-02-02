@@ -54,6 +54,10 @@ class Ship extends Entropic {
 		this.thrust = init.thrust || .0000005 // switching to addition not multiplication  // 1.0000005
 		this.turn_speed = init.turn_speed || .5
 
+		this.sound = init.sound || {
+			boost: 'boost_light'
+		}
+
 		this.speed_limit = init.speed_limit || 5
 
 		// this.ref = this.ref || {}
@@ -87,29 +91,54 @@ class Ship extends Entropic {
 
 	move_towards( desired_position ){
 
+		// arrive logic
+		const dist = this.ref.position.distanceTo( desired_position )
+
+		this.ref.boosting = true
+
+		if( dist < this.speed_limit * 2 ){
+
+			log('flag', 'pretty close')
+
+			const runway = this.land()
+			if( runway == 'arrived' ) return 'arrived'
+			return true
+		}
+
+		log('flag', 'remaining dist:', dist )
+
+
 		const M = this.move
 
-		M.facing.subVectors( this.ref.position, desired_position ).normalize()
+		M.facing.subVectors( desired_position, this.ref.position ).normalize() // 0 - 1
 
-		M.projection.copy( this.ref.momentum )
+		M.projection.copy( this.ref.momentum ) // 0 - 5
 
-		M.acceleration.copy( M.facing.addScalar( this.thrust ) ) // .multiplyScalar( delta_seconds )
+		M.acceleration.copy( M.facing.addScalar( this.thrust ) ) // .multiplyScalar( delta_seconds ) // 0 - 5
 
-		M.projection.add( M.acceleration )
+		M.projection.add( M.acceleration ) // 0 - 10
 
-		M.crowfly = M.projection.distanceTo( new Vector3(0, 0, 0) )
+		M.crowfly = M.projection.distanceTo( new Vector3(0, 0, 0) ) // 0 - 10
 
-		if( M.crowfly < this.speed_limit * 1000 ){
 
-			this.ref.momentum.copy( M.projection )
 
-			// log('flag', 'safe speed', M.projection )
+
+		if( M.crowfly < this.speed_limit ){ // } * 1000 ){ // duh
+
+			// here it is - speed_limit is an arbitrary value.  how to bring to seconds....
+
+
+
+
+			this.ref.momentum.copy( M.projection ) 
+
+			log('flag', 'safe speed', M.projection )
 
 			// .add( M.acceleration )
 
 		}else{
 
-			// log('flag', 'too fast')
+			log('flag', 'too fast')
 
 			this.ref.momentum.copy( M.projection.multiplyScalar( this.speed_limit / M.crowfly ) )
 
@@ -130,6 +159,28 @@ class Ship extends Entropic {
 
 		// ship.momentum.add( facing.multiplyScalar( ship.thrust ) )
 			// should not need delta scalar, because clientside divides delta by 1000 to operate in unit seconds, and this is a one second interval
+
+	}
+
+
+
+	land( desired_position ){
+
+		log('flag', 'in for landing')
+
+
+
+		this.ref.position.lerp( desired_position, .3 )
+
+		if( this.ref.position.distanceTo( desired_position ) < 3 ){
+
+			log('flag', 'arrived')
+
+			this.ref.boosting = false
+
+			return 'arrived'
+
+		}
 
 	}
 

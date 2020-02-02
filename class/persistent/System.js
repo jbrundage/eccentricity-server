@@ -720,7 +720,7 @@ class System extends Persistent {
 					reputation: {
 						[ faction ]: 0
 					},
-					waypoint: new Vector3( 500, 500, 500 )
+					waypoint: new Vector3( Math.random() * 500, Math.random() * 500, Math.random() * 500 )
 				})
 				system.register_entity('entropic', false, ship )
 				system.register_entity('sentient', 'npc', pilot )
@@ -771,22 +771,35 @@ class System extends Persistent {
 					const move = system.sentient.npc[ uuid ].decide_move()
 
 					switch( move.type ){
-						case 'engage':
-						log('flag', 'sentient engage: ', move.e_uuid )
-						systems.entropic[ uuid ].move_towards( system.entropic[ move.e_uuid ].ref.position )
-						// move.e_uuid
-						break;
-						case 'waypoint':
-						system.entropic[ uuid ].move_towards( move.waypoint )
-						// move.waypoint
-						break;
-						case 'drift':
-						// alright then
-						// the rrrrreal physics
-						// drifted = system.entropic[ uuid ].ref.momentum * lib.tables.pulse.npc.decide_move
-						system.entropic[ uuid ].ref.position.add( system.entropic[ uuid ].ref.momentum )
 
-						break;
+						case 'engage':
+							log('flag', 'sentient engage: ', move.e_uuid )
+							if( system.entropic[ uuid ].move_towards ){ // ships only
+								system.entropic[ uuid ].move_towards( system.entropic[ move.e_uuid ].ref.position )
+							}else{
+								log('flag', 'non ship being asked to engage')
+							}
+							break;
+
+						case 'waypoint':
+							if( system.entropic[ uuid ].move_towards ){
+								const runway = system.entropic[ uuid ].move_towards( move.waypoint )
+								log('flag', 'runway: ', runway )
+								if( runway == 'arrived' ){
+									delete system.sentient.npc[ uuid ].waypoint
+								}
+							}else{
+								log('flag', 'non ship being asked to move')
+							}
+							break;
+
+						case 'drift':
+							// alright then
+							// the rrrrreal physics
+							// drifted = system.entropic[ uuid ].ref.momentum * lib.tables.pulse.npc.decide_move
+							system.entropic[ uuid ].ref.position.add( system.entropic[ uuid ].ref.momentum )
+
+							break;
 						default:
 						break;
 					}
@@ -828,6 +841,7 @@ class System extends Persistent {
 					pos: system.entropic[ uuid ].ref.position || new Vector3(), //{ x: 0, y: 0, z: 0 },
 					// quat: system.entropic[ uuid ].ref.quaternion || new Quaternion(), //{ x: 0, y: 0, z: 0, w: 0 },
 					quat: system.entropic[ uuid ].ref.model.quaternion || new Quaternion(), //{ x: 0, y: 0, z: 0, w: 0 },
+					boost: system.entropic[ uuid ].ref.boosting,
 					pc: system.sentient.pc[ uuid ] ? true : false
 				}
 
