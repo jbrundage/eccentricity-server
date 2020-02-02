@@ -55,7 +55,7 @@ const lib = {
 		pulse: {
 			npc: {
 				spawn: 10000,
-				decide_move: 5000
+				decide_move: 1000
 			},
 			entropic: {
 				spawn: 9000,

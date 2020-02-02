@@ -720,7 +720,7 @@ class System extends Persistent {
 					reputation: {
 						[ faction ]: 0
 					},
-					waypoint: new Vector3( Math.random() * 500, Math.random() * 500, Math.random() * 500 )
+					waypoint: new Vector3( Math.random() * 200, Math.random() * 200, Math.random() * 200 )
 				})
 				system.register_entity('entropic', false, ship )
 				system.register_entity('sentient', 'npc', pilot )
@@ -784,7 +784,7 @@ class System extends Persistent {
 						case 'waypoint':
 							if( system.entropic[ uuid ].move_towards ){
 								const runway = system.entropic[ uuid ].move_towards( move.waypoint )
-								log('flag', 'runway: ', runway )
+								log('flag', system.entropic[ uuid ].uuid.substr(0, 3) + ': ' + ' runway: ', runway )
 								if( runway == 'arrived' ){
 									delete system.sentient.npc[ uuid ].waypoint
 								}

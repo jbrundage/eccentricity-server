@@ -98,14 +98,14 @@ class Ship extends Entropic {
 
 		if( dist < this.speed_limit * 2 ){
 
-			log('flag', 'pretty close')
+			log('flag', this.uuid.substr(0, 3) + ': ' + ' pretty close')
 
-			const runway = this.land()
+			const runway = this.land( desired_position )
 			if( runway == 'arrived' ) return 'arrived'
 			return true
 		}
 
-		log('flag', 'remaining dist:', dist )
+		log('flag', this.uuid.substr(0, 3) + ': ' + ' remaining dist:', dist )
 
 
 		const M = this.move
@@ -116,7 +116,10 @@ class Ship extends Entropic {
 
 		M.acceleration.copy( M.facing.addScalar( this.thrust ) ) // .multiplyScalar( delta_seconds ) // 0 - 5
 
-		M.projection.add( M.acceleration ) // 0 - 10
+		M.projection.add( M.acceleration ) // 0 - 10 // this will always be double at max flight, and need to be capped ....
+
+		// could use a function that detects 'ideal vector' and then turns off this booster logic 
+		// but, 1 fps on server is not too bad ...
 
 		M.crowfly = M.projection.distanceTo( new Vector3(0, 0, 0) ) // 0 - 10
 
@@ -132,13 +135,13 @@ class Ship extends Entropic {
 
 			this.ref.momentum.copy( M.projection ) 
 
-			log('flag', 'safe speed', M.projection )
+			// log('flag', this.uuid.substr(0, 3) + ': ' + ' safe speed', M.projection )
 
 			// .add( M.acceleration )
 
 		}else{
 
-			log('flag', 'too fast')
+			// log('flag', this.uuid.substr(0, 3) + ': ' + ' too fast')
 
 			this.ref.momentum.copy( M.projection.multiplyScalar( this.speed_limit / M.crowfly ) )
 
@@ -148,6 +151,8 @@ class Ship extends Entropic {
 		// log('flag', 'crowfly: ', M.crowfly )
 
 		this.ref.position.add( this.ref.momentum )
+
+		log('flag', this.uuid.substr(0, 3) + ': ' + ' position: ',  this.ref.position )
 
 		// this.ref.facing.copy( M.facing )
 
@@ -166,7 +171,7 @@ class Ship extends Entropic {
 
 	land( desired_position ){
 
-		log('flag', 'in for landing')
+		log('flag', this.uuid.substr(0, 3) + ': ' + ' in for landing')
 
 
 
@@ -174,7 +179,7 @@ class Ship extends Entropic {
 
 		if( this.ref.position.distanceTo( desired_position ) < 3 ){
 
-			log('flag', 'arrived')
+			log('flag', this.uuid.substr(0, 3) + ': ' + ' arrived')
 
 			this.ref.boosting = false
 
