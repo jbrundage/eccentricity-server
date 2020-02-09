@@ -18,7 +18,8 @@ class Freighter extends Ship  {
 
 		this.subtype = 'freighter'
 	
-		this.model_url = init.model_url || 'ships/freighter/ryath/untitled.glb'
+		// this.model_url = init.model_url || 'ships/freighter/ryath/untitled.glb'
+		this.model_url = init.model_url || 'ships/freighter/Ryath_3_glowstick.glb'
 
 		// stats
 		this.sections = init.sections || 3
