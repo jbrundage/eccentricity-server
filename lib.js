@@ -65,6 +65,8 @@ const lib = {
 
 	},
 
+	ORIGIN: new Vector3(0, 0, 0),
+
 	json_hydrate: function( data ){
 
 		if( typeof( data ) == 'string' ){
@@ -229,6 +231,12 @@ const lib = {
 	sanitize_packet: function( packet ){
 
 		return packet
+
+	},
+
+	getBaseLog: function(x, y) {
+
+		return Math.log(y) / Math.log(x)
 
 	},
 

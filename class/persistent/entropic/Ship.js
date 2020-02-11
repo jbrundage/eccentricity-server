@@ -51,14 +51,14 @@ class Ship extends Entropic {
 		this.equipped = init.equipped || ['pulse_canister', '', '', '']
 
 		// movement
-		this.thrust = init.thrust || .0000005 // switching to addition not multiplication  // 1.0000005
-		this.turn_speed = init.turn_speed || .5
+		this.thrust = init.thrust || 2 // switching to addition not multiplication  // 1.0000005
+		this.turn_speed = init.turn_speed || .5 // aesthetic only
 
 		this.sound = init.sound || {
 			boost: 'boost_light'
 		}
 
-		this.speed_limit = init.speed_limit || 5
+		this.speed_limit = init.speed_limit || 25
 
 		// this.ref = this.ref || {}
 		// this.ref.position = this.ref.position || new Vector3() //{x: 0, y: 0, z: 0}
@@ -73,97 +73,103 @@ class Ship extends Entropic {
 		this.align_buffer = init.align_buffer || 5
 		this.needs_align = 0
 
-		this.move = {
+		this.scratch = { 
 			facing: new Vector3(),
 			projection: new Vector3(),
 			acceleration: new Vector3(),
-			crowfly: 0
+			crowfly: 0,
+			speed: 0
 		}
 			
 
 		this.private = this.private || []
 		this.private.push( 'equipped' )
 
-
-
 	}
 
 
 	move_towards( desired_position ){
 
-		// arrive logic
-		const dist = this.ref.position.distanceTo( desired_position )
-
-		this.ref.boosting = true
-
-		if( dist < this.speed_limit * 2 ){
-
-			log('flag', this.uuid.substr(0, 3) + ': ' + ' pretty close')
-
-			const runway = this.land( desired_position )
-			if( runway == 'arrived' ) return 'arrived'
-			return true
+		if( !desired_position ){
+			log('flag', 'no waypoint')
+			return false
 		}
 
-		log('flag', this.uuid.substr(0, 3) + ': ' + ' remaining dist:', dist )
+		const S = this.scratch
+
+		S.speed = this.ref.momentum.distanceTo( lib.ORIGIN )
+
+		const remaining_dist = this.ref.position.distanceTo( desired_position )
+
+		const seconds_to_stop = lib.getBaseLog( this.thrust, remaining_dist ) + 2
+
+		const seconds_to_arrive = remaining_dist / S.speed
+
+		const misaligned = 0
+		// const vector_to_destination = ...
+		// const misaligned = new Vector3().copy( this.ref.momentum )
+		// misaligned.normalize().subVectors(  ) // misaligned, vector_to_destination ?
+
+		log('flag', this.uuid.substr(0, 3) + ': a, s: ' + seconds_to_arrive, seconds_to_stop, remaining_dist )
 
 
-		const M = this.move
+		if( seconds_to_arrive < seconds_to_stop ){
 
-		M.facing.subVectors( desired_position, this.ref.position ).normalize() // 0 - 1
+			this.land( desired_position )
 
-		M.projection.copy( this.ref.momentum ) // 0 - 5
+		}else if( misaligned > .1 || S.speed < ( S.speed_limit - .5 ) ){ // still need to get on course
 
-		M.acceleration.copy( M.facing.addScalar( this.thrust ) ) // .multiplyScalar( delta_seconds ) // 0 - 5
+			S.facing.subVectors( desired_position, this.ref.position ).normalize() // 0 - 1 - no more turn speed - immediate face
 
-		M.projection.add( M.acceleration ) // 0 - 10 // this will always be double at max flight, and need to be capped ....
+			S.projection.copy( this.ref.momentum ) // 0 - 5
 
-		// could use a function that detects 'ideal vector' and then turns off this booster logic 
-		// but, 1 fps on server is not too bad ...
+			S.acceleration.copy( S.facing.addScalar( this.thrust ) ) // .multiplyScalar( delta_seconds ) // 0 - 5
 
-		M.crowfly = M.projection.distanceTo( new Vector3(0, 0, 0) ) // 0 - 10
+			S.projection.add( S.acceleration ) // 0 - 10 // this will always be double at max flight, and need to be capped ....
 
+			// could use a function that detects 'ideal vector' and then turns off this booster logic 
+			// but, 1 fps on server is not too bad ...
 
-
-
-		if( M.crowfly < this.speed_limit ){ // } * 1000 ){ // duh
-
-			// here it is - speed_limit is an arbitrary value.  how to bring to seconds....
-
-
-
-
-			this.ref.momentum.copy( M.projection ) 
-
-			// log('flag', this.uuid.substr(0, 3) + ': ' + ' safe speed', M.projection )
-
-			// .add( M.acceleration )
-
+			S.crowfly = S.projection.distanceTo( lib.ORIGIN ) // 0 - 10
+			
 		}else{
 
-			// log('flag', this.uuid.substr(0, 3) + ': ' + ' too fast')
-
-			this.ref.momentum.copy( M.projection.multiplyScalar( this.speed_limit / M.crowfly ) )
+			// we driftin
 
 		}
 
-		// log('flag', 'momentum: ', this.ref.momentum )
-		// log('flag', 'crowfly: ', M.crowfly )
+		// log('flag', this.uuid.substr(0, 3) + ': ' + ' remaining dist:', dist )
 
-		this.ref.position.add( this.ref.momentum )
+		// if( S.crowfly < this.speed_limit ){ // } * 1000 ){ // duh
 
-		log('flag', this.uuid.substr(0, 3) + ': ' + ' position: ',  this.ref.position )
+		// 	this.ref.momentum.copy( S.projection ) 
 
-		// this.ref.facing.copy( M.facing )
+		// 	// log('flag', this.uuid.substr(0, 3) + ': ' + ' safe speed', S.projection )
 
-		// this.ref.rotation.copy( M.facing )
+		// }else{
 
-		this.ref.model.lookAt( M.facing )
+		// 	// log('flag', this.uuid.substr(0, 3) + ': ' + ' too fast')
 
-		// this.ref.quaternion.copy( M.facing )
+		// 	this.ref.momentum.copy( S.projection.multiplyScalar( this.speed_limit / S.crowfly ) )
 
-		// ship.momentum.add( facing.multiplyScalar( ship.thrust ) )
-			// should not need delta scalar, because clientside divides delta by 1000 to operate in unit seconds, and this is a one second interval
+		// }
+
+		// // log('flag', 'momentum: ', this.ref.momentum )
+
+		// this.ref.position.add( this.ref.momentum )
+
+		// // log('flag', this.uuid.substr(0, 3) + ': ' + ' position: ',  this.ref.position )
+
+		// // this.ref.facing.copy( S.facing )
+
+		// // this.ref.rotation.copy( S.facing )
+
+		// this.ref.model.lookAt( S.facing )
+
+		// // this.ref.quaternion.copy( S.facing )
+
+		// // ship.momentum.add( facing.multiplyScalar( ship.thrust ) )
+		// // should not need delta scalar, because clientside divides delta by 1000 to operate in unit seconds, and this is a one second interval
 
 	}
 
@@ -171,21 +177,21 @@ class Ship extends Entropic {
 
 	land( desired_position ){
 
-		log('flag', this.uuid.substr(0, 3) + ': ' + ' in for landing')
-
-
+		// log('flag', this.uuid.substr(0, 3) + ': ' + ' in for landing')
 
 		this.ref.position.lerp( desired_position, .3 )
 
 		if( this.ref.position.distanceTo( desired_position ) < 3 ){
 
-			log('flag', this.uuid.substr(0, 3) + ': ' + ' arrived')
+			// log('flag', this.uuid.substr(0, 3) + ': ' + ' arrived')
 
 			this.ref.boosting = false
 
 			return 'arrived'
 
 		}
+
+		return 'landing...'
 
 	}
 

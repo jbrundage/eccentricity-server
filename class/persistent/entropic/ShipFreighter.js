@@ -30,8 +30,8 @@ class Freighter extends Ship  {
 		this.equipped = init.equipped || ['pulse_canister', '', '', '']
 
 		// movement
-		this.thrust = init.thrust || .05
-		this.turn_speed = init.turn_speed || .1
+		this.thrust = init.thrust || 1
+		this.turn_speed = init.turn_speed || .1 // aesthetic only
 		this.align_buffer = init.align_buffer || 20
 
 		this.sound = init.sound || {

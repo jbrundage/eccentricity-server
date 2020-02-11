@@ -46,7 +46,8 @@ class Entropic {
 
 	drift(){
 
-		this.ref.position.z += 10
+		// this.ref.position.z += 10
+		this.ref.position.add( this.ref.momentum )
 
 	}
 
