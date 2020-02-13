@@ -71,6 +71,10 @@ class Sentient {
 			r.type = 'waypoint'
 			r.waypoint = this.waypoint
 
+		}else if( this.get_faction() > blorb ) {
+
+			// defender; on patrol; new waypoint
+
 		}else{
 
 			r.type = 'drift'
