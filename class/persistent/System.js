@@ -771,7 +771,7 @@ class System extends Persistent {
 				})
 
 				if( i === 0 ) ship.log = true
-				
+
 				system.register_entity('entropic', false, ship )
 				system.register_entity('sentient', 'npc', pilot )
 			}
@@ -814,6 +814,8 @@ class System extends Persistent {
 
 								if( runway == 'arrived' ){
 									log('npc_move', uuid.substr(0, 3), 'arrived')
+									system.entropic[ uuid ].ref.momentum = new Vector3(0, 0, 0)
+									system.entropic[ uuid ].ref.boosting = false
 									delete system.sentient.npc[ uuid ].waypoint
 								}
 
@@ -873,6 +875,7 @@ class System extends Persistent {
 					// quat: system.entropic[ uuid ].ref.quaternion || new Quaternion(), //{ x: 0, y: 0, z: 0, w: 0 },
 					quat: system.entropic[ uuid ].ref.model.quaternion || new Quaternion(), //{ x: 0, y: 0, z: 0, w: 0 },
 					boost: system.entropic[ uuid ].ref.boosting,
+					waypoint: system.sentient.npc[ uuid ] ? system.sentient.npc[ uuid ].waypoint : false,
 					pc: system.sentient.pc[ uuid ] ? true : false
 				}
 

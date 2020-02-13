@@ -411,7 +411,7 @@ DB.initPool(( err, db ) => {
 
 						socket.send(JSON.stringify({
 							type: 'error',
-							msg: 'no session found - try reloading the page'
+							msg: 'invalid session - try reloading the page'
 						}))
 						log('flag', 'no session found')
 						// return false 

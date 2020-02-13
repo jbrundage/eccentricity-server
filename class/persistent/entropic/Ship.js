@@ -75,14 +75,7 @@ class Ship extends Entropic {
 		this.align_buffer = init.align_buffer || 5
 		this.needs_align = 0
 
-		this.scratch = { 
-			facing: new Vector3(),
-			direction: new Vector3(),
-			acceleration: new Vector3(),
-			projection: new Vector3(),
-			crowfly: 0,
-			speed: 0
-		}
+		this.scratch = new_scratch()
 			
 
 		this.private = this.private || []
@@ -100,11 +93,11 @@ class Ship extends Entropic {
 
 		const remaining_dist = this.ref.position.distanceTo( destination )
 
-		if( remaining_dist <= 3 ){ // safeguard - should never be handled here
-			log('npc_move', this.uuid + ' has arrived')
-			this.ref.momentum = new Vector3(0,0,0)
-			return false
-		}
+		// if( remaining_dist <= 3 ){ // safeguard - should never be handled here
+		// 	log('npc_move', this.uuid + ' has arrived')
+		// 	this.ref.momentum = new Vector3(0,0,0)
+		// 	return false
+		// }
 
 		const S = this.scratch
 
@@ -123,9 +116,11 @@ class Ship extends Entropic {
 
 		///// determine vector
 
+		const step_log = false
+
 		if( stop_distance > remaining_dist ){
 
-			if( this.log ) log('npc_move', this.uuid.substr(0, 3) + ' stopping')
+			if( this.log && step_log ) log('npc_move', this.uuid.substr(0, 3) + ' stopping')
 
 			this.ref.boosting = true
 
@@ -137,13 +132,13 @@ class Ship extends Entropic {
 
 			if( misaligned > .1 ) log('npc_move', 'correcting misaligned ')
 
-			// if( this.log ) log('npc_move', this.uuid.substr(0, 3) + ' accelerating')
+			if( this.log && step_log ) log('npc_move', this.uuid.substr(0, 3) + ' accelerating')
 
 			this.ref.boosting = true
 
 		}else{
 
-			if( this.log ) log('npc_move', this.uuid.substr(0, 3) + ' cruising')
+			if( this.log && step_log ) log('npc_move', this.uuid.substr(0, 3) + ' cruising')//, why no momentum: ', this.ref.momentum )
 
 			this.ref.boosting = false
 
@@ -153,13 +148,15 @@ class Ship extends Entropic {
 
 		// ///// modify momentum
 
+		S.projection.copy( this.ref.momentum )
+
+		if( this.log ) log('npc_move', 'whyyyy', this.ref.momentum )
+
 		if( this.ref.boosting ){
 
 			S.acceleration.copy( S.facing ).multiplyScalar( this.thrust ) // .multiplyScalar( delta_seconds ) // 0 - 5
 
-			if( this.log ) log('npc_move', 'why acc not grow: ', this.ref.momentum )
-
-			S.projection.copy( this.ref.momentum ).add( S.acceleration ) // 0 - 5
+			S.projection.add( S.acceleration ) // 0 - 5
 
 			// S.projection.add( S.acceleration ) // 0 - 10 // this will always be double at max flight, and need to be capped ....
 
@@ -169,13 +166,13 @@ class Ship extends Entropic {
 
 				this.ref.momentum.copy( S.projection ) 
 
-				if( this.log ) log('npc_move', 'acc: ', S.facing, S.acceleration, this.thrust )
+				// if( this.log ) log('npc_move', 'acc: ', S.facing, S.acceleration, this.thrust )
 
 			}else{
 
 				this.ref.momentum.copy( S.projection.multiplyScalar( this.speed_limit / S.crowfly ) )
 
-				if( this.log ) log('npc_move', 'new momentum tapered: ', this.ref.momentum )
+				// if( this.log ) log('npc_move', 'new momentum tapered: ', this.ref.momentum )
 
 			}
 
@@ -184,26 +181,31 @@ class Ship extends Entropic {
 		///// apply momentum
 
 		this.ref.position.add( this.ref.momentum )
+		// this.ref.position.add( S.projection )
 
 		this.ref.model.lookAt( S.facing )
 
 		///// check for arrived
 
-		if( this.ref.position.distanceTo( destination ) < 3 ){
-
-			// log('flag', this.uuid.substr(0, 3) + ': ' + ' arrived')
-
-			this.ref.momentum = new Vector3(0, 0, 0)
-
-			this.ref.boosting = false
-
+		if( this.ref.position.distanceTo( destination ) < 5 ){
 			return 'arrived'
-
 		}
 
 	}
 
 
+}
+
+
+function new_scratch(){
+	return { 
+		facing: new Vector3(),
+		direction: new Vector3(),
+		acceleration: new Vector3(),
+		projection: new Vector3(),
+		crowfly: 0,
+		speed: 0
+	}
 }
 
 
