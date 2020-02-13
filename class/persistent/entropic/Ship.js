@@ -23,6 +23,8 @@ class Ship extends Entropic {
 
 		this.type = 'ship'
 
+		this.subtype = 'ship'
+
 		this.table = 'ships'
 
 		this.clickable = true
@@ -75,8 +77,9 @@ class Ship extends Entropic {
 
 		this.scratch = { 
 			facing: new Vector3(),
-			projection: new Vector3(),
+			direction: new Vector3(),
 			acceleration: new Vector3(),
+			projection: new Vector3(),
 			crowfly: 0,
 			speed: 0
 		}
@@ -88,102 +91,109 @@ class Ship extends Entropic {
 	}
 
 
-	move_towards( desired_position ){
+	move_towards( destination ){
 
-		if( !desired_position ){
-			log('flag', 'no waypoint')
+		if( !destination || !destination.isVector3 ){
+			log('npc_move', 'invalid destination given')
+			return false
+		}
+
+		const remaining_dist = this.ref.position.distanceTo( destination )
+
+		if( remaining_dist <= 3 ){ // safeguard - should never be handled here
+			log('npc_move', this.uuid + ' has arrived')
+			this.ref.momentum = new Vector3(0,0,0)
 			return false
 		}
 
 		const S = this.scratch
 
 		S.speed = this.ref.momentum.distanceTo( lib.ORIGIN )
+		S.direction.copy( this.ref.momentum ).normalize()
+		S.facing.subVectors( destination, this.ref.position ).normalize()
 
-		const remaining_dist = this.ref.position.distanceTo( desired_position )
+		// le physiques:
+		// distance = ( initialSpeed * time ) + ( .5 * acceleration * ( time^2)  )
 
-		const seconds_to_stop = lib.getBaseLog( this.thrust, remaining_dist ) + 2
+		let stop_time = ( S.speed - 0 ) / this.thrust
+		let stop_distance = .5 * this.thrust * ( stop_time * stop_time )
 
-		const seconds_to_arrive = remaining_dist / S.speed
+		const misaligned = new Vector3().subVectors( S.direction, S.facing )
+		// const misaligned = 0
 
-		const misaligned = 0
-		// const vector_to_destination = ...
-		// const misaligned = new Vector3().copy( this.ref.momentum )
-		// misaligned.normalize().subVectors(  ) // misaligned, vector_to_destination ?
+		///// determine vector
 
-		log('flag', this.uuid.substr(0, 3) + ': a, s: ' + seconds_to_arrive, seconds_to_stop, remaining_dist )
+		if( stop_distance > remaining_dist ){
 
+			if( this.log ) log('npc_move', this.uuid.substr(0, 3) + ' stopping')
 
-		if( seconds_to_arrive < seconds_to_stop ){
+			this.ref.boosting = true
 
-			this.land( desired_position )
+			S.facing.subVectors( lib.ORIGIN, S.facing ).normalize()
 
-		}else if( misaligned > .1 || S.speed < ( S.speed_limit - .5 ) ){ // still need to get on course
+			// this.ref.position.lerp( destination, .3 )
 
-			S.facing.subVectors( desired_position, this.ref.position ).normalize() // 0 - 1 - no more turn speed - immediate face
+		}else if( misaligned > .1 || S.speed < ( this.speed_limit - .5 ) ){ // still need thrust to get on course
 
-			S.projection.copy( this.ref.momentum ) // 0 - 5
+			if( misaligned > .1 ) log('npc_move', 'correcting misaligned ')
 
-			S.acceleration.copy( S.facing.addScalar( this.thrust ) ) // .multiplyScalar( delta_seconds ) // 0 - 5
+			// if( this.log ) log('npc_move', this.uuid.substr(0, 3) + ' accelerating')
 
-			S.projection.add( S.acceleration ) // 0 - 10 // this will always be double at max flight, and need to be capped ....
+			this.ref.boosting = true
 
-			// could use a function that detects 'ideal vector' and then turns off this booster logic 
-			// but, 1 fps on server is not too bad ...
-
-			S.crowfly = S.projection.distanceTo( lib.ORIGIN ) // 0 - 10
-			
 		}else{
 
-			// we driftin
+			if( this.log ) log('npc_move', this.uuid.substr(0, 3) + ' cruising')
+
+			this.ref.boosting = false
+
+			// cruising en route
 
 		}
 
-		// log('flag', this.uuid.substr(0, 3) + ': ' + ' remaining dist:', dist )
+		// ///// modify momentum
 
-		// if( S.crowfly < this.speed_limit ){ // } * 1000 ){ // duh
+		if( this.ref.boosting ){
 
-		// 	this.ref.momentum.copy( S.projection ) 
+			S.acceleration.copy( S.facing ).multiplyScalar( this.thrust ) // .multiplyScalar( delta_seconds ) // 0 - 5
 
-		// 	// log('flag', this.uuid.substr(0, 3) + ': ' + ' safe speed', S.projection )
+			if( this.log ) log('npc_move', 'why acc not grow: ', this.ref.momentum )
 
-		// }else{
+			S.projection.copy( this.ref.momentum ).add( S.acceleration ) // 0 - 5
 
-		// 	// log('flag', this.uuid.substr(0, 3) + ': ' + ' too fast')
+			// S.projection.add( S.acceleration ) // 0 - 10 // this will always be double at max flight, and need to be capped ....
 
-		// 	this.ref.momentum.copy( S.projection.multiplyScalar( this.speed_limit / S.crowfly ) )
+			S.crowfly = S.projection.distanceTo( lib.ORIGIN ) // 0 - 10
 
-		// }
+			if( S.crowfly < this.speed_limit ){ 
 
-		// // log('flag', 'momentum: ', this.ref.momentum )
+				this.ref.momentum.copy( S.projection ) 
 
-		// this.ref.position.add( this.ref.momentum )
+				if( this.log ) log('npc_move', 'acc: ', S.facing, S.acceleration, this.thrust )
 
-		// // log('flag', this.uuid.substr(0, 3) + ': ' + ' position: ',  this.ref.position )
+			}else{
 
-		// // this.ref.facing.copy( S.facing )
+				this.ref.momentum.copy( S.projection.multiplyScalar( this.speed_limit / S.crowfly ) )
 
-		// // this.ref.rotation.copy( S.facing )
+				if( this.log ) log('npc_move', 'new momentum tapered: ', this.ref.momentum )
 
-		// this.ref.model.lookAt( S.facing )
+			}
 
-		// // this.ref.quaternion.copy( S.facing )
+		}
 
-		// // ship.momentum.add( facing.multiplyScalar( ship.thrust ) )
-		// // should not need delta scalar, because clientside divides delta by 1000 to operate in unit seconds, and this is a one second interval
+		///// apply momentum
 
-	}
+		this.ref.position.add( this.ref.momentum )
 
+		this.ref.model.lookAt( S.facing )
 
+		///// check for arrived
 
-	land( desired_position ){
-
-		// log('flag', this.uuid.substr(0, 3) + ': ' + ' in for landing')
-
-		this.ref.position.lerp( desired_position, .3 )
-
-		if( this.ref.position.distanceTo( desired_position ) < 3 ){
+		if( this.ref.position.distanceTo( destination ) < 3 ){
 
 			// log('flag', this.uuid.substr(0, 3) + ': ' + ' arrived')
+
+			this.ref.momentum = new Vector3(0, 0, 0)
 
 			this.ref.boosting = false
 
@@ -191,9 +201,8 @@ class Ship extends Entropic {
 
 		}
 
-		return 'landing...'
-
 	}
+
 
 }
 

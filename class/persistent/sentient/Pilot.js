@@ -81,27 +81,21 @@ class Pilot extends Sentient {
 					uuid: pilot.uuid
 				})
 				new_ship.ref.position = new Vector3( 0, 0 , -500 )
-				// {
-				// 	x: 0,
-				// 	y: 0,
-				// 	z: -500
-				// }
+
 				return new_ship
 			}
 
 		}else{
 
 			log('pilot', 'returning provisional ship')
-			let new_ship = new Ship({
+			let init = {
 				uuid: pilot.uuid
-			})
-			new_ship.ref.position = {
-				x: 0, 
-				y: 0,
-				z: -1000
 			}
-			return new_ship
+			let new_ship = new Ship( init )
 
+			new_ship.ref.position = new Vector3( 0, 0, -1000 )
+
+			return new_ship
 
 		}
 

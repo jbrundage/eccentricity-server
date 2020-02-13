@@ -68,12 +68,12 @@ class Galaxy {
 			return msg
 		}		
 
+
+		// check database for existing PILOT / SHIP:
 		socket.request.session.user = new User( socket.request.session.user )
 		socket.request.session.user.PILOT = await socket.request.session.user.touch_pilot()
 		socket.request.session.user.PILOT.SHIP = await socket.request.session.user.PILOT.touch_ship()
-		// if( socket.request.session.user.PILOT.SHIP
 
-		// log('flag', 'pilot: ', socket.request.session.user.PILOT )
 		const station_key = socket.request.session.user.PILOT.station_key
 		const system_key = socket.request.session.user.PILOT.system_key
 
@@ -84,17 +84,10 @@ class Galaxy {
 			return msg
 		}
 
-
 		// dont need this at spawn actually...
 		// const { results, fields } = await pool.queryPromise('SELECT * FROM \`stations\` WHERE id = ? LIMIT 1', [ station_key ])
 
 		// const STATION = results[ 0 ]
-
-	
-
-		// wrongggg
-		// need to lookup ---- system WHERE station.id = station_key -----
-		// or better yet store system key on station.....
 
 		const SYSTEM = await this.touch_system( system_key )
 
@@ -115,6 +108,10 @@ class Galaxy {
 
 		USERS[ socket.uuid ].PILOT.uuid = socket.uuid
 		USERS[ socket.uuid ].PILOT.SHIP.uuid = socket.uuid
+		USERS[ socket.uuid ].PILOT.SHIP.pc = true
+
+		USERS[ socket.uuid ].PILOT.SHIP.log = true
+
 
 		// USERS[ socket.uuid ].PILOT.SHIP		
 

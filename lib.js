@@ -1,7 +1,7 @@
 const validator = require('email-validator')
 const p_validator = require('password-validator')
 
-const { Vector3 } = require('three')
+const { Object3D, Vector3 } = require('three')
 
 const schema = new p_validator()
 const log = require('./log.js')
@@ -18,6 +18,12 @@ schema
 // .has().digits()                              // Must have digits
 	.has().not().spaces()                           // Should not have spaces
 	.is().not().oneOf(['password', 'Passw0rd', 'Password123'])
+
+Object3D.prototype.lookAwayFrom = function( target ){
+	const v = new Vector3()
+    v.subVectors( this.position, target.position ).add( this.position )
+    source.lookAt( v )
+}
 
 const lib = {
 
@@ -234,6 +240,27 @@ const lib = {
 
 	},
 
+	steps_to_zero( step, current ){
+
+		if( current <= 0 || step <= 0 ) return false
+
+		let mirror = current
+		let interval = 0
+		let steps = 0
+		// let total = 
+		// for( let i = 0; i < dest; i++){
+		while( mirror > 0 ){
+
+			interval += step
+			mirror -= interval
+			steps++
+
+		}
+
+		return steps
+
+	},
+
 	getBaseLog: function(x, y) {
 
 		return Math.log(y) / Math.log(x)
@@ -242,13 +269,19 @@ const lib = {
 
 	sanitize_chat: sanitize_chat,
 
-	THREE: {
+	// THREE: {
 
-		distanceTo: distanceTo,
+	// 	distanceTo: distanceTo,
 
-		distanceToSquared: distanceToSquared
+	// 	distanceToSquared: distanceToSquared,
 
-	}
+	// 	lookAwayFrom: function( source, target ){
+	// 	    const v = new Vector3()
+	// 	    v.subVectors( source.position, target.position ).add( source.position )
+	// 	    source.lookAt( v )
+	// 	}
+
+	// }
 
 }
 
@@ -288,21 +321,21 @@ function random_hex( len ){
 
 
 
-function distanceTo( v1, v2 ) {
+// function distanceTo( v1, v2 ) {
 
-	return Math.sqrt( distanceToSquared( v1, v2 ) )
+// 	return Math.sqrt( distanceToSquared( v1, v2 ) )
 
-}
+// }
 
-function distanceToSquared( v1, v2 ) {
+// function distanceToSquared( v1, v2 ) {
 
-	var dx = v1.x - v2.x, 
-		dy = v1.y - v2.y, 
-		dz = v1.z - v2.z
+// 	var dx = v1.x - v2.x, 
+// 		dy = v1.y - v2.y, 
+// 		dz = v1.z - v2.z
 
-	return dx * dx + dy * dy + dz * dz
+// 	return dx * dx + dy * dy + dz * dz
 
-}
+// }
 
 
 

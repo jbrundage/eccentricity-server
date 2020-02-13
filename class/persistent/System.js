@@ -463,6 +463,22 @@ class System extends Persistent {
 
 
 
+	get_pc( type ){
+
+		const r = []
+
+		if( type == 'entropic' ){
+			for( const key of Object.keys( this.entropic ))  if( this.entropic[ key ].pc ) r.push( this.entropic[ key ])
+		}else if( type == 'sentient' ){
+			for( const key of Object.keys( this.sentient.pc ))  r.push( this.sentient.pc[ key ])
+		}
+
+		return r
+
+	}
+
+
+
 
 
 
@@ -693,7 +709,9 @@ class System extends Persistent {
 					uuid: new_uuid,
 					reputation: {
 						[ faction ]: 150
-					}
+					},
+					waypoint: new Vector3( Math.random() * 500, Math.random() * 500, Math.random() * 500 )
+
 				})
 
 				system.register_entity('entropic', false, ship )
@@ -715,12 +733,13 @@ class System extends Persistent {
 						// }
 					}
 				})
+					
 				let pilot = new Pilot({
 					uuid: new_uuid,
 					reputation: {
 						[ faction ]: 0
 					},
-					waypoint: new Vector3( Math.random() * 200, Math.random() * 200, Math.random() * 200 )
+					waypoint: new Vector3( Math.random() * 500, Math.random() * 500, Math.random() * 500 )
 				})
 				system.register_entity('entropic', false, ship )
 				system.register_entity('sentient', 'npc', pilot )
@@ -748,7 +767,11 @@ class System extends Persistent {
 					reputation: {
 						[ faction ]: -150
 					},
+					waypoint: new Vector3( Math.random() * -500, Math.random() * -500, Math.random() * -500 )
 				})
+
+				if( i === 0 ) ship.log = true
+				
 				system.register_entity('entropic', false, ship )
 				system.register_entity('sentient', 'npc', pilot )
 			}
@@ -773,7 +796,9 @@ class System extends Persistent {
 					switch( move.type ){
 
 						case 'engage':
+
 							log('flag', 'sentient engage: ', move.e_uuid )
+
 							if( system.entropic[ uuid ].move_towards ){ // ships only
 								system.entropic[ uuid ].move_towards( system.entropic[ move.e_uuid ].ref.position )
 							}else{
@@ -782,14 +807,20 @@ class System extends Persistent {
 							break;
 
 						case 'waypoint':
+
 							if( system.entropic[ uuid ].move_towards ){
+
 								const runway = system.entropic[ uuid ].move_towards( move.waypoint )
-								log('flag', system.entropic[ uuid ].uuid.substr(0, 3) + ': ' + ' runway: ', runway )
+
 								if( runway == 'arrived' ){
+									log('npc_move', uuid.substr(0, 3), 'arrived')
 									delete system.sentient.npc[ uuid ].waypoint
 								}
+
 							}else{
+
 								log('flag', 'non ship being asked to move')
+
 							}
 							break;
 
@@ -858,6 +889,7 @@ class System extends Persistent {
 		log('pulse', 'init_pulse: ', system.id )
 
 	}
+
 
 
 	end_pulse(){

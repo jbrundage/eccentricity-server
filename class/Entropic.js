@@ -23,18 +23,17 @@ class Entropic {
 
 		this.entropy = 'positive'
 
-		this.pc = false
+		this.pc = init.pc || false
+
+		this.log = init.log || false
 		
 		this.model_url = init.model_url || 'Entropics/thing.glb'
 
 		this.ref = init.ref || {}
-		this.ref.momentum = this.ref.momentum || new Vector3( lib.tables.momentum.entropic.x, lib.tables.momentum.entropic.y, lib.tables.momentum.entropic.z )
+		this.ref.momentum = this.ref.momentum || new Vector3().copy( lib.tables.momentum.entropic ) 
 		this.ref.position = this.ref.position || new Vector3()
 		this.ref.model = this.ref.model || new Object3D()
 		this.ref.boosting = false
-		// this.ref.facing = this.ref.facing || new Vector3()
-		// this.ref.rotation = this.ref.rotation || new Vector3()
-		// this.ref.quaternion = this.ref.quaternion || new Quaternion() //{ x: 0, y: 0, z: 0, w: 0 }
 
 		this.private = init.private || []
 		// 'previous'

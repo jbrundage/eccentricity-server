@@ -339,7 +339,7 @@ exp.get('/logout', function( request, response ){
 exp.post('*', function(request, response){
 	log('routing', 'POST 404: ' + request.url)
 	if(request.url.match(/\.html$/)){
-		response.status(404).sendFile('/client/html/404.html', { root : __dirname})    
+		response.status(404).sendFile('/client/html/404.html', { root : '../'})    
 	}else{
 		response.end()
 	}
@@ -347,7 +347,7 @@ exp.post('*', function(request, response){
 
 exp.get('*', function(request, response){
 	log('routing', 'GET 404: '  + request.url)
-	response.status(404).sendFile('/client/html/404.html', { root : __dirname})    
+	response.status(404).sendFile('/client/html/404.html', { root : '../'})    
 })
 
 
