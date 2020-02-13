@@ -150,7 +150,7 @@ class Ship extends Entropic {
 
 		S.projection.copy( this.ref.momentum )
 
-		if( this.log ) log('npc_move', 'whyyyy', this.ref.momentum )
+		// if( this.log ) log('npc_move', 'whyyyy', this.ref.momentum )
 
 		if( this.ref.boosting ){
 
@@ -187,7 +187,7 @@ class Ship extends Entropic {
 
 		///// check for arrived
 
-		if( this.ref.position.distanceTo( destination ) < 5 ){
+		if( this.ref.position.distanceTo( destination ) < 10 ){
 			return 'arrived'
 		}
 
