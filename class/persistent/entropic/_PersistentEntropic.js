@@ -12,8 +12,8 @@ class PersistentEntropic extends Entropic {
 
 		this.temporality = 'persistent'
 
-		this.private = this.private || []
-		this.private.push('inertia_pos', 'align_buffer')
+		this.internal = this.internal || []
+		this.internal.push('inertia_pos', 'align_buffer')
 
 	}
 
@@ -56,6 +56,21 @@ class PersistentEntropic extends Entropic {
 			})
 
 		})
+
+	}
+
+	
+	publish(){
+
+		let r = {}
+
+		for( const key of Object.keys( this )){
+
+			if( key !== 'internal' )  r[ key ] = this[ key ]
+
+		}
+
+		return r
 
 	}
 	

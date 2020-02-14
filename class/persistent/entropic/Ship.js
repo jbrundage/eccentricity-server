@@ -45,8 +45,19 @@ class Ship extends Entropic {
 		this.name = init.name || lib.tables.names.ships[ Math.floor( Math.random() * lib.tables.names.ships.length ) ]
 
 		// stats
-		this.health = init.health || 100
-		this.shields = init.shields || 0
+		this.health = init.health || {
+			current: 100,
+			capacity: 100
+		}
+		this.shields = init.shields || {
+			current: 0,
+			capacity: 0
+		}
+		this.fuel = init.fuel || {
+			current: 100,
+			capacity: 100
+		}
+
 		this.stealth = init.stealth || 0
 
 		this.turrets = init.turrets || 0
@@ -78,8 +89,8 @@ class Ship extends Entropic {
 		this.scratch = new_scratch()
 			
 
-		this.private = this.private || []
-		this.private.push( 'equipped' )
+		this.internal = this.internal || []
+		this.internal.push( 'equipped' )
 
 	}
 

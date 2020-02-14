@@ -47,7 +47,7 @@ class User extends Persistent {
 
 		this.bad_packets = 0
 
-		this.private = ['socket']
+		this.internal = ['socket']
 
 	}
 

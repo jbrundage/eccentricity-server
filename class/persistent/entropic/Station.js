@@ -31,9 +31,23 @@ class Station extends Entropic {
 		this.capacity = init.capacity || 50 // players
 		this.hangar = init.hangar || 1 // defense ships
 
-		this.turrets = init.turrets || 0
-		this.health = init.health || 500
-		this.shields = init.shields || 0
+		this.turrets = init.turrets || {
+			current: 1,
+			capacity: 1
+		}
+		this.health = init.health || {
+			current: 1000,
+			capacity: 1000
+		}
+		this.shields = init.shields || {
+			current: 0,
+			capacity: 0
+		}
+		this.fuel = init.fuel || {
+			current: 1000,
+			capacity: 1000
+		}
+
 		this.stealth = init.stealth || 0
 
 		this.ref = init.ref || {}
@@ -44,7 +58,7 @@ class Station extends Entropic {
 		// 	z: Math.random() * 5000//lib.tables.position.station.z
 		// }
 
-		this.private = this.private || []
+		this.internal = this.internal || []
 
 	}
 

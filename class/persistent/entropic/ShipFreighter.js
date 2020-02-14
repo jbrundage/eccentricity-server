@@ -22,10 +22,20 @@ class Freighter extends Ship  {
 		this.model_url = init.model_url || 'ships/freighter/Ryath_3_glowstick.glb'
 
 		// stats
-		this.sections = init.sections || 3
-		this.shields = init.shields || 0
-		this.stealth = init.stealth || 0
+		this.health = init.health || {
+			current: 300,
+			capacity: 300
+		}
+		this.shields = init.shields || {
+			current: 0,
+			capacity: 0
+		}
+		this.fuel = init.fuel || {
+			current: 500,
+			capacity: 500
+		}
 
+		this.sections = init.sections || 3
 		this.turrets = init.turrets || 0
 		this.equipped = init.equipped || ['pulse_canister', '', '', '']
 

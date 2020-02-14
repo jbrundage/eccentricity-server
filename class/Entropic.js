@@ -35,9 +35,9 @@ class Entropic {
 		this.ref.model = this.ref.model || new Object3D()
 		this.ref.boosting = false
 
-		this.private = init.private || []
+		this.internal = init.internal || []
 		// 'previous'
-		this.private.push('private', 'uuid', 'ref', 'model', 'clickable', 'type', 'table', 'entropy', 'model_url', 'temporality')
+		this.internal.push('internal', 'uuid', 'ref', 'model', 'clickable', 'type', 'table', 'entropy', 'model_url', 'temporality')
 
 	}
 

@@ -16,8 +16,8 @@ class PersistentEntropic extends Sentient {
 
 		this.temporality = 'persistent'
 
-		this.private = this.private || []
-		this.private.push('edited', 'portrait', 'table', 'color')
+		this.internal = this.internal || []
+		this.internal.push('edited', 'portrait', 'table', 'color')
 
 	}
 
@@ -60,6 +60,21 @@ class PersistentEntropic extends Sentient {
 			})
 
 		})
+
+	}
+
+
+	publish(){
+
+		let r = {}
+
+		for( const key of Object.keys( this )){
+
+			if( key !== 'internal' )  r[ key ] = this[ key ]
+
+		}
+
+		return r
 
 	}
 	

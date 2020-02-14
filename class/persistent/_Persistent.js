@@ -18,8 +18,10 @@ class Persistent {
 
 		this.temporality = 'persistent'
 
-		this.private = init.private || []
-		this.private.push('id', 'private', 'table')
+		this.internal = init.internal || []
+		this.internal.push('id', 'internal', 'table')
+
+		this.internal = init.internal || {}
 
 	}
 
@@ -61,6 +63,22 @@ class Persistent {
 			// .then( res => { resolve( res ) }).catch( err => { reject( err ) })
 
 		})
+
+	}
+
+
+
+	publish(){
+
+		let r = {}
+
+		for( const key of Object.keys( this )){
+
+			if( key !== 'internal' )  r[ key ] = this[ key ]
+
+		}
+
+		return r
 
 	}
 	

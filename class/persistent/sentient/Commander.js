@@ -29,8 +29,8 @@ class Commander extends Sentient {
 			return init.coin || 100
 		})()
 
-		this.private = this.private || []
-		this.private.push('active_station', 'STATION')
+		this.internal = this.internal || []
+		this.internal.push('active_station', 'STATION')
 
 		this.active_station = init.active_station
 

@@ -23,8 +23,8 @@ class Sentient {
 		// this.type // has to come from subclass ...
 
 		this.faction = init.faction || 'none'
-		this.reputation = init.reputation || {} // factions
-		this.relationships = init.relationships || {} // uuids
+		this.reputation = init.reputation || {} // factions - { name: score }
+		this.relationships = init.relationships || {} // uuids - { uuid: { score: n, dist: n } }
 
 		this.fname = init.fname || lib.tables.names.pilots.fname[ Math.floor( Math.random() * lib.tables.names.pilots.fname.length ) ]
 		this.lname = init.lname || lib.tables.names.pilots.lname[ Math.floor( Math.random() * lib.tables.names.pilots.lname.length ) ]
@@ -48,8 +48,8 @@ class Sentient {
 
 		this.waypoint = init.waypoint
 
-		this.private = init.private || []
-		this.private.push('private', 'uuid', 'type', 'temporality', 'entropy')
+		this.internal = init.internal || []
+		this.internal.push('internal', 'uuid', 'type', 'temporality', 'entropy')
 		
 	}
 
@@ -84,8 +84,14 @@ class Sentient {
 
 		}else if( orientation == 'enemy' ){
 
-			r.type = 'waypoint'
-			r.waypoint = this.get_new_waypoint( 'enemy', system )
+			let e_uuid = this.get_enemy_target( system )
+			if( e_uuid ){
+				r.type = 'engage'
+				r.e_uuid = e_uuid
+			}else{
+				r.type = 'waypoint'
+				r.waypoint = this.get_new_waypoint( 'enemy', system )
+			}
 
 		}else{
 
@@ -114,7 +120,7 @@ class Sentient {
 
 		if( type == 'enemy' ){
 
-			log('flag', 'new enemy waypoint')
+			log('sentient', 'new enemy waypoint')
 
 			const radius = 1000
 
@@ -124,7 +130,7 @@ class Sentient {
 
 		}else if( type == 'friend' ){
 
-			log('flag', 'new friend waypoint')
+			log('sentient', 'new friend waypoint')
 
 			const radius = 1000
 
@@ -134,7 +140,7 @@ class Sentient {
 
 		}else if( type == 'traffic' ){
 
-			log('flag', 'new traffic waypoint')
+			log('sentient', 'new traffic waypoint')
 
 			const radius = 2000
 
@@ -169,6 +175,10 @@ class Sentient {
 		let relationships = this.relationships
 
 		const sentient = this
+
+		const faction = system.get('array', 'faction')[0]
+
+		const sentients = system.get('object', 'sentient')
 		// system.sentient.npc[ uuid ].relationships
 
 		// find nemesis
@@ -180,10 +190,17 @@ class Sentient {
 
 		let max_dist = 0
 
-		for( const other_uuid of Object.keys( relationships )){
-			if( relationships[ other_uuid ].score < -100 && relationships[ other_uuid ].score < enemy_target.score ){ 
+		for( const other_uuid of Object.keys( sentients )){
+
+			if( !relationships[ other_uuid ]) {
+				relationships[ other_uuid ] = {
+					score: sentient.reputation[ sentients[ other_uuid ].relationships[ faction ] ] || 0
+				}
+			}
+
+			if( relationships[ other_uuid ].score < lib.tables.factions.enemy && relationships[ other_uuid ].score < enemy_target.score ){ 
 				relationships[ other_uuid ].dist = lib.THREE.distanceTo( system.entropic[ sentient.uuid ].ref.position, system.entropic[ other_uuid ].ref.position )
-				log('flag', relationships[ other_uuid ].dist + ' units away from supposed enemy')
+				// log('flag', relationships[ other_uuid ].dist + ' units away from supposed enemy')
 				if( relationships[ other_uuid ].dist > max_dist )  max_dist = relationships[ other_uuid ].dist
 			}
 		}

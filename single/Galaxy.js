@@ -122,7 +122,7 @@ class Galaxy {
 
 		SOCKETS[ socket.uuid ].send( JSON.stringify( {
 			type: 'init_session',
-			system: SYSTEM,
+			system: SYSTEM.publish(),
 			user: USERS[ socket.uuid ],
 			uuid: socket.uuid
 		}) )
