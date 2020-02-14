@@ -75,19 +75,22 @@ class Sentient {
 
 		}else if( orientation == 'friend' ) {
 
-			// r.type = 'waypoint'
-			// r.waypoint = this.get_new_waypoint( 'friend', system )
+			// what to do with stationary :
+
+			r.type = 'waypoint'
+			r.waypoint = this.get_new_waypoint( 'friend', system )
 
 			// defender; on patrol; new waypoint
 
 		}else if( orientation == 'enemy' ){
 
-			// r.type = 'waypoint'
-			// r.waypoint = this.get_new_waypoint( 'enemy', system )
+			r.type = 'waypoint'
+			r.waypoint = this.get_new_waypoint( 'enemy', system )
 
 		}else{
 
-			r.type = 'drift'
+			r.type = 'waypoint'
+			r.waypoint = this.get_new_waypoint( 'traffic', system )
 
 		}
 
@@ -100,15 +103,44 @@ class Sentient {
 
 		let waypoint = new Vector3()
 
+		const primary = system.get('array', 'entropic', true, 'primary' )[0]
+		let origin 
+		if( primary ) {
+			origin = primary.ref.position
+		}else{
+			origin = new Vector3()
+		}
+
+
 		if( type == 'enemy' ){
 
+			log('flag', 'new enemy waypoint')
 
+			const radius = 1000
+
+			waypoint.x = origin.x - ( radius / 2 ) + ( Math.random() * radius )
+			waypoint.y = origin.y - ( radius / 2 ) + ( Math.random() * radius )
+			waypoint.z = origin.z - ( radius / 2 ) + ( Math.random() * radius )
 
 		}else if( type == 'friend' ){
 
-			waypoint.x = system.entropic[ this.uuid ].ref.position.x + ( Math.random() * 1000 )
-			waypoint.y = system.entropic[ this.uuid ].ref.position.y + ( Math.random() * 1000 )
-			waypoint.z = system.entropic[ this.uuid ].ref.position.z + ( Math.random() * 1000 )
+			log('flag', 'new friend waypoint')
+
+			const radius = 1000
+
+			waypoint.x = origin.x - ( radius / 2 ) + ( Math.random() * radius )
+			waypoint.y = origin.y - ( radius / 2 ) + ( Math.random() * radius )
+			waypoint.z = origin.z - ( radius / 2 ) + ( Math.random() * radius )
+
+		}else if( type == 'traffic' ){
+
+			log('flag', 'new traffic waypoint')
+
+			const radius = 2000
+
+			waypoint.x = origin.x - ( radius / 2 ) + ( Math.random() * radius )
+			waypoint.y = origin.y - ( radius / 2 ) + ( Math.random() * radius )
+			waypoint.z = origin.z - ( radius / 2 ) + ( Math.random() * radius )
 
 		}
 

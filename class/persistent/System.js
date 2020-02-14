@@ -658,7 +658,7 @@ class System extends Persistent {
 
 			const sentients = system.get('object', 'sentient')
 
-			const primary = system.get('array', 'entropic', 'station', 'primary')[0]
+			const primary = system.get('array', 'entropic', true, 'primary')[0]
 
 			for( const uuid of Object.keys( system.entropic ) ){
 
@@ -812,7 +812,7 @@ class System extends Persistent {
 			// set ref.position, ref.momentum, ref.quaternion - these are DESIRED locations that will be lerped to client side
 			for( const uuid of Object.keys( system.sentient.npc )){
 
-				if( system.entropic[ uuid ]){
+				if( system.entropic[ uuid ] && system.entropic[ uuid ].type == 'ship' ){
 
 					const move = system.sentient.npc[ uuid ].decide_move( system )
 
@@ -833,6 +833,8 @@ class System extends Persistent {
 
 							if( system.entropic[ uuid ].move_towards ){
 
+								if( !system.sentient.npc[ uuid ].waypoint ) system.sentient.npc[ uuid ].waypoint = move.waypoint
+
 								const runway = system.entropic[ uuid ].move_towards( move.waypoint )
 
 								if( runway == 'arrived' ){
@@ -844,7 +846,7 @@ class System extends Persistent {
 
 							}else{
 
-								log('flag', 'non ship being asked to move')
+								log('flag', 'non ship being asked to move: ', system.entropic[ uuid ].type, system.entropic[ uuid ].subtype )
 
 							}
 							break;
@@ -856,8 +858,17 @@ class System extends Persistent {
 							system.entropic[ uuid ].ref.position.add( system.entropic[ uuid ].ref.momentum )
 
 							break;
+
+						case 'station':
+
+							// log('system', 'skipping station')
+
+							break;
+
 						default:
-						break;
+
+							break;
+
 					}
 
 				}
