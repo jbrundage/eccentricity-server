@@ -74,7 +74,6 @@ class System extends Persistent {
 
 		this.reputation = lib.json_hydrate( init.reputation )
 		// typeof( init.reputation ) === 'string' ? JSON.parse( init.reputation ) : {} 
-		// this.faction // only access through get_faction()
 
 		this.planet = init.planet
 		this.traffic = init.traffic || 5
@@ -396,141 +395,160 @@ class System extends Persistent {
 
 
 
+	get( response, principal, type, subtype ){
 
+		let r
 
-
-
-	get_faction(){
+		if( response === 'array' ){
+			r = []
+		}else if( response === 'object' ){
+			r = {}
+		}else{
+			log('flag', 'unspecified response type: ', principal, type, subtype ); return false
+		}
 
 		const system = this
 
-		let high = 0
-		let faction = 'none'
+		switch( principal ){
 
-		for( const f of Object.keys( system.reputation ) ){
+			case 'faction': 
 
-			if( system.reputation[ f ] > high ){
+				if( response !== 'array' ) { log('flag', 'unsupported response type: ', response, principal, type, subtype ); return false }
 
-				faction = f
+				if( type ){
 
-			}
+				}else{
 
-		}
+					let high = 0
+					let faction = 'none'
 
-		return faction
+					for( const f of Object.keys( system.reputation ) ){
 
-	}
+						if( system.reputation[ f ] > high )  faction = f
 
+					}
 
+					r.push( faction )
 
+				}
 
-	get_by_subtype( type, subtype, amount ){ 
+				break;
 
-		const r = []
+			case 'sentient':
 
-		for( const uuid of Object.keys( this[ type ] )){
+				if( response !== 'object' ) { log('flag', 'unsupported response type: ', response, principal, type, subtype ); return false }
 
-			if( this[ type ][ uuid ].subtype == subtype )  r.push( this[ type ][ uuid ] )
+				if( type == 'pc' ){
 
-			if( r.length >= amount ) return r
+					for( const key of Object.keys( system.sentient.pc )){
+						r[ key ] = system.sentient.pc[ key ]
+					}
 
-		}
+				}else if( type == 'npc' ){
 
-		if( r.length ){
-			return r
-		}else{
-			return false
-		}
+					for( const key of Object.keys( system.sentient.npc )){
+						r[ key ] = system.sentient.npc[ key ]
+					}
 
-	}
+				}else{
 
+					for( const key of Object.keys( system.sentient.pc )){
+						r[ key ] = system.sentient.pc[ key ]
+					}
+					for( const key of Object.keys( system.sentient.npc )){
+						r[ key ] = system.sentient.npc[ key ]
+					}
 
+				}
 
-	get_sentients(){
+				break;
 
-		let s = {}
+			case 'entropic':
 
-		for( const key of Object.keys( this.sentient.pc )){
-			s[ key ] = this.sentient.pc[ key ]
-		}
-		for( const key of Object.keys( this.sentient.npc )){
-			s[ key ] = this.sentient.npc[ key ]
-		}
+				if( response === 'array' ){ //{ log('flag', 'unsupported response type: ', response, principal, type, subtype ); return false }
 
-		return s
+					if( type ){
 
-	}
+						if( subtype ){
 
+							for( const key of Object.keys( system.entropic )){
+								if( system.entropic[ key ].subtype == subtype ) r[ key ] = system.entropic[ key ]
+								// r.push( system.entropic[ type ][ subtype ][ key ]  )
+							}
 
+						}else{
 
-	get_pc( type ){
+							for( const key of Object.keys( system.entropic )){
+								if( system.entropic[ key ].type == type )  r[ key ] = system.entropic[ key ]
+							}
 
-		const r = []
+						}
 
-		if( type == 'entropic' ){
-			for( const key of Object.keys( this.entropic ))  if( this.entropic[ key ].pc ) r.push( this.entropic[ key ])
-		}else if( type == 'sentient' ){
-			for( const key of Object.keys( this.sentient.pc ))  r.push( this.sentient.pc[ key ])
+					}else{
+
+						for( const key of Object.keys( system.entropic ))  r[ key ] = system.entropic[ key ]
+
+					}
+
+				}else if( response === 'array' ){
+
+					if( type ){
+
+						if( subtype ){
+
+							for( const key of Object.keys( system.entropic )){
+								if( system.entropic[ key ].subtype == subtype ) r.push( system.entropic[ key ] )
+								// r.push( system.entropic[ type ][ subtype ][ key ]  )
+							}
+
+						}else{
+
+							for( const key of Object.keys( system.entropic )){
+								if( system.entropic[ key ].type == type )  r.push( system.entropic[ key ] )
+							}
+
+						}
+
+					}else{
+
+						for( const key of Object.keys( system.entropic ))  r.push( system.entropic[ key ] )
+
+					}
+
+				}
+
+				break;
+
+			case 'pc':
+
+				if( response !== 'array' ) { log('flag', 'unsupported response type: ', response, principal, type, subtype ); return false }
+
+				if( type == 'entropic' ){
+
+					for( const key of Object.keys( this.entropic )) {
+						if( this.entropic[ key ].pc ) r.push( this.entropic[ key ])
+					}
+
+				}else if( type == 'sentient' ){
+
+					for( const key of Object.keys( this.sentient )) {
+						r.push( this.sentient[ key ])
+					}
+
+				}
+
+				break;
+
+			default: 
+
+				break;
+
 		}
 
 		return r
 
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-	get_enemy_target( uuid ){
-
-		const system = this
-
-		let relationships = this.sentient.npc[ uuid ].relationships
-
-		// find nemesis
-
-		let enemy_target = {
-			uuid: false,
-			score: 0
-		}
-
-		let max_dist = 0
-
-		for( const other_uuid of Object.keys( relationships )){
-			if( relationships[ other_uuid ].score < -100 && relationships[ other_uuid ].score < enemy_target.score ){ 
-				relationships[ other_uuid ].dist = lib.THREE.distanceTo( system.entropic[ uuid ].ref.position, system.entropic[ other_uuid ].ref.position )
-				log('flag', relationships[ other_uuid ].dist + ' units away from supposed enemy')
-				if( relationships[ other_uuid ].dist > max_dist )  max_dist = relationships[ other_uuid ].dist
-				// if( system.entropics[ uuid ] )  enemy_target.uuid = uuid
-			}
-		}
-
-		if( max_dist > 0 ){ // otherwise, no enemies were found to begin with ^^
-
-			let low_score = 0
-			for( const other_uuid of Object.keys( relationships )){
-				let distance_adjusted = relationships[ other_uuid ].score * ( relationships[ other_uuid ].dist / max_dist )
-				if( distance_adjusted < low_score ){
-					enemy_target.uuid = other_uuid
-				}
-			}
-
-			if( enemy_target.uuid < env.MAX_PURSUIT ) return enemy_target.uuid
-
-		}
-
-		return false
-
-	}
 
 
 
@@ -636,11 +654,11 @@ class System extends Persistent {
 				capacity: system.volatility
 			}
 
-			const faction = system.get_faction()
+			const faction = system.get('array', 'faction')[0]
 
-			const sentients = system.get_sentients()
+			const sentients = system.get('object', 'sentient')
 
-			const primary = system.get_by_subtype( 'entropic', 'primary', 1 )[0]
+			const primary = system.get('array', 'entropic', 'station', 'primary')[0]
 
 			for( const uuid of Object.keys( system.entropic ) ){
 
@@ -656,19 +674,20 @@ class System extends Persistent {
 
 				}else if( system.entropic[ uuid ].type == 'ship' ){
 
-					if( sentients[ uuid ] ){
+					// if( sentients.findIndex( (s) => s.uuid === uuid ) ){
+					if( sentients[ uuid ]){
 
-						if( !faction || faction == 'neutral' ){
+						if( !faction || faction == 'none' ){
 
 							traffic.current++
 
 						}else{
 
-							if( sentients[ uuid ].reputation[ faction ] > 100 ){
+							if( sentients[ uuid ].reputation[ faction ] > lib.tables.factions.friend ){
 
 								defense.current++
 
-							}else if( sentients[ uuid ].reputation[ faction ] < -100 ){
+							}else if( sentients[ uuid ].reputation[ faction ] < lib.tables.factions.enemy ){
 
 								enemies.current++
 
@@ -680,6 +699,8 @@ class System extends Persistent {
 
 						}
 
+					}else{
+						log('flag', '(no sentient)')
 					}
 
 				}
@@ -689,6 +710,8 @@ class System extends Persistent {
 			let need_defense = defense.capacity - defense.current
 			let need_traffic = traffic.capacity - traffic.current
 			let need_enemies = enemies.capacity - enemies.current
+
+			log('system', 'npc.spawn: need defense, traffic, enemies: ', need_defense, need_traffic, need_enemies )
 
 			// defense
 
@@ -791,7 +814,7 @@ class System extends Persistent {
 
 				if( system.entropic[ uuid ]){
 
-					const move = system.sentient.npc[ uuid ].decide_move()
+					const move = system.sentient.npc[ uuid ].decide_move( system )
 
 					switch( move.type ){
 

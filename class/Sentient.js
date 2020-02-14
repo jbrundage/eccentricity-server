@@ -22,7 +22,7 @@ class Sentient {
 
 		// this.type // has to come from subclass ...
 
-		this.faction = init.faction || 'neutral'
+		this.faction = init.faction || 'none'
 		this.reputation = init.reputation || {} // factions
 		this.relationships = init.relationships || {} // uuids
 
@@ -55,11 +55,13 @@ class Sentient {
 
 
 
-	decide_move(){
+	decide_move( system ){
 
 		let r = {
 			type: false
 		}
+
+		let orientation = this.get_orientation( system.get('array', 'faction')[0] )
 
 		if( this.e_uuid ){
 
@@ -71,9 +73,17 @@ class Sentient {
 			r.type = 'waypoint'
 			r.waypoint = this.waypoint
 
-		}else if( this.get_faction() > blorb ) {
+		}else if( orientation == 'friend' ) {
+
+			// r.type = 'waypoint'
+			// r.waypoint = this.get_new_waypoint( 'friend', system )
 
 			// defender; on patrol; new waypoint
+
+		}else if( orientation == 'enemy' ){
+
+			// r.type = 'waypoint'
+			// r.waypoint = this.get_new_waypoint( 'enemy', system )
 
 		}else{
 
@@ -82,6 +92,85 @@ class Sentient {
 		}
 
 		return r
+
+	}
+
+
+	get_new_waypoint( type, system ){
+
+		let waypoint = new Vector3()
+
+		if( type == 'enemy' ){
+
+
+
+		}else if( type == 'friend' ){
+
+			waypoint.x = system.entropic[ this.uuid ].ref.position.x + ( Math.random() * 1000 )
+			waypoint.y = system.entropic[ this.uuid ].ref.position.y + ( Math.random() * 1000 )
+			waypoint.z = system.entropic[ this.uuid ].ref.position.z + ( Math.random() * 1000 )
+
+		}
+
+		return waypoint
+
+	}
+
+
+	get_orientation( system_faction ){
+
+		if( Number( this.reputation[ system_faction ] ) > lib.tables.factions.friend ) return 'friend'
+		if( Number( this.reputation[ system_faction ] ) < lib.tables.factions.enemy ) return 'enemy'
+
+		return 'none'
+
+	}
+
+
+
+
+
+
+	get_enemy_target( system ){
+
+		// let relationships = system.sentient.npc[ uuid ].relationships
+		let relationships = this.relationships
+
+		const sentient = this
+		// system.sentient.npc[ uuid ].relationships
+
+		// find nemesis
+
+		let enemy_target = {
+			uuid: false,
+			score: 0
+		}
+
+		let max_dist = 0
+
+		for( const other_uuid of Object.keys( relationships )){
+			if( relationships[ other_uuid ].score < -100 && relationships[ other_uuid ].score < enemy_target.score ){ 
+				relationships[ other_uuid ].dist = lib.THREE.distanceTo( system.entropic[ sentient.uuid ].ref.position, system.entropic[ other_uuid ].ref.position )
+				log('flag', relationships[ other_uuid ].dist + ' units away from supposed enemy')
+				if( relationships[ other_uuid ].dist > max_dist )  max_dist = relationships[ other_uuid ].dist
+			}
+		}
+
+		if( max_dist > 0 ){ // otherwise, no enemies were found to begin with ^^
+
+			let low_score = 0
+			for( const other_uuid of Object.keys( relationships )){
+				let distance_adjusted = relationships[ other_uuid ].score * ( relationships[ other_uuid ].dist / max_dist )
+				if( distance_adjusted < low_score ){
+					enemy_target.uuid = other_uuid
+				}
+			}
+
+			if( enemy_target.uuid < env.MAX_PURSUIT ) return enemy_target.uuid
+
+		}
+
+		return false
 
 	}
 

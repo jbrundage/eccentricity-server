@@ -29,6 +29,11 @@ const lib = {
 
 	tables: {
 
+		factions: {
+			friend: 100,
+			enemy: -100
+		},
+
 		accounts:{
 			pilot: [1, 2, 3]
 		},
