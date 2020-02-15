@@ -63,6 +63,12 @@ const lib = {
 
 		verboten: ['fuck', 'shit', 'cunt', 'damn', 'nigger', 'kike', 'chink', 'bitch'],
 
+		cooldown: {
+
+			cannon: 1000
+
+		},
+
 		pulse: {
 			npc: {
 				spawn: 10000,
@@ -71,7 +77,8 @@ const lib = {
 			entropic: {
 				spawn: 9000,
 				move: 2000
-			}
+			},
+			projectiles: 900
 		}
 
 	},

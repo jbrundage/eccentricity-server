@@ -13,13 +13,20 @@ const Commander = require('./sentient/Commander.js')
 const Pilot = require('./sentient/Pilot.js')
 
 const Asteroid = require('../ephemera/entropic/Asteroid.js')
+// const Projectile = require('../ephemera/entropic/Projectile.js')
 const Ship = require('./entropic/Ship.js')
 const Freighter = require('./entropic/ShipFreighter.js')
 
 const Persistent = require('./_Persistent.js')
 
+
 const SOCKETS = require('../../single/SOCKETS.js')
 const USERS = require('../../single/USERS.js')
+
+const {
+	Projectile,
+	ARMATURES
+} = require('../aux/Armatures.js')
 
 const initPulse = require('./SystemPulse.js')
 
@@ -36,8 +43,9 @@ const maps = {
 	}
 }
 
-// const WSS = require('../Server.js')()
 log( 'call', 'System.js' )
+
+
 
 
 
@@ -79,6 +87,10 @@ class System extends Persistent {
 			}
 		}
 
+		this.entropic = this.validate_uuids( init.entropic )
+
+		this.projectiles = init.projectiles || {}
+
 
 		this.internal = {
 
@@ -93,15 +105,13 @@ class System extends Persistent {
 				entropic: {
 					spawn: false,
 					move: false
-				}
+				},
+
+				projectiles: false
 
 			}
 
 		}
-
-		this.entropic = this.validate_uuids( init.entropic )
-
-		this.internal = this.internal || []
 
 	}
 
@@ -370,6 +380,85 @@ class System extends Persistent {
 
 
 
+	handle_action( o_uuid, packet ){
+
+		const system = this
+
+		// packet = { index, t_o_uuid }
+
+		let armature = system.entropic[ o_uuid ].equipped[ packet.index ]
+
+		log('system', 'armature action: ', armature, packet )
+
+		// valid
+
+		if( typeof( packet.index ) !== 'number' || packet.index > 4 ){
+			log('flag', 'invalid action: ', packet.index )
+			return false
+		}
+
+		if( !system.entropic[ o_uuid ] )  return false
+
+		// on cooldown
+
+		if( system.entropic[ o_uuid ].cooldowns[ packet.index ] ){
+			SOCKETS[ o_uuid ].send( JSON.stringify({type: 'error', msg: 'on cooldown'}))
+			return false
+		}		
+
+		// and we go
+
+		if( ARMATURES[ armature ].type == 'projectile' ){
+
+			// has target
+
+			if( !system.entropic[ packet.t_uuid ] ){
+				SOCKETS[ o_uuid ].send( JSON.stringify({type: 'error', msg: 'invalid target'}))
+				return false
+			}
+
+			const new_uuid = uuid()
+
+			system.projectiles[ new_uuid ] = new Projectile({ 
+				uuid: new_uuid,
+				owner_uuid: o_uuid,
+				target_uuid: packet.t_uuid
+			})
+			
+			for( const key of Object.keys( ARMATURES[ armature ] )){
+				system.projectiles[ new_uuid ][ key ] = ARMATURES[ armature ][ key ]
+			}
+
+		}else if( ARMATURES[ armature ].type == 'laser' ){
+
+			// has target
+
+			if( !system.entropic[ packet.t_uuid ] ){
+				SOCKETS[ o_uuid ].send( JSON.stringify({type: 'error', msg: 'invalid target'}))
+				return false
+			}
+
+		}else if( ARMATURES[ armature ].type == 'harvester'){
+
+			log('flag', 'missing harvester handler')
+
+		}
+
+		system.entropic[ o_uuid ].cooldowns[ packet.index ] = true
+
+		setTimeout(function(){
+			system.entropic[ o_uuid ].cooldowns[ packet.index ] = false
+		}, ARMATURES[ armature ].cooldown )
+
+		
+
+		// }else{
+		// 	log('system', 'blocked cooldown')
+		// }
+
+
+
+	}
 
 
 
@@ -379,6 +468,11 @@ class System extends Persistent {
 
 
 
+
+
+
+
+	///////////////////////////////////////// GET
 
 	get( response, principal, type, subtype ){
 
@@ -548,54 +642,12 @@ class System extends Persistent {
 
 
 
-	init_pulse(){
-
-		initPulse( this )
-
-	}
-
-	
-
-
-	
-
-	
-
-
-
-	end_pulse(){
-
-		for( const key of Object.keys( this.internal.pulses ) ){
-			for( const type of Object.keys( this.internal.pulses[ key ] ) ){
-				log('system', 'clearing setInt: ', key, type )
-				clearInterval( this.internal.pulses[ key ][ type ] )
-				this.internal.pulses[ key ][ type ] = false
-			}
-		}
-
-	}
-
-	
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	///////////////////////////////////////// COMMS
 
 	broadcast( sender_uuid, packet ){
 
@@ -677,6 +729,40 @@ class System extends Persistent {
 
 
 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	///////////////////////////////////////// PULSE
+
+	init_pulse(){
+
+		initPulse( this )
+
+	}
+
+	end_pulse(){
+
+		for( const key of Object.keys( this.internal.pulses ) ){
+			for( const type of Object.keys( this.internal.pulses[ key ] ) ){
+				log('system', 'clearing setInt: ', key, type )
+				clearInterval( this.internal.pulses[ key ][ type ] )
+				this.internal.pulses[ key ][ type ] = false
+			}
+		}
+
+	}
 
 	
 

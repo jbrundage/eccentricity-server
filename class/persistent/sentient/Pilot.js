@@ -35,8 +35,8 @@ class Pilot extends Sentient {
 		
 		this.reputation = init.reputation || {}
 		
-		this.internal = this.internal || []
-		this.internal.push('active_ship', 'SHIP')
+		this.logistic = this.logistic || []
+		this.logistic.push('active_ship', 'SHIP')
 
 		this.active_ship = init.active_ship
 

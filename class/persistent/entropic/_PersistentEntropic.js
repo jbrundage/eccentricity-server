@@ -12,8 +12,12 @@ class PersistentEntropic extends Entropic {
 
 		this.temporality = 'persistent'
 
-		this.internal = this.internal || []
-		this.internal.push('inertia_pos', 'align_buffer')
+		this.align_buffer = init.align_buffer || 5
+		this.needs_align = 0
+
+
+		this.logistic = this.logistic || []
+		this.logistic.push('align_buffer', 'needs_align')
 
 	}
 

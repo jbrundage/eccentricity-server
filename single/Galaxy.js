@@ -270,15 +270,21 @@ class Galaxy {
 					}))
 					break;
 
-				case 'combat':
-					console.log(packet)
-					break;
-				case 'action':
-					console.log(packet)
-					break;
-				case 'data':
-					console.log(packet)
-					break;
+				case 'action_bar':
+					system.handle_action( uuid, packet )
+					break
+
+				// case 'combat':
+				// 	system.handle_combat( uuid, packet )
+				// 	break;
+
+				// case 'action':
+				// 	console.log(packet)
+				// 	break;
+
+				// case 'data':
+				// 	console.log(packet)
+				// 	break;
 
 				default: break;
 

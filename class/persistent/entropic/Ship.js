@@ -61,6 +61,7 @@ class Ship extends Entropic {
 		this.stealth = init.stealth || 0
 
 		this.turrets = init.turrets || 0
+		this.cooldowns = []
 		this.equipped = init.equipped || ['pulse_canister', '', '', '']
 
 		// movement
@@ -83,14 +84,12 @@ class Ship extends Entropic {
 
 
 		// instantiated
-		this.align_buffer = init.align_buffer || 5
-		this.needs_align = 0
 
 		this.scratch = new_scratch()
 			
 
-		this.internal = this.internal || []
-		this.internal.push( 'equipped' )
+		this.logistic = this.logistic || []
+		this.logistic.push( 'equipped' )
 
 	}
 

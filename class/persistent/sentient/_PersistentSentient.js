@@ -16,8 +16,8 @@ class PersistentEntropic extends Sentient {
 
 		this.temporality = 'persistent'
 
-		this.internal = this.internal || []
-		this.internal.push('edited', 'portrait', 'table', 'color')
+		this.logistic = this.logistic || []
+		this.logistic.push('edited', 'portrait', 'table', 'color')
 
 	}
 

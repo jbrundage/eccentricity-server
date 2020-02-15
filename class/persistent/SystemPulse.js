@@ -314,6 +314,23 @@ module.exports = function initPulse( system ){
 
 	}, lib.tables.pulse.entropic.move )
 
+	/////////////////////////////////////////////////////////////////////////////////////////////// projectiles
+
+	system.internal.pulses.projectiles = setInterval(function(){
+
+		const packet = {
+			type: 'projectile',
+			projectiles: {}
+		}
+
+		for( const uuid of Object.keys( system.projectiles )){
+
+			log('flag', 'haha! proj: ', uuid )
+
+		}
+
+	}, lib.tables.pulse.projectiles )
+
 	/////////////////////////////////////////////////////////////////////////////////////////////// end
 
 	log('pulse', 'init_pulse: ', system.id )

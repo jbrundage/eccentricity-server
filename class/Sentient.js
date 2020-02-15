@@ -48,8 +48,8 @@ class Sentient {
 
 		this.waypoint = init.waypoint
 
-		this.internal = init.internal || []
-		this.internal.push('internal', 'uuid', 'type', 'temporality', 'entropy')
+		this.logistic = init.logistic || []
+		this.logistic.push('logistic', 'uuid', 'type', 'temporality', 'entropy')
 		
 	}
 

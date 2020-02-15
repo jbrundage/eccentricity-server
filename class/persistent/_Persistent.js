@@ -18,8 +18,8 @@ class Persistent {
 
 		this.temporality = 'persistent'
 
-		this.internal = init.internal || []
-		this.internal.push('id', 'internal', 'table')
+		this.logistic = init.logistic || []
+		this.logistic.push('id', 'logistic', 'table')
 
 		this.internal = init.internal || {}
 

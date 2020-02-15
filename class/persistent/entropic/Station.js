@@ -58,7 +58,7 @@ class Station extends Entropic {
 		// 	z: Math.random() * 5000//lib.tables.position.station.z
 		// }
 
-		this.internal = this.internal || []
+		this.logistic = this.logistic || []
 
 	}
 
