@@ -25,6 +25,8 @@ class Entropic {
 
 		this.pc = init.pc || false
 
+		this.pulse_status = false
+
 		this.log = init.log || false
 		
 		this.model_url = init.model_url || 'Entropics/thing.glb'
@@ -32,12 +34,13 @@ class Entropic {
 		this.ref = init.ref || {}
 		this.ref.momentum = this.ref.momentum || new Vector3().copy( lib.tables.momentum.entropic ) 
 		this.ref.position = this.ref.position || new Vector3()
+		this.ref.facing = this.ref.facing || new Vector3()
 		this.ref.model = this.ref.model || new Object3D()
 		this.ref.boosting = false
 
 		this.logistic = init.logistic || []
 		// 'previous'
-		this.logistic.push('logistic', 'uuid', 'ref', 'model', 'clickable', 'type', 'table', 'entropy', 'model_url', 'temporality')
+		this.logistic.push('logistic', 'uuid', 'ref', 'model', 'clickable', 'type', 'table', 'entropy', 'model_url', 'temporality', 'pulse_status')
 
 	}
 

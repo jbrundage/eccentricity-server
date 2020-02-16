@@ -49,7 +49,7 @@ const lib = {
 		position: {
 			station: {
 				base: new Vector3( Math.random() * 10000, Math.random() * 10000, Math.random() * 10000 ),
-				primary: new Vector3( 500, 0, 0 ),
+				primary: new Vector3( 250, 0, 0 ),
 				mining: new Vector3( -500, 0, 0 ),
 				docking: new Vector3( 0, 0, 99000 )
 			},
@@ -76,9 +76,12 @@ const lib = {
 			},
 			entropic: {
 				spawn: 9000,
-				move: 2000
+				move: 2000,
+				status: 2000
 			},
-			projectiles: 900
+			misc: {
+				projectiles: 900
+			}
 		}
 
 	},

@@ -72,7 +72,7 @@ class Ship extends Entropic {
 			boost: 'boost_light'
 		}
 
-		this.speed_limit = init.speed_limit || 25
+		this.speed_limit = init.speed_limit || 200
 
 		// this.ref = this.ref || {}
 		// this.ref.position = this.ref.position || new Vector3() //{x: 0, y: 0, z: 0}
@@ -113,7 +113,7 @@ class Ship extends Entropic {
 
 		S.speed = this.ref.momentum.distanceTo( lib.ORIGIN )
 		S.direction.copy( this.ref.momentum ).normalize()
-		S.facing.subVectors( destination, this.ref.position ).normalize()
+		this.ref.facing.subVectors( destination, this.ref.position ).normalize()
 
 		// le physiques:
 		// distance = ( initialSpeed * time ) + ( .5 * acceleration * ( time^2)  )
@@ -121,7 +121,7 @@ class Ship extends Entropic {
 		let stop_time = ( S.speed - 0 ) / this.thrust
 		let stop_distance = .5 * this.thrust * ( stop_time * stop_time )
 
-		const misaligned = new Vector3().subVectors( S.direction, S.facing )
+		const misaligned = new Vector3().subVectors( S.direction, this.ref.facing )
 		// const misaligned = 0
 
 		///// determine vector
@@ -134,7 +134,7 @@ class Ship extends Entropic {
 
 			this.ref.boosting = true
 
-			S.facing.subVectors( lib.ORIGIN, S.facing ).normalize()
+			this.ref.facing.subVectors( lib.ORIGIN, this.ref.facing ).normalize()
 
 			// this.ref.position.lerp( destination, .3 )
 
@@ -164,7 +164,7 @@ class Ship extends Entropic {
 
 		if( this.ref.boosting ){
 
-			S.acceleration.copy( S.facing ).multiplyScalar( this.thrust ) // .multiplyScalar( delta_seconds ) // 0 - 5
+			S.acceleration.copy( this.ref.facing ).multiplyScalar( this.thrust ) // .multiplyScalar( delta_seconds ) // 0 - 5
 
 			S.projection.add( S.acceleration ) // 0 - 5
 
@@ -176,7 +176,7 @@ class Ship extends Entropic {
 
 				this.ref.momentum.copy( S.projection ) 
 
-				// if( this.log ) log('npc_move', 'acc: ', S.facing, S.acceleration, this.thrust )
+				// if( this.log ) log('npc_move', 'acc: ', this.ref.facing, S.acceleration, this.thrust )
 
 			}else{
 
@@ -193,7 +193,7 @@ class Ship extends Entropic {
 		this.ref.position.add( this.ref.momentum )
 		// this.ref.position.add( S.projection )
 
-		this.ref.model.lookAt( S.facing )
+		this.ref.model.lookAt( this.ref.facing )
 
 		///// check for arrived
 
@@ -209,7 +209,6 @@ class Ship extends Entropic {
 
 function new_scratch(){
 	return { 
-		facing: new Vector3(),
 		direction: new Vector3(),
 		acceleration: new Vector3(),
 		projection: new Vector3(),

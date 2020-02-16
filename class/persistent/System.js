@@ -104,10 +104,13 @@ class System extends Persistent {
 
 				entropic: {
 					spawn: false,
-					move: false
+					move: false,
+					status: false
 				},
 
-				projectiles: false
+				misc: {
+					projectiles: false
+				}
 
 			}
 
@@ -384,7 +387,7 @@ class System extends Persistent {
 
 		const system = this
 
-		// packet = { index, t_o_uuid }
+		// packet = { type[to get us here], index, t_uuid }
 
 		let armature = system.entropic[ o_uuid ].equipped[ packet.index ]
 
@@ -417,17 +420,23 @@ class System extends Persistent {
 				return false
 			}
 
-			const new_uuid = uuid()
-
-			system.projectiles[ new_uuid ] = new Projectile({ 
-				uuid: new_uuid,
+			const new_p = new Projectile({ 
 				owner_uuid: o_uuid,
-				target_uuid: packet.t_uuid
+				target_uuid: packet.t_uuid,
+				subtype: armature,
+				sound: armature
 			})
+
+			system.projectiles[ new_p.uuid ] = new_p
+
+			new_p.launch( system.entropic[ o_uuid ] )
 			
-			for( const key of Object.keys( ARMATURES[ armature ] )){
-				system.projectiles[ new_uuid ][ key ] = ARMATURES[ armature ][ key ]
-			}
+			// for( const key of Object.keys( ARMATURES[ armature ] )){
+			// 	log('flag', key, system.projectiles[ new_uuid ][ key ] )
+			// 	log('flag', 'set to: ', ARMATURES[ armature ][ key ] )
+			// 	system.projectiles[ new_uuid ][ key ] = ARMATURES[ armature ][ key ]
+			// }
+
 
 		}else if( ARMATURES[ armature ].type == 'laser' ){
 
@@ -655,19 +664,19 @@ class System extends Persistent {
 
 		log('wss', 'broadcast: ', string )
 
-		switch( packet.type ){
+		// switch( packet.type ){
 
-			case 'chat':
+		// 	case 'chat':
 				for( const uuid of Object.keys( this.sentient.pc ) )   this.send_to_socket( uuid, string )
-				break;
+		// 		break;
 
-			default: 
-				for( const uuid of Object.keys( this.sentient.pc ) ){
-					if( !sender_uuid || sender_uuid != uuid )  this.send_to_socket( uuid, string )
-				}
-				break;
+		// 	default: 
+		// 		for( const uuid of Object.keys( this.sentient.pc ) ){
+		// 			if( !sender_uuid || sender_uuid != uuid )  this.send_to_socket( uuid, string )
+		// 		}
+		// 		break;
 
-		}
+		// }
 
 	}
 
@@ -676,16 +685,15 @@ class System extends Persistent {
 
 		if( SOCKETS[ uuid ] ){
 
+			// log('flag', 'sending string: ', string )
+
 			SOCKETS[ uuid ].send( string )
 
 		}else{  // why are they in sentient but no socket ...
 
-			delete SOCKETS[ uuid ]
-			delete USERS[ uuid ]
-			delete this.sentient.pc[ uuid ]
-			this.dispose( uuid )
+			log('flag', 'could not find uuid, deleting: ', uuid )
 
-			log('flag', 'no socket, deleting user', uuid )
+			system.delete_uuid( uuid )
 
 		}
 
@@ -693,9 +701,22 @@ class System extends Persistent {
 
 
 
+	delete_uuid( uuid ){
+
+		delete SOCKETS[ uuid ]
+		delete USERS[ uuid ]
+		delete this.sentient.pc[ uuid ]
+		delete this.sentient.npc[ uuid ]
+		this.dispose_model( uuid )
+
+		log('flag', 'no socket, deleting user', uuid )
+
+	}
 
 
-	dispose( uuid ){
+
+
+	dispose_model( uuid ){
 
 		delete this.entropic[ uuid ]
 		log('flag', 'deleting: ', uuid, ' but finish dispose() function..')
@@ -755,11 +776,13 @@ class System extends Persistent {
 	end_pulse(){
 
 		for( const key of Object.keys( this.internal.pulses ) ){
+
 			for( const type of Object.keys( this.internal.pulses[ key ] ) ){
 				log('system', 'clearing setInt: ', key, type )
 				clearInterval( this.internal.pulses[ key ][ type ] )
 				this.internal.pulses[ key ][ type ] = false
 			}
+
 		}
 
 	}

@@ -314,9 +314,31 @@ module.exports = function initPulse( system ){
 
 	}, lib.tables.pulse.entropic.move )
 
+	/////////////////////////////////////////////////////////////////////////////////////////////// entropic status
+
+	system.internal.pulses.entropic.status = setInterval(function(){
+
+		const packet = {
+			type: 'status',
+			entropic: {}
+		}
+
+		for( const uuid of Object.keys( system.entropic )){
+			if( system.entropic[ uuid ].pulse_status ){
+				packet.entropic[ uuid ] = system.entropic[ uuid ].publish()
+				system.entropic[ uuid ].pulse_status = false
+			}
+		}
+
+		if( Object.keys( packet.entropic ).length ){
+			system.broadcast( false, packet )
+		}
+
+	}, lib.tables.pulse.entropic.status )
+
 	/////////////////////////////////////////////////////////////////////////////////////////////// projectiles
 
-	system.internal.pulses.projectiles = setInterval(function(){
+	system.internal.pulses.misc.projectiles = setInterval(function(){
 
 		const packet = {
 			type: 'projectile',
@@ -325,11 +347,24 @@ module.exports = function initPulse( system ){
 
 		for( const uuid of Object.keys( system.projectiles )){
 
-			log('flag', 'haha! proj: ', uuid )
+			// log('flag', 'init pos: ', system.projectiles[ uuid ].ref.position )
+
+			system.projectiles[ uuid ].traject( system.entropic[ system.projectiles[ uuid ].target_uuid ] )
+
+			packet.projectiles[ uuid ] = system.projectiles[ uuid ].publish() // - ONLY SHALLOW COPY - could be deleted in next step
+
+			// log('flag', 'projectile pos; ', packet.projectiles[ uuid ].ref.position, system.projectiles[ uuid ].ref.position )
+
+			if( system.projectiles[ uuid ].gc ) delete system.projectiles[ uuid ]
 
 		}
 
-	}, lib.tables.pulse.projectiles )
+		if( Object.keys( packet.projectiles ).length ){
+			// log('flag', 'projectiles packet: ', packet )
+			system.broadcast( false, packet )
+		}
+
+	}, lib.tables.pulse.misc.projectiles )
 
 	/////////////////////////////////////////////////////////////////////////////////////////////// end
 
