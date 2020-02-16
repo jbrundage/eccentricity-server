@@ -65,7 +65,7 @@ class Ship extends Entropic {
 		this.equipped = init.equipped || ['pulse_canister', '', '', '']
 
 		// movement
-		this.thrust = init.thrust || 2 // switching to addition not multiplication  // 1.0000005
+		this.thrust = init.thrust || 10 // switching to addition not multiplication  // 1.0000005
 		this.turn_speed = init.turn_speed || .5 // aesthetic only
 
 		this.sound = init.sound || {
