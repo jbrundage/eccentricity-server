@@ -351,11 +351,23 @@ module.exports = function initPulse( system ){
 
 			system.projectiles[ uuid ].traject( system.entropic[ system.projectiles[ uuid ].target_uuid ] )
 
-			packet.projectiles[ uuid ] = system.projectiles[ uuid ].publish() // - ONLY SHALLOW COPY - could be deleted in next step
+			packet.projectiles[ uuid ] = {
+				owner_uuid: system.projectiles[ uuid ].owner_uuid,
+				target_uuid: system.projectiles[ uuid ].target_uuid,
+				subtype: system.projectiles[ uuid ].subtype,
+				launched: system.projectiles[ uuid ].launched,
+				// lifetime: system.projectiles[ uuid ].lifetime,
+				// sound: system.projectiles[ uuid ].sound
+			}
+
+			// packet.projectiles[ uuid ] = system.projectiles[ uuid ].publish() // - ONLY SHALLOW COPY - could be deleted in next step
 
 			// log('flag', 'projectile pos; ', packet.projectiles[ uuid ].ref.position, system.projectiles[ uuid ].ref.position )
 
-			if( system.projectiles[ uuid ].gc ) delete system.projectiles[ uuid ]
+			if( system.projectiles[ uuid ].gc ) {
+				log('flag', 'deleting projectile: ', uuid )
+				delete system.projectiles[ uuid ]
+			}
 
 		}
 
