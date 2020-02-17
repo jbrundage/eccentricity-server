@@ -354,8 +354,12 @@ module.exports = function initPulse( system ){
 			packet.projectiles[ uuid ] = {
 				owner_uuid: system.projectiles[ uuid ].owner_uuid,
 				target_uuid: system.projectiles[ uuid ].target_uuid,
+				origin: system.projectiles[ uuid ].ref.origin,
 				subtype: system.projectiles[ uuid ].subtype,
 				launched: system.projectiles[ uuid ].launched,
+				target_dist: system.projectiles[ uuid ].target_dist,
+				drifting: system.projectiles[ uuid ].drifting
+				// position: system.projectiles[ uuid ].ref.position
 				// lifetime: system.projectiles[ uuid ].lifetime,
 				// sound: system.projectiles[ uuid ].sound
 			}
@@ -372,7 +376,7 @@ module.exports = function initPulse( system ){
 		}
 
 		if( Object.keys( packet.projectiles ).length ){
-			// log('flag', 'projectiles packet: ', packet )
+			log('flag', 'projectiles packet: ', packet )
 			system.broadcast( false, packet )
 		}
 

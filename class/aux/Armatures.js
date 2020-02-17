@@ -6,6 +6,54 @@ const uuid = require('uuid')
 
 
 
+
+class Cannon {
+
+	constructor( init ){
+
+		init = init || {}
+
+		this.type = 'cannon'
+		this.subtype = init.subtype
+		this.range = init.range || 1000
+		this.cooldown = init.cooldown || 1500
+		this.animation = init.animation || 'flare'
+
+		this.projectile = init.projectile // should always be instantiated separately
+
+	}
+
+}
+
+
+
+class Laser {
+
+	constructor( init ){
+		this.type = init.type || 'laser'
+		this.min_dmg = init.min_dmg || 1
+		this.max_dmg = init.max_dmg || 10
+		this.range = init.range || 500
+		this.cooldown = init.cooldown || 1500
+		this.animation = init.animation || 'flare'
+	}
+
+}
+
+class Harvester {
+
+	constructor( init ){
+		this.type = init.type || 'harvester'
+		this.range = init.range || 50
+		this.cooldown = init.cooldown || 1500
+		this.animation = init.animation || 'harvest'
+	}	
+
+}
+
+
+
+
 class Projectile {
 
 	constructor( init ){
@@ -13,11 +61,11 @@ class Projectile {
 		this.type = 'projectile'
 		this.subtype = init.subtype
 		this.speed = init.speed || 25
-		this.min_dmg = init.min_dmg || 1
-		this.max_dmg = init.max_dmg || 10
-		this.range = init.range || 500
-		this.cooldown = init.cooldown || 1500
-		this.animation = init.animation || 'flare'
+		// this.min_dmg = init.min_dmg || 1
+		// this.max_dmg = init.max_dmg || 10
+		// this.range = init.range || 500
+		// this.cooldown = init.cooldown || 1500
+		// this.animation = init.animation || 'flare'
 
 		// unique to Projectile:
 
@@ -35,6 +83,7 @@ class Projectile {
 
 		// this.proximity = init.proximity
 		this.launched = 0
+		this.drifting = false
 		this.lifetime = init.lifetime || 5000
 		// this.dist = 999999999
 		// this.cruise = false
@@ -42,9 +91,11 @@ class Projectile {
 
 		this.ref = init.ref || {}
 		// this.ref.momentum = this.ref.momentum || new Vector3()
+		this.ref.origin = this.ref.origin || new Vector3()
 		this.ref.position = this.ref.position || new Vector3()
 		this.ref.facing = this.ref.facing || new Vector3()
 		this.ref.model = this.ref.model || new Object3D()
+
 
 		this.scratch = {
 			// direction: new Vector3(),
@@ -58,16 +109,21 @@ class Projectile {
 		this.gc = false
 
 		this.target = init.target
-		
+		this.target_dist = false
+
 	}
 
-	launch( owner ){
-
-		this.launched = Date.now()
+	launch( owner, sys_projectiles ){
 
 		owner.ref.facing.normalize()
 
 		this.ref.position.copy( owner.ref.position )
+
+		this.ref.origin.copy( this.ref.position )
+
+		this.launched = Date.now()
+
+		sys_projectiles[ this.uuid ] = this
 
 		// this.ref.momentum.copy( owner.ref.facing ).multiplyScalar( this.speed )
 
@@ -83,33 +139,33 @@ class Projectile {
 			return false
 		}
 
-		if( !target ){ // drift
-			let drift = new Vector3().copy( this.ref.facing ).normalize().multiplyScalar( this.speed )
-			// this.ref.position.add( this.ref.momentum )
-			this.ref.position.add( drift )
-		}else{
+		if( target ){  
 
 			this.ref.facing.subVectors( target.ref.position, this.ref.position ).normalize()
 
 			const projection = this.ref.projection = new Vector3().copy( this.ref.facing )
 
-			// const scalar = 1 / projection.distanceTo( lib.ORIGIN )
+			projection.multiplyScalar( this.speed )
 
-			projection.multiplyScalar( this.speed )// * scalar )
-
-			// log('flag', 'p: ',projection.distanceTo( lib.ORIGIN ) )
-
-
-			if( projection.distanceTo( lib.ORIGIN ) > projection.distanceTo( target.ref.position ) ){
+			if( projection.distanceTo( lib.ORIGIN ) > this.ref.position.distanceTo( target.ref.position ) ){
 				projection.multiplyScalar( projection.distanceTo( target.ref.position ) / projection.distanceTo( lib.ORIGIN ) )
 				this.impact( target )
 			}
 
-			// this.ref.lookAt( this.ref.facing )  // should only be necessary on client
-
 			this.ref.position.add( projection )
 
-			log('projectile', 'projectile pos: ', this.ref.position )
+			this.target_dist = this.ref.position.distanceTo( target.ref.position )
+
+			log('projectile', 'projectile tracking ', target.uuid )
+
+		}else{
+
+			this.drifting = true
+
+			let drift = new Vector3().copy( this.ref.facing ).normalize().multiplyScalar( this.speed )
+			this.ref.position.add( drift )
+
+			log('projectile', 'projectile drifting')
 
 		}
 
@@ -118,7 +174,7 @@ class Projectile {
 
 	impact( target ){
 
-		log('projectile', 'projectile impact: ', uuid + ' >> ' + target.uuid )
+		log('projectile', 'projectile IMPACT: ', uuid + ' >> ' + target.uuid )
 
 		target.health -= Math.floor( Math.random() * ( this.max_dmg - this.min_dmg ))
 
@@ -152,36 +208,31 @@ class Projectile {
 
 }
 
-class Laser {
 
-	constructor( init ){
-		this.type = init.type || 'laser'
-		this.min_dmg = init.min_dmg || 1
-		this.max_dmg = init.max_dmg || 10
-		this.range = init.range || 500
-		this.cooldown = init.cooldown || 1500
-		this.animation = init.animation || 'flare'
-	}
 
-}
 
-class Harvester {
 
-	constructor( init ){
-		this.type = init.type || 'harvester'
-		this.range = init.range || 50
-		this.cooldown = init.cooldown || 1500
-		this.animation = init.animation || 'harvest'
-	}	
+const ProjectileMap = {
+
+	pulse_canister: {
+		subtype: 'pulse_canister',
+		speed: 25,
+		scale: 1,
+		length: 5,
+		radial_segments: 6
+	},
+
+
 
 }
+
 
 
 
 
 const ARMATURES = {
 
-	pulse_canister: new Projectile({
+	pulse_canister: new Cannon({
 		subtype: 'pulse_canister'
 	}),
 
@@ -203,6 +254,7 @@ const ARMATURES = {
 
 module.exports = {
 	Projectile,
+	ProjectileMap,
 	Laser,
 	Harvester,
 	ARMATURES

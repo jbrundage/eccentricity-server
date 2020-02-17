@@ -25,6 +25,7 @@ const USERS = require('../../single/USERS.js')
 
 const {
 	Projectile,
+	ProjectileMap,
 	ARMATURES
 } = require('../aux/Armatures.js')
 
@@ -411,25 +412,28 @@ class System extends Persistent {
 
 		// and we go
 
-		if( ARMATURES[ armature ].type == 'projectile' ){
+		if( ARMATURES[ armature ].type == 'cannon' ){
 
 			// has target
 
 			if( !system.entropic[ packet.t_uuid ] ){
-				SOCKETS[ o_uuid ].send( JSON.stringify({type: 'error', msg: 'invalid target'}))
+				SOCKETS[ o_uuid ].send( JSON.stringify({ type: 'error', msg: 'invalid target', time: 1000 }))
 				return false
 			}
 
-			const new_p = new Projectile({ 
-				owner_uuid: o_uuid,
-				target_uuid: packet.t_uuid,
-				subtype: armature,
-				sound: armature
-			})
+			let dist = system.entropic[ packet.t_uuid ].ref.position.distanceTo( system.entropic[ o_uuid ].ref.position )
 
-			system.projectiles[ new_p.uuid ] = new_p
+			if( dist > ARMATURES[ armature ].range ){
+				SOCKETS[ o_uuid ].send( JSON.stringify({ type: 'error', msg: 'out of range - ' + dist, time: 1000 }))
+				return false
+			} 
 
-			new_p.launch( system.entropic[ o_uuid ] )
+			const new_p = new Projectile( ProjectileMap[ armature ] )
+			new_p.owner_uuid = o_uuid
+			new_p.target_uuid = packet.t_uuid
+			new_p.subtype = armature
+
+			new_p.launch( system.entropic[ o_uuid ], system.projectiles )
 			
 			// for( const key of Object.keys( ARMATURES[ armature ] )){
 			// 	log('flag', key, system.projectiles[ new_uuid ][ key ] )
