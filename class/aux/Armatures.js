@@ -15,7 +15,7 @@ class Cannon {
 
 		this.type = 'cannon'
 		this.subtype = init.subtype
-		this.range = init.range || 1000
+		this.range = init.range || 1500
 		this.cooldown = init.cooldown || 1500
 		this.animation = init.animation || 'flare'
 
