@@ -3,6 +3,7 @@ module.exports = {
 	pulse_canister: {
 
 		subtype: 'pulse_canister',
+		lifetime: 10000,
 		max_dmg: 10,
 		min_dmg: 1,
 		speed: 50,

@@ -40,7 +40,8 @@ const auth = require('./auth.js')
 const User = require('./class/persistent/User.js')
 
 const WSS = require('./single/Server.js')()
-const GALAXY = require('./single/Galaxy.js')()
+// const GALAXY = require('./single/Galaxy.js')()
+const { getSingleton } = require('./single/Galaxy.js')
 
 // for logging:
 const USERS = require('./single/USERS.js')
@@ -51,7 +52,7 @@ const SOCKETS = require('./single/SOCKETS.js')
 
 const render = require('./render_html.js')
 
-
+const GALAXY = getSingleton()
 
 log('call', 'ecc.js')
 

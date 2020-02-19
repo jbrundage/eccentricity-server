@@ -69,6 +69,7 @@ class Projectile {
 		this.system_key = init.system_key
 		
 		// from ProjectileMap:
+		this.lifetime = init.lifetime || 6000
 		this.speed = init.speed || 50
 		this.scale = init.scale || 1
 		this.min_dmg = init.min_dmg || 1
@@ -81,7 +82,6 @@ class Projectile {
 
 		// use data:
 		this.launched = 0
-		this.lifetime = init.lifetime || 6000
 
 		this.drifting = false
 		this.impacted = false

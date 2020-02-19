@@ -24,6 +24,9 @@ class User extends Persistent {
 
 		init = init || {}
 
+		this.last_ping = init.last_ping || Date.now()
+		this.last_log = init.last_log || false
+
 		this.version = init.version || 2  // no init.id means this will un-auth entire session
 
 		this.table = 'users'
@@ -43,8 +46,6 @@ class User extends Persistent {
 		this.confirmed = init.confirmed || 'no'
 
 		// this.settings = new Settings( init.settings ) 
-
-		this.last_log = init.last_log || false
 
 		this.bad_packets = 0
 

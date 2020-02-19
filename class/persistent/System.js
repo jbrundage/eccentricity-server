@@ -210,7 +210,7 @@ class System extends Persistent {
 
 
 
-	register_entity( type, cgroup, obj ){
+	register_entity( type, cgroup, obj ){ // ex. sentient, npc, { the_npc }
 
 		let group = this[ type ]
 		if( cgroup ) group = this[ type ][ cgroup ]
@@ -452,6 +452,8 @@ class System extends Persistent {
 		}else if( ARMATURES[ armature ].type == 'laser' ){
 
 			// has target
+			log('flag', 'missing laser handler')
+
 
 			if( !system.entropic[ packet.t_uuid ] ){
 				SOCKETS[ o_uuid ].send( JSON.stringify({type: 'error', msg: 'invalid target'}))
@@ -784,7 +786,38 @@ class System extends Persistent {
 
 
 
+	purge_socket( s_uuid, data ){
 
+		const system = this
+
+		log('purge_socket', 'closing: ', s_uuid )
+
+		// for( const id of Object.keys( system.sentient )){ // ya goof
+		for( const uuid of Object.keys( system.sentient.pc )){ 
+
+			if( s_uuid != uuid && SOCKETS[ uuid ] ){
+
+				SOCKETS[ uuid ].send( JSON.stringify({
+
+					type: 'close_pilot',
+					uuid: s_uuid
+
+				}) )
+
+			}
+		}
+
+		delete USERS[ s_uuid ]
+		delete SOCKETS[ s_uuid ]
+		delete system.entropic[ s_uuid ]
+		delete system.sentient.pc[ s_uuid ]
+
+		// handled by bigbang pulse:
+		// if( Object.keys( system.sentient.pc ).length <= 0 ) {
+		// 	galaxy.close_system( system.id )
+		// }
+
+	}
 
 
 

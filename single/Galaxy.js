@@ -115,7 +115,7 @@ class Galaxy {
 		USERS[ socket.uuid ].PILOT.SHIP.uuid = socket.uuid
 		USERS[ socket.uuid ].PILOT.SHIP.pc = true
 
-		USERS[ socket.uuid ].PILOT.SHIP.log = true
+		USERS[ socket.uuid ].PILOT.SHIP.log = false
 
 
 		// USERS[ socket.uuid ].PILOT.SHIP		
@@ -229,9 +229,13 @@ class Galaxy {
 					log('wss', 'rcvd packet: ', packet )
 
 					USER.PILOT.SHIP.ref.position = new Vector3( packet.pos.x, packet.pos.y, packet.pos.z ) // || USER.PILOT.SHIP.ref.position
-					USER.PILOT.SHIP.ref.model.quaternion.copy( new Quaternion( packet.quat.x, packet.quat.y, packet.quat.z, packet.quat.w ) )//|| USER.PILOT.SHIP.ref.model.quaternion
+					// USER.PILOT.SHIP.ref.model.quaternion.copy( new Quaternion( packet.quat.x, packet.quat.y, packet.quat.z, packet.quat.w ) )//|| USER.PILOT.SHIP.ref.model.quaternion
+					USER.PILOT.SHIP.ref.model.quaternion.set( packet.quat._x, packet.quat._y, packet.quat._z, packet.quat._w ) //|| USER.PILOT.SHIP.ref.model.quaternion
 					// USER.PILOT.SHIP.ref.quaternion = new Quaternion( packet.quat.x, packet.quat.y, packet.quat.z ) || USER.PILOT.SHIP.ref.quaternion 
 					USER.PILOT.SHIP.ref.momentum = new Vector3( packet.mom.x, packet.mom.y, packet.mom.z ) // || USER.PILOT.SHIP.ref.momentum
+
+					USER.last_ping = Date.now()
+
 					break;
 
 				case 'chat':
@@ -300,41 +304,11 @@ class Galaxy {
 
 		SOCKETS[ uuid ].on('close', function( data ){
 
-			const socket = this
-			const uuid = socket.uuid
-
-			// log('flag', 'got close:?', uuid )
-
-			delete USERS[ uuid ]
-			delete SOCKETS[ uuid ]
-			delete system.entropic[ uuid ]
-			delete system.sentient.pc[ uuid ]
-
-			// for( const id of Object.keys( system.sentient )){ // ya goof
-			for( const uuid of Object.keys( SOCKETS )){ 
-
-				if( socket.uuid != uuid ){
-
-					SOCKETS[ uuid ].send( JSON.stringify({
-
-						type: 'close_pilot',
-						uuid: uuid
-
-					}) )
-
-				}
-			}
-
-			if( Object.keys( system.sentient.pc ).length <= 0 ) {
-				galaxy.close_system( system.id )
-			}
+			system.purge_socket( uuid, data )
 
 		})
 
 	}
-
-
-
 
 
 
@@ -407,7 +381,7 @@ class Galaxy {
 				}
 			}
 
-		}, 30000)
+		}, lib.tables.bingbang_interval )
 
 
 
@@ -420,4 +394,8 @@ class Galaxy {
 }
 
 
-module.exports = getSingleton
+module.exports = {
+
+	getSingleton
+
+}

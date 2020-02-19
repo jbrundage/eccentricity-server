@@ -29,6 +29,10 @@ const lib = {
 
 	tables: {
 
+		bingbang_interval: 30000,
+
+		timeout: 30000, 
+
 		factions: {
 			friend: 100,
 			enemy: -100

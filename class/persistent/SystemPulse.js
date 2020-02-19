@@ -1,6 +1,9 @@
 const lib = require('../../lib.js')
+const env = require('../../env.js')
 const log = require('../../log.js')
 const uuid = require('uuid')
+
+const USERS = require('../../single/USERS.js')
 
 // const Asteroid = require('../ephemera/entropic/Asteroid.js')
 const Ship = require('./entropic/Ship.js')
@@ -25,6 +28,13 @@ module.exports = function initPulse( system ){
 	/////////////////////////////////////////////////////////////////////////////////////////////// npc spawn
 
 	system.internal.pulses.npc.spawn = setInterval(function(){
+
+		check_for_life( system )
+
+		if( !env.SYSTEM_SPAWN ) {
+			log('pulse_npc_spawn', 'skipping spawn')
+			return false
+		}
 
 		// get defense
 		// ( traffic - defense ) = remaining
@@ -104,7 +114,7 @@ module.exports = function initPulse( system ){
 		let need_traffic = traffic.capacity - traffic.current
 		let need_enemies = enemies.capacity - enemies.current
 
-		log('system', 'npc.spawn: need defense, traffic, enemies: ', need_defense, need_traffic, need_enemies )
+		log('pulse_npc_spawn', 'npc.spawn: need defense, traffic, enemies: ', need_defense, need_traffic, need_enemies )
 
 		// defense
 
@@ -219,9 +229,9 @@ module.exports = function initPulse( system ){
 
 					case 'engage':
 
-						log('flag', 'sentient engage: ', move.e_uuid )
 
 						if( system.entropic[ uuid ].move_towards ){ // ships only
+							log('flag', 'sentient engaging: ', move.e_uuid )
 							system.entropic[ uuid ].move_towards( system.entropic[ move.e_uuid ].ref.position )
 						}else{
 							log('flag', 'non ship being asked to engage')
@@ -274,7 +284,7 @@ module.exports = function initPulse( system ){
 		}
 
 
-		log('pulse', 'pulse npc think')
+		log('pulse_npc_decide_move', 'pulse npc think')
 
 	}, lib.tables.pulse.npc.decide_move )
 
@@ -284,7 +294,7 @@ module.exports = function initPulse( system ){
 
 		// minerals, resources, etc
 
-		log('pulse', 'pulse entropic spawn')
+		log('pulse_entropic_spawn', 'pulse entropic spawn')
 
 	}, lib.tables.pulse.entropic.spawn )
 
@@ -316,7 +326,7 @@ module.exports = function initPulse( system ){
 
 		system.broadcast( false, packet )
 
-		log('pulse', 'pulse entropic move')
+		log('pulse_entropic_move', 'pulse entropic move')
 
 	}, lib.tables.pulse.entropic.move )
 
@@ -380,14 +390,14 @@ module.exports = function initPulse( system ){
 			// log('flag', 'projectile pos; ', packet.projectiles[ uuid ].ref.position, system.projectiles[ uuid ].ref.position )
 
 			if( system.projectiles[ uuid ].gc ) {
-				log('flag', 'deleting projectile: ', uuid )
+				log('pulse_projectile', 'deleting projectile: ', uuid )
 				delete system.projectiles[ uuid ]
 			}
 
 		}
 
 		if( Object.keys( packet.projectiles ).length ){
-			log('flag', 'projectiles packet: ', packet )
+			log('pulse_projectile', 'projectiles packet: ', packet )
 			system.broadcast( false, packet )
 		}
 
@@ -395,6 +405,34 @@ module.exports = function initPulse( system ){
 
 	/////////////////////////////////////////////////////////////////////////////////////////////// end
 
-	log('pulse', 'init_pulse: ', system.id )
+	log('system', 'init_pulse: ', system.id )
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+function check_for_life( system ){
+
+	for( const uuid of Object.keys( system.sentient.pc )){
+		if( Date.now() - USERS[ uuid ].last_ping > lib.tables.timeout ){
+
+			blorb
+			
+
+		}
+	}
 
 }

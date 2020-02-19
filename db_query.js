@@ -12,9 +12,14 @@ const log = require('./log.js')
 
 const SYSTEMS = require('./single/SYSTEMS.js')
 
-const GALAXY = require('./single/Galaxy.js')()
+const {
+	getSingleton
+} = require('./single/Galaxy.js')
+
 
 log('call', 'db_query.js')
+
+const GALAXY = getSingleton()
 
 const r = {
 
