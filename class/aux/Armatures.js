@@ -2,6 +2,7 @@ const { Vector3, Object3D } = require('three')
 const lib = require('../../lib.js')
 const log = require('../../log.js')
 const uuid = require('uuid')
+const ProjectileMap = require('./ProjectileMap.js')
 
 
 
@@ -60,7 +61,7 @@ class Projectile {
 
 		this.type = 'projectile'
 		this.subtype = init.subtype
-		this.speed = init.speed || 25
+		this.speed = init.speed || 50
 		// this.min_dmg = init.min_dmg || 1
 		// this.max_dmg = init.max_dmg || 10
 		// this.range = init.range || 500
@@ -83,8 +84,13 @@ class Projectile {
 
 		// this.proximity = init.proximity
 		this.launched = 0
+		this.lifetime = init.lifetime || 6000
+
 		this.drifting = false
-		this.lifetime = init.lifetime || 5000
+		this.impacted = false
+		this.expired = false
+		this.exploded = false
+
 		// this.dist = 999999999
 		// this.cruise = false
 		// this.arrived = false
@@ -135,7 +141,7 @@ class Projectile {
 
 		if( this.launched > 0 && Date.now() - this.launched > this.lifetime ) {
 			log('projectile', 'projectile expired: ', ( Date.now() - this.launched ), this.lifetime )
-			this.destroy()
+			this.destruct('expired')
 			return false
 		}
 
@@ -143,13 +149,11 @@ class Projectile {
 
 			this.ref.facing.subVectors( target.ref.position, this.ref.position ).normalize()
 
-			const projection = this.ref.projection = new Vector3().copy( this.ref.facing )
-
-			projection.multiplyScalar( this.speed )
+			const projection = this.ref.projection = new Vector3().copy( this.ref.facing ).multiplyScalar( this.speed )
 
 			if( projection.distanceTo( lib.ORIGIN ) > this.ref.position.distanceTo( target.ref.position ) ){
 				projection.multiplyScalar( projection.distanceTo( target.ref.position ) / projection.distanceTo( lib.ORIGIN ) )
-				this.impact( target )
+				this.destruct( 'impacted', target )
 			}
 
 			this.ref.position.add( projection )
@@ -172,21 +176,29 @@ class Projectile {
 	}
 
 
-	impact( target ){
 
-		log('projectile', 'projectile IMPACT: ', uuid + ' >> ' + target.uuid )
+	destruct( type, target ){
 
-		target.health -= Math.floor( Math.random() * ( this.max_dmg - this.min_dmg ))
+		log('projectile', 'projectile ' + type.toUpperCase() )
 
-		target.update_status = true
+		if( type == 'expired' ){
 
-		this.destroy()
+			this.expired = true
 
-	}
+		}else if( type == 'exploded' ){
 
+			this.exploded = true
 
-	destroy(){
+		}else if( type == 'impacted' ){
 
+			this.impacted = true
+
+			target.health.current -= Math.floor( Math.random() * ( this.max_dmg - this.min_dmg ))
+
+			target.pulse_status = true
+		}
+
+		// delete flag - dont delete here, it needs to pulse one last time
 		this.gc = true
 
 	}
@@ -211,20 +223,6 @@ class Projectile {
 
 
 
-
-const ProjectileMap = {
-
-	pulse_canister: {
-		subtype: 'pulse_canister',
-		speed: 25,
-		scale: 1,
-		length: 5,
-		radial_segments: 6
-	},
-
-
-
-}
 
 
 

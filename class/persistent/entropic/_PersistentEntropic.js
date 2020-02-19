@@ -61,23 +61,7 @@ class PersistentEntropic extends Entropic {
 
 		})
 
-	}
-
-	
-	publish(){
-
-		let r = {}
-
-		for( const key of Object.keys( this )){
-
-			if( key !== 'internal' )  r[ key ] = this[ key ]
-
-		}
-
-		return r
-
-	}
-	
+	}	
 
 }
 

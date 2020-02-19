@@ -323,8 +323,10 @@ module.exports = function initPulse( system ){
 			entropic: {}
 		}
 
+		let checkup
 		for( const uuid of Object.keys( system.entropic )){
 			if( system.entropic[ uuid ].pulse_status ){
+				checkup = system.entropic[ uuid ]
 				packet.entropic[ uuid ] = system.entropic[ uuid ].publish()
 				system.entropic[ uuid ].pulse_status = false
 			}
@@ -333,6 +335,7 @@ module.exports = function initPulse( system ){
 		if( Object.keys( packet.entropic ).length ){
 			system.broadcast( false, packet )
 		}
+
 
 	}, lib.tables.pulse.entropic.status )
 
@@ -358,10 +361,12 @@ module.exports = function initPulse( system ){
 				subtype: system.projectiles[ uuid ].subtype,
 				launched: system.projectiles[ uuid ].launched,
 				target_dist: system.projectiles[ uuid ].target_dist,
-				drifting: system.projectiles[ uuid ].drifting
-				// position: system.projectiles[ uuid ].ref.position
-				// lifetime: system.projectiles[ uuid ].lifetime,
-				// sound: system.projectiles[ uuid ].sound
+				// status:
+				drifting: system.projectiles[ uuid ].drifting,
+				impacted: system.projectiles[ uuid ].impacted,
+				expired: system.projectiles[ uuid ].expired,
+				exploded: system.projectiles[ uuid ].exploded,
+				// gc: system.projectiles[ uuid ].gc // should be inferred client side
 			}
 
 			// packet.projectiles[ uuid ] = system.projectiles[ uuid ].publish() // - ONLY SHALLOW COPY - could be deleted in next step

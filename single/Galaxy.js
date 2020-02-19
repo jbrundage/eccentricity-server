@@ -11,6 +11,8 @@ const {
 	Quaternion
 } = require('three')
 
+const aux_package = require('../class/aux/package.js')
+
 const System = require('../class/persistent/System.js')
 const User = require('../class/persistent/User.js')
 
@@ -124,7 +126,8 @@ class Galaxy {
 			type: 'init_session',
 			system: SYSTEM.publish(),
 			user: USERS[ socket.uuid ],
-			uuid: socket.uuid
+			uuid: socket.uuid,
+			packages: aux_package()
 		}) )
 
 		SYSTEM.broadcast( socket.uuid, { 
