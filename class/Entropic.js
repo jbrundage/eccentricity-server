@@ -1,10 +1,13 @@
 const log = require('../log.js')
+const env = require('../env.js')
 const lib = require('../lib.js')
 const { 
 	Vector3,
 	Quaternion,
 	Object3D
 } = require('three')
+
+const SYSTEMS = require('../single/SYSTEMS.js')
 
 log('call', 'Entropic.js')
 
@@ -15,9 +18,12 @@ class Entropic {
 
 		init = init || {}
 
+
 		this.id = init.id
 
 		this.uuid = init.uuid
+
+		this.system_key = init.system_key || env.INIT_SYSTEM_KEY 
 
 		this.clickable = true
 
@@ -25,7 +31,16 @@ class Entropic {
 
 		this.pc = init.pc || false
 
-		this.pulse_status = false
+		// this.pulse_status = false
+
+		this.health = init.health || {
+			current: 100,
+			capacity: 100
+		}
+		this.shields = init.shields || {
+			current: 0,
+			capacity: 0
+		}
 
 		this.log = init.log || false
 		
@@ -40,9 +55,37 @@ class Entropic {
 
 		this.logistic = init.logistic || []
 		// 'previous'
-		this.logistic.push('logistic', 'uuid', 'ref', 'model', 'clickable', 'type', 'table', 'entropy', 'model_url', 'temporality', 'pulse_status')
+		// 'pulse_status'
+		this.logistic.push('logistic', 'uuid', 'ref', 'model', 'clickable', 'type', 'table', 'entropy', 'model_url', 'temporality')
 
 	}
+
+
+
+	resolve_damage( base_dmg ){
+
+		const changes = {}
+
+		const shield_result = this.shields.current - base_dmg
+		
+		changes.shields = {
+			current: Math.max( 0, shield_result ),
+			capacity: this.shields.capacity
+		}
+		if( shield_result < 0 ){
+			this.health.current += shield_result // ( yep )
+			changes.health = {
+				current: Math.max( 0, this.health.current ),
+				capacity: this.health.capacity
+			}
+		}
+
+		if( this.health.current <= 0 )  SYSTEMS[ this.system_key ].destroy( this.uuid )
+
+		return changes
+
+	}
+
 
 
 

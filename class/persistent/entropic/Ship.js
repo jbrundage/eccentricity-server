@@ -45,14 +45,8 @@ class Ship extends Entropic {
 		this.name = init.name || lib.tables.names.ships[ Math.floor( Math.random() * lib.tables.names.ships.length ) ]
 
 		// stats
-		this.health = init.health || {
-			current: 100,
-			capacity: 100
-		}
-		this.shields = init.shields || {
-			current: 0,
-			capacity: 0
-		}
+		// health: Entropic
+		// shields: Entropic
 		this.fuel = init.fuel || {
 			current: 100,
 			capacity: 100

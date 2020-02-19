@@ -3,7 +3,7 @@ const lib = require('../../lib.js')
 const log = require('../../log.js')
 const uuid = require('uuid')
 const ProjectileMap = require('./ProjectileMap.js')
-
+const SYSTEMS = require('../../single/SYSTEMS.js')
 
 
 
@@ -73,6 +73,7 @@ class Projectile {
 		this.uuid = init.uuid || uuid()
 		this.owner_uuid = init.owner_uuid 
 		this.target_uuid = init.target_uuid
+		this.system_key = init.system_key
 
 		// this.origin = init.origin
 		// this.vector = new Vector3()
@@ -193,9 +194,17 @@ class Projectile {
 
 			this.impacted = true
 
-			target.health.current -= Math.floor( Math.random() * ( this.max_dmg - this.min_dmg ))
+			const base_dmg = Math.floor( Math.random() * ( this.max_dmg - this.min_dmg ))
+			
+			const changes = target.resolve_damage( base_dmg )
 
-			target.pulse_status = true
+			SYSTEMS[ this.system_key ].broadcast( false, {
+				type: 'combat',
+				subtype: 'resolve_damage',
+				subject_uuid: target.uuid,
+				changes: changes
+			})
+
 		}
 
 		// delete flag - dont delete here, it needs to pulse one last time

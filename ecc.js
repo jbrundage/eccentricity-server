@@ -183,7 +183,7 @@ exp.get('/touch_user', function( request, response ){ // not called from /sky
 		// request.session.user = new User( request.session.user )
 
 		request.session.user.PILOT = await request.session.user.touch_pilot()
-		request.session.user.SHIP = await request.session.user.PILOT.touch_ship()
+		request.session.user.SHIP = await request.session.user.PILOT.touch_ship( request.session.user.PILOT.system_key, false )
 
 		response.json({
 			success: true,

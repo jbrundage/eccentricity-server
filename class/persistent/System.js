@@ -106,7 +106,7 @@ class System extends Persistent {
 				entropic: {
 					spawn: false,
 					move: false,
-					status: false
+					// status: false
 				},
 
 				misc: {
@@ -138,6 +138,7 @@ class System extends Persistent {
 			let p_uuid = uuid()
 			const primary = new Station({
 				uuid: p_uuid,
+				system_key: this.id,
 				subtype: 'primary',
 				ref: {
 					position: new Vector3( lib.tables.position.station[ 'primary' ].x, lib.tables.position.station[ 'primary' ].y, lib.tables.position.station[ 'primary' ].z )
@@ -154,9 +155,11 @@ class System extends Persistent {
 
 			let d_uuid = uuid()
 			const docking = new Station({
+				uuid: d_uuid,
+				system_key: this.id,
 				subtype: 'docking',
 				ref: {
-					position: new Vector3( lib.tables.position.station[ 'primary' ].x, lib.tables.position.station[ 'primary' ].y, lib.tables.position.station[ 'primary' ].z )
+					position: new Vector3( lib.tables.position.station[ 'docking' ].x, lib.tables.position.station[ 'docking' ].y, lib.tables.position.station[ 'primary' ].z )
 					// {
 					// 	x: lib.tables.position.station[ 'docking' ].x,
 					// 	y: lib.tables.position.station[ 'docking' ].y,
@@ -429,6 +432,7 @@ class System extends Persistent {
 			} 
 
 			const new_p = new Projectile( ProjectileMap[ armature ] )
+			new_p.system_key = system.id
 			new_p.owner_uuid = o_uuid
 			new_p.target_uuid = packet.t_uuid
 			new_p.subtype = armature
@@ -477,6 +481,21 @@ class System extends Persistent {
 
 
 
+
+
+
+
+
+
+
+
+	destroy( uuid ){
+
+		log('flag', 'destroying: ', uuid )
+
+		
+
+	}
 
 
 

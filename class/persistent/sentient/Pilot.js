@@ -48,12 +48,13 @@ class Pilot extends Sentient {
 
 
 
-	async touch_ship( position ){
+	async touch_ship( system_key, position ){
 
 		const pilot = this
 
 		if( pilot.SHIP ){
 
+			pilot.SHIP.system_key = system_key
 			let ship = new Ship( pilot.SHIP )
 			ship.uuid = pilot.uuid
 			ship.ref = ship.ref || {}

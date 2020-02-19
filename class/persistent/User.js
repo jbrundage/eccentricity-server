@@ -1,4 +1,5 @@
 const log = require('../../log.js')
+const env = require('../../env.js')
 const lib = require('../../lib.js')
 
 // const Settings = require('../aux/Settings.js')
@@ -53,7 +54,7 @@ class User extends Persistent {
 
 
 
-	touch_pilot(){
+	touch_pilot( system_key ){
 
 		const user = this
 
@@ -64,7 +65,8 @@ class User extends Persistent {
 			if( !user.active_pilot ) {
 
 				user.PILOT = new Pilot({
-					uuid: user.uuid
+					uuid: user.uuid,
+					system_key: system_key 
 				}) // builds provisional Pilot
 
 				// user.active_pilot // active_pilot is a lookup key - only saved pilots get this
@@ -125,7 +127,10 @@ class User extends Persistent {
 
 						log('flag', 'fetch user pilot: ', results )
 
-						user.PILOT = new Pilot( results[0] )
+						const pilot = results[0]
+						pilot.system_key = pilot.system_key || env.INIT_SYSTEM_KEY
+
+						user.PILOT = new Pilot( pilot )
 
 						resolve({
 							success: true,

@@ -316,28 +316,28 @@ module.exports = function initPulse( system ){
 
 	/////////////////////////////////////////////////////////////////////////////////////////////// entropic status
 
-	system.internal.pulses.entropic.status = setInterval(function(){
+	// system.internal.pulses.entropic.status = setInterval(function(){
 
-		const packet = {
-			type: 'status',
-			entropic: {}
-		}
+	// 	const packet = {
+	// 		type: 'status',
+	// 		entropic: {}
+	// 	}
 
-		let checkup
-		for( const uuid of Object.keys( system.entropic )){
-			if( system.entropic[ uuid ].pulse_status ){
-				checkup = system.entropic[ uuid ]
-				packet.entropic[ uuid ] = system.entropic[ uuid ].publish()
-				system.entropic[ uuid ].pulse_status = false
-			}
-		}
+	// 	let checkup
+	// 	for( const uuid of Object.keys( system.entropic )){
+	// 		if( system.entropic[ uuid ].pulse_status ){
+	// 			checkup = system.entropic[ uuid ]
+	// 			packet.entropic[ uuid ] = system.entropic[ uuid ].publish()
+	// 			system.entropic[ uuid ].pulse_status = false
+	// 		}
+	// 	}
 
-		if( Object.keys( packet.entropic ).length ){
-			system.broadcast( false, packet )
-		}
+	// 	if( Object.keys( packet.entropic ).length ){
+	// 		system.broadcast( false, packet )
+	// 	}
 
 
-	}, lib.tables.pulse.entropic.status )
+	// }, lib.tables.pulse.entropic.status )
 
 	/////////////////////////////////////////////////////////////////////////////////////////////// projectiles
 

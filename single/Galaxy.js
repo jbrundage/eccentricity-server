@@ -73,11 +73,14 @@ class Galaxy {
 
 		// check database for existing PILOT / SHIP:
 		socket.request.session.user = new User( socket.request.session.user )
+		// saved system_key's should be returned here:
 		socket.request.session.user.PILOT = await socket.request.session.user.touch_pilot()
-		socket.request.session.user.PILOT.SHIP = await socket.request.session.user.PILOT.touch_ship()
 
 		const station_key = socket.request.session.user.PILOT.station_key
 		const system_key = socket.request.session.user.PILOT.system_key
+
+		socket.request.session.user.PILOT.SHIP = await socket.request.session.user.PILOT.touch_ship( system_key, false )
+
 
 		// we have  at least one valid key
 		if( typeof( station_key ) !== 'number' || station_key <= 0 || typeof( system_key ) != 'number' || system_key <= 0 ) {
