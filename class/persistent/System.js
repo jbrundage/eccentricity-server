@@ -25,9 +25,10 @@ const USERS = require('../../single/USERS.js')
 
 const {
 	Projectile,
-	ProjectileMap,
 	ARMATURES
 } = require('../aux/Armatures.js')
+
+const ProjectileMap = require('../aux/ProjectileMap.js')
 
 const initPulse = require('./SystemPulse.js')
 
@@ -141,7 +142,7 @@ class System extends Persistent {
 				system_key: this.id,
 				subtype: 'primary',
 				ref: {
-					position: new Vector3( lib.tables.position.station[ 'primary' ].x, lib.tables.position.station[ 'primary' ].y, lib.tables.position.station[ 'primary' ].z )
+					position: new Vector3().copy( lib.tables.position.station.primary )
 					// {
 					// 	x: lib.tables.position.station[ 'primary' ].x,
 					// 	y: lib.tables.position.station[ 'primary' ].y,
@@ -150,7 +151,8 @@ class System extends Persistent {
 				}
 			})
 			const primary_commander = new Commander({
-				uuid: p_uuid
+				uuid: p_uuid,
+				system_key: this.id
 			})
 
 			let d_uuid = uuid()
@@ -159,7 +161,7 @@ class System extends Persistent {
 				system_key: this.id,
 				subtype: 'docking',
 				ref: {
-					position: new Vector3( lib.tables.position.station[ 'docking' ].x, lib.tables.position.station[ 'docking' ].y, lib.tables.position.station[ 'primary' ].z )
+					position: new Vector3().copy( lib.tables.position.station.docking )
 					// {
 					// 	x: lib.tables.position.station[ 'docking' ].x,
 					// 	y: lib.tables.position.station[ 'docking' ].y,
@@ -168,7 +170,8 @@ class System extends Persistent {
 				}
 			})
 			const docking_commander = new Commander({
-				uuid: d_uuid
+				uuid: d_uuid,
+				system_key: this.id
 			})
 	
 			this.register_entity( 'entropic', false, docking )
@@ -576,7 +579,7 @@ class System extends Persistent {
 
 			case 'entropic':
 
-				if( response === 'array' ){ //{ log('flag', 'unsupported response type: ', response, principal, type, subtype ); return false }
+				if( response === 'object' ){ //{ log('flag', 'unsupported response type: ', response, principal, type, subtype ); return false }
 
 					if( type ){
 

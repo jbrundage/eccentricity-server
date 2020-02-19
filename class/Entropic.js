@@ -18,12 +18,11 @@ class Entropic {
 
 		init = init || {}
 
-
 		this.id = init.id
 
 		this.uuid = init.uuid
 
-		this.system_key = init.system_key || env.INIT_SYSTEM_KEY 
+		this.system_key = init.system_key
 
 		this.clickable = true
 
@@ -79,6 +78,8 @@ class Entropic {
 				capacity: this.health.capacity
 			}
 		}
+
+		log('flag', 'resolved damage:', this.health, this.shields )
 
 		if( this.health.current <= 0 )  SYSTEMS[ this.system_key ].destroy( this.uuid )
 

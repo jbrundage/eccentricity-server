@@ -112,6 +112,7 @@ module.exports = function initPulse( system ){
 			let new_uuid = uuid()
 			let ship = new Ship({
 				uuid: new_uuid,
+				system_key: system.id,
 				ref: {
 					position: new Vector3( Math.random() * 100, Math.random() * 100, Math.random() * 100 )
 					// {
@@ -123,6 +124,7 @@ module.exports = function initPulse( system ){
 			})
 			let pilot = new Pilot({
 				uuid: new_uuid,
+				system_key: system.id,
 				reputation: {
 					[ faction ]: 150
 				},
@@ -140,6 +142,7 @@ module.exports = function initPulse( system ){
 			let new_uuid = uuid()
 			let ship = new Freighter({
 				uuid: new_uuid,
+				system_key: system.id,
 				ref: {
 					position: new Vector3( Math.random() * 100, Math.random() * 100, Math.random() * 100 )
 					// {
@@ -152,6 +155,7 @@ module.exports = function initPulse( system ){
 				
 			let pilot = new Pilot({
 				uuid: new_uuid,
+				system_key: system.id,
 				reputation: {
 					[ faction ]: 0
 				},
@@ -168,6 +172,7 @@ module.exports = function initPulse( system ){
 			let new_uuid = uuid()
 			let ship = new Ship({
 				uuid: new_uuid,
+				system_key: system.id,
 				model_url: 'ships/fighter/spacefighter/spacefighter01.glb',
 				ref: {
 					position: new Vector3( Math.random() * 100, Math.random() * 100, Math.random() * 100 )
@@ -180,6 +185,7 @@ module.exports = function initPulse( system ){
 			})
 			let pilot = new Pilot({
 				uuid: new_uuid,
+				system_key: system.id,
 				reputation: {
 					[ faction ]: -150
 				},

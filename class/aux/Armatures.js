@@ -61,29 +61,25 @@ class Projectile {
 
 		this.type = 'projectile'
 		this.subtype = init.subtype
-		this.speed = init.speed || 50
-		// this.min_dmg = init.min_dmg || 1
-		// this.max_dmg = init.max_dmg || 10
-		// this.range = init.range || 500
-		// this.cooldown = init.cooldown || 1500
-		// this.animation = init.animation || 'flare'
 
-		// unique to Projectile:
-
+		// instanced:
 		this.uuid = init.uuid || uuid()
 		this.owner_uuid = init.owner_uuid 
 		this.target_uuid = init.target_uuid
 		this.system_key = init.system_key
-
-		// this.origin = init.origin
-		// this.vector = new Vector3()
-
+		
+		// from ProjectileMap:
+		this.speed = init.speed || 50
 		this.scale = init.scale || 1
-		this.sound = this.subtype || this.type
+		this.min_dmg = init.min_dmg || 1
+		this.max_dmg = init.max_dmg || 10
 		this.length = init.length || 5
 		this.radial_segments = init.radial_segments || 6
 
-		// this.proximity = init.proximity
+		// inferred:
+		this.sound = this.subtype || this.type
+
+		// use data:
 		this.launched = 0
 		this.lifetime = init.lifetime || 6000
 
@@ -92,31 +88,26 @@ class Projectile {
 		this.expired = false
 		this.exploded = false
 
-		// this.dist = 999999999
-		// this.cruise = false
-		// this.arrived = false
-
 		this.ref = init.ref || {}
-		// this.ref.momentum = this.ref.momentum || new Vector3()
 		this.ref.origin = this.ref.origin || new Vector3()
 		this.ref.position = this.ref.position || new Vector3()
 		this.ref.facing = this.ref.facing || new Vector3()
 		this.ref.model = this.ref.model || new Object3D()
 
-
-		this.scratch = {
-			// direction: new Vector3(),
-			// acceleration: new Vector3(),
-			projection: new Vector3(),
-			// crowfly: 0,
-			// speed: 0
-		}
-
+		this.internal = init.internal 
 
 		this.gc = false
 
-		this.target = init.target
+		// this.target = init.target
 		this.target_dist = false
+
+		this.scratch = {
+			projection: new Vector3(),
+			// direction: new Vector3(),
+			// acceleration: new Vector3(),
+			// crowfly: 0,
+			// speed: 0
+		}
 
 	}
 
@@ -261,7 +252,7 @@ const ARMATURES = {
 
 module.exports = {
 	Projectile,
-	ProjectileMap,
+	// ProjectileMap,
 	Laser,
 	Harvester,
 	ARMATURES

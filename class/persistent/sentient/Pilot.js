@@ -52,10 +52,15 @@ class Pilot extends Sentient {
 
 		const pilot = this
 
+		if( !system_key ){
+			log('flag', 'missing touch_ship system_key: ', system_key )
+			return false
+		}
+
 		if( pilot.SHIP ){
 
-			pilot.SHIP.system_key = system_key
 			let ship = new Ship( pilot.SHIP )
+			ship.system_key = system_key
 			ship.uuid = pilot.uuid
 			ship.ref = ship.ref || {}
 			if( position )  ship.ref.position = position
@@ -72,6 +77,7 @@ class Pilot extends Sentient {
 				if( !results ) return false
 
 				let ship = new map[ results[0].type ]( results[0] )
+				ship.system_key = system_key 
 				ship.uuid = pilot.uuid
 				return ship  // um yea.. more validation
 
@@ -79,7 +85,8 @@ class Pilot extends Sentient {
 
 				log('pilot', 'returning default ship, invalid active_ship: ', pilot.active_ship )
 				let new_ship = new Ship({
-					uuid: pilot.uuid
+					uuid: pilot.uuid,
+					system_key: system_key
 				})
 				new_ship.ref.position = new Vector3( 0, 0 , -500 )
 
@@ -90,7 +97,8 @@ class Pilot extends Sentient {
 
 			log('pilot', 'returning provisional ship')
 			let init = {
-				uuid: pilot.uuid
+				uuid: pilot.uuid,
+				system_key: system_key
 			}
 			let new_ship = new Ship( init )
 
