@@ -50,7 +50,7 @@ const SOCKETS = require('./single/SOCKETS.js')
 
 // const readline = require('readline')
 
-const render = require('./render_html.js')
+const render = require('../client/html/ecc_html.js')
 
 const GALAXY = getSingleton()
 
@@ -82,7 +82,6 @@ const gatekeep = function(req, res, next) {
 		next()
 
 	}else{
-
 
 		// AVAST YE MATEYS
 		req.session.user = new User( req.session.user )
@@ -123,7 +122,7 @@ exp.use( bodyParser.json({
 // exp.use('/ws', lru_session)
 
 // exp.use('/', lru_session )
-// exp.use('/launch', lru_session )
+// exp.use('/hangar', lru_session )
 // exp.use('/sky', lru_session )
 // exp.use('/fetch*', lru_session )
 
@@ -132,42 +131,49 @@ exp.use( lru_session )
 exp.use( gatekeep )
 
 // exp.use('/', gatekeep )
-// exp.use('/launch', gatekeep )
+// exp.use('/hangar', gatekeep )
 // exp.use('/sky', gatekeep )
 // exp.use('/fetch_system', gatekeep )
 // exp.use('/fetch_pilots', gatekeep )
 
 // routing
 exp.get('/', function(request, response) {
-
-	
-	// response.sendFile('/client/html/splash.html', {root: '../'})
 	response.send( render('index') )
-	// response.send(erender('/client/html/splash.html.js', request))
 })
 
 exp.get('/login*', function(request, response){
 	response.send( render('login') )	
 })
 
-exp.get('/credit*', function(request, response){
-	response.sendFile('/client/html/credits.html', {root: '../'})
-})
-
-exp.get('/launch*', function(request, response){
-	response.sendFile('/client/html/launch.html', {root: '../'})
-})
-
 exp.get('/register*', function(request, response){
-	response.sendFile('/client/html/register.html', {root: '../'})
+	response.send( render('register') )	
+})
+
+exp.get('/credit*', function(request, response){
+	response.send( render('credit') )
+})
+
+exp.get('/hangar*', function(request, response){
+	response.send( render('hangar') )
 })
 
 exp.get('/sky*', function(request, response){
-	response.sendFile('/client/html/sky.html', {root: '../'})
+	response.send( render('sky'))
 })
 
 exp.get('/account*', function(request, response){
-	response.sendFile('/client/html/account.html', {root: '../'})
+	response.send( render('account'))
+	// response.sendFile('/client/html/account.html', {root: '../'})
+})
+
+exp.get('/logout', function( request, response ){
+	auth.logout_user( request )
+		.then( function( res ){
+			response.redirect('/')
+		})
+		.catch(function(err){
+			response.status(500).json(err)
+		})
 })
 
 exp.get('/robots.txt', function(request, response){
@@ -321,20 +327,6 @@ exp.post('/set_pilot', function(request, response){
 		})
 })
 
-exp.get('/logout', function( request, response ){
-	auth.logout_user( request )
-		.then( function( res ){
-		// res.redirect('/')
-			response.redirect('/')
-			// response.sendFile('/client/html/splash.html', {root: __dirname}); log('routing', 'landed root')
-
-		// response.status(200).json(res)
-		})
-		.catch(function(err){
-			response.status(500).json(err)
-		})
-})
-
 
 
 exp.post('*', function(request, response){
@@ -347,8 +339,8 @@ exp.post('*', function(request, response){
 })
 
 exp.get('*', function(request, response){
-	log('routing', 'GET 404: '  + request.url)
-	response.status(404).sendFile('/client/html/404.html', { root : '../'})    
+	response.status( 404 ).send( render('404') )
+	// response.status(404).sendFile('/client/html/404.html', { root : '../'})    
 })
 
 
