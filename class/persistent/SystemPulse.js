@@ -427,7 +427,7 @@ module.exports = function initPulse( system ){
 function check_for_life( system ){
 
 	for( const uuid of Object.keys( system.sentient.pc )){
-		if( Date.now() - USERS[ uuid ].last_ping > lib.tables.timeout ){
+		if( Date.now() - USERS[ uuid ].internal.last_ping > lib.tables.timeout ){
 
 			blorb
 			

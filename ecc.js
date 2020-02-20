@@ -194,7 +194,7 @@ exp.get('/touch_user', function( request, response ){ // not called from /sky
 
 		response.json({
 			success: true,
-			user: request.session.user 
+			user: request.session.user.publish()
 		})
 
 		return true
@@ -305,25 +305,25 @@ exp.post('/login', function(request, response){
 		})
 })
 
-exp.post('/register', function(request, response){
-	auth.register_user(request)
-		.then(function(res){
-			response.status(200).json(res)
+exp.post('/register', function( request, response ){
+	auth.register_user( request )
+		.then( function( res ){
+			response.status(200).json( res )
 		})
 		.catch(function(err){
-			response.status(500).json(err)
+			response.status(500).json( err )
 		})
 })
 
 
-exp.post('/set_pilot', function(request, response){
+exp.post('/set_pilot', function( request, response ){
 	// auth.set_pilot(request)
 	request.session.user.set_pilot()
-		.then(function(res){
-			response.status(200).json(res)
+		.then(function( res ){
+			response.status(200).json( res )
 		})
 		.catch(function(err){
-			response.status(500).json(err)
+			response.status(500).json( err )
 		})
 })
 
@@ -332,7 +332,7 @@ exp.post('/set_pilot', function(request, response){
 exp.post('*', function(request, response){
 	log('routing', 'POST 404: ' + request.url)
 	if(request.url.match(/\.html$/)){
-		response.status(404).sendFile('/client/html/404.html', { root : '../'})    
+		response.status(404).sendFile('/client/html/404.html', { root : '../' })    
 	}else{
 		response.end()
 	}

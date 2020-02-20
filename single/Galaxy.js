@@ -216,8 +216,8 @@ class Galaxy {
 			try{ 
 				packet = lib.sanitize_packet( JSON.parse( data ) )
 			}catch(e){
-				USER.bad_packets++
-				if( USER.bad_packets > 100 ){
+				USER.internal.bad_packets++
+				if( USER.internal.bad_packets > 100 ){
 					log('flag', 'packet problem for USER:', USER.uuid, e )
 				}
 			}
@@ -234,7 +234,7 @@ class Galaxy {
 					// USER.PILOT.SHIP.ref.quaternion = new Quaternion( packet.quat.x, packet.quat.y, packet.quat.z ) || USER.PILOT.SHIP.ref.quaternion 
 					USER.PILOT.SHIP.ref.momentum = new Vector3( packet.mom.x, packet.mom.y, packet.mom.z ) // || USER.PILOT.SHIP.ref.momentum
 
-					USER.last_ping = Date.now()
+					USER.internal.last_ping = Date.now()
 
 					break;
 

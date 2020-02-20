@@ -24,32 +24,31 @@ class User extends Persistent {
 
 		init = init || {}
 
-		this.last_ping = init.last_ping || Date.now()
-		this.last_log = init.last_log || false
-
-		this.version = init.version || 2  // no init.id means this will un-auth entire session
-
-		this.table = 'users'
-
-		this.active_pilot = init.active_pilot
-		this.PILOT = init.PILOT 
-
-		this.pilots = init.pilots || []
-
-		//|| new Pilot()
-		// init.PILOT = init.PILOT || {}
-		// init.PILOT.id = this.id
-		// this.PILOT = new Pilot( init.PILOT )
+		this.version = init.version || 2 
 
 		this.email = init.email || false
+
 		this.level = init.level || 0
+
+		this.PILOT = init.PILOT 
+		this.active_pilot = init.active_pilot
+
 		this.confirmed = init.confirmed || 'no'
 
-		// this.settings = new Settings( init.settings ) 
+		init.internal = init.internal || {}
+		this.internal = {
 
-		this.bad_packets = 0
+			bad_packets: 0,
 
-		this.logistic = ['socket']
+			last_ping: init.internal.last_ping || Date.now(),
+
+			last_log: init.internal.last_log || false,
+
+			table: init.internal.table || 'users'
+
+		}
+
+		this.logistic = []
 
 	}
 

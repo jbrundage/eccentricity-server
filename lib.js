@@ -13,17 +13,19 @@ log('call', 'lib.js')
 schema
 	.is().min(6)                                    // Minimum length 8
 	.is().max(30)                                   // Maximum length 100
-// .has().uppercase()                           // Must have uppercase letters
-// .has().lowercase()                           // Must have lowercase letters
-// .has().digits()                              // Must have digits
+	// .has().uppercase()                           // Must have uppercase letters
+	// .has().lowercase()                           // Must have lowercase letters
+	// .has().digits()                              // Must have digits
 	.has().not().spaces()                           // Should not have spaces
 	.is().not().oneOf(['password', 'Passw0rd', 'Password123'])
+
 
 Object3D.prototype.lookAwayFrom = function( target ){
 	const v = new Vector3()
     v.subVectors( this.position, target.position ).add( this.position )
     source.lookAt( v )
 }
+
 
 const lib = {
 
@@ -208,8 +210,7 @@ const lib = {
 
 	is_valid_password: function( password ){
 
-		if( !schema.validate( password + '' ) ) return false
-		return true
+		return schema.validate( password + '' )
 
 	},
 

@@ -10,7 +10,7 @@ let _pool
 function initPool( callback ) {
     
 	if ( _pool ) {
-		console.warn('trying to init pool redundantly')
+		console.log('trying to init pool redundantly')
 		return callback(null, _pool)
 	}
 
