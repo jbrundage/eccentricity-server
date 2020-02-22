@@ -80,7 +80,10 @@ class User extends Persistent {
 					system_key: system_key 
 				}) // builds provisional Pilot
 
-				resolve({ success: true	}) // already instantiated by gatekeeper()
+				resolve({ 
+					success: true,
+					pilot: user.PILOT.publish()
+				}) // already instantiated by gatekeeper()
 				return
 
 			}else{ // logged in
@@ -122,7 +125,10 @@ class User extends Persistent {
 
 				if( query_type == 'valid' ){
 
-					resolve({ success: true })
+					resolve({ 
+						success: true,
+						pilot: user.PILOT.publish()
+					})
 
 				}else{
 
@@ -251,59 +257,6 @@ class User extends Persistent {
 
 
 
-	async create_pilot( request ){
-
-		if( typeof( this.id ) != 'number' ){
-			return {
-				success: false,
-				msg: 'must be logged in to create a pilot'
-			}
-		}
-
-		const fname = request.body.fname
-		const lname = request.body.lname
-		const portrait = request.body.selected
-
-		log('flag', '-------------------', fname, lname)
-
-		if( !lib.is_valid_name( fname ) || !lib.is_valid_name( lname ) )  return {
-			success: false,
-			msg: 'invalid names'
-		}
-
-		const pool = DB.getPool()
-
-		const query = 'INSERT INTO `pilots` ( fname, lname, portrait, user_id, license ) VALUES ( ?, ?, ?, ?, ? )'
-		const vals = [ fname, lname, portrait, this.id, 'initiate' ]
-
-		const { result, fields } = await pool.queryPromise( query, vals )
-		if( !result ){
-			return {
-				success: false,
-				msg: 'error creating pilot record'
-			}
-		}
-
-		log('User', 'create_pilot:', result )//, fields )
-
-		if( result.insertId && typeof( result.insertId ) == 'number' ) {
-			request.session.user.active_pilot = result.insertId
-		}
-
-		return {
-			success: true,
-			msg: 'pilot created'
-		}
-
-	}
-
-
-
-
-
-
-
-
 
 
 	async set_pilot ( request ) {
@@ -317,11 +270,17 @@ class User extends Persistent {
 					success: false, 
 					msg: 'unable to set that pilot' 
 				}
+			}else{
+				log('set_pilot', 'ok so desired:', desired_name )
 			}
 
 			if( !this.PILOT ){ // we have name but no active_pilot or PILOT
 
+				log('set_pilot', 1)
+
 				if( this.pilots_data ){
+
+				log('set_pilot', 2)
 
 					const name = this.set_pilot_by_name( desired_name )
 					if( name ){
@@ -339,6 +298,8 @@ class User extends Persistent {
 
 				}else{	
 
+					log('set_pilot', 3)
+
 					fetch_pilots()
 					.then( res => {
 
@@ -352,6 +313,9 @@ class User extends Persistent {
 						}else{
 
 							user.pilots_data = res.pilots
+
+							log('set_pilot', 4)
+
 
 							const name = set_pilot_by_name( desired_name )
 							if( name ){
@@ -373,16 +337,26 @@ class User extends Persistent {
 
 			}else{
 
-				if( !this.PILOT.is_hydrated ) this.PILOT = new Pilot( this.PILOT )
+				if( !this.PILOT.is_hydrated ) {
+
+					log('set_pilot', 5 )
+
+					this.PILOT = new Pilot( this.PILOT )
+				}
 
 				let current_name = this.PILOT.get_name()
 
 				if( current_name == desired_name ){
+
+					log('set_pilot', 5.5 )
+
 					return{
 						success: true, 
 						pilot: this.PILOT.publish()
 					}
 				}else{
+
+					log('set_pilot', 6, current_name, desired_name )
 
 					const name = this.set_pilot_by_name( desired_name )
 					
@@ -431,6 +405,65 @@ class User extends Persistent {
 			}
 		}
 		return name
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+		async create_pilot( request ){
+
+		if( typeof( this.id ) != 'number' ){
+			return {
+				success: false,
+				msg: 'must be logged in to create a pilot'
+			}
+		}
+
+		const fname = request.body.fname
+		const lname = request.body.lname
+		const portrait = request.body.selected
+
+		log('flag', '-------------------', fname, lname)
+
+		if( !lib.is_valid_name( fname ) || !lib.is_valid_name( lname ) )  return {
+			success: false,
+			msg: 'invalid names'
+		}
+
+		const pool = DB.getPool()
+
+		const query = 'INSERT INTO `pilots` ( fname, lname, portrait, user_id, license ) VALUES ( ?, ?, ?, ?, ? )'
+		const vals = [ fname, lname, portrait, this.id, 'initiate' ]
+
+		const { error, results, fields } = await pool.queryPromise( query, vals )
+		if( error || !results ){
+			if( error ) log('flag', 'error creating record: ', error )
+			return {
+				success: false,
+				msg: 'error creating pilot record'
+			}
+		}
+
+		log('User', 'create_pilot:', result )//, fields )
+
+		if( result.insertId && typeof( result.insertId ) == 'number' ) {
+			request.session.user.active_pilot = result.insertId
+		}
+
+		return {
+			success: true,
+			msg: 'pilot created'
+		}
 
 	}
 

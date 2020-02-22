@@ -49,7 +49,7 @@ class Pilot extends Sentient {
 
 	get_name(){
 		if( !this.fname ) return false
-		return this.fname + ' ' + this.name
+		return this.fname + ' ' + this.lname
 	}
 
 

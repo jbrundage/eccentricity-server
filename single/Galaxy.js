@@ -15,6 +15,7 @@ const aux_package = require('../class/aux/package.js')
 
 const System = require('../class/persistent/System.js')
 const User = require('../class/persistent/User.js')
+const Pilot = require('../class/persistent/sentient/Pilot.js')
 
 const SOCKETS = require('./SOCKETS.js')
 const SYSTEMS = require('./SYSTEMS.js')
@@ -74,7 +75,13 @@ class Galaxy {
 		// check database for existing PILOT / SHIP:
 		socket.request.session.user = new User( socket.request.session.user )
 		// saved system_key's should be returned here:
-		socket.request.session.user.PILOT = await socket.request.session.user.touch_pilot()
+		// do NOT assign to user - returns publish() value
+		await socket.request.session.user.touch_pilot()
+
+
+		// if( !socket.request.session.user.PILOT.is_hydrated ){
+		// 	socket.request.session.user.PILOT = new Pilot( socket.request.session.user.PILOT )
+		// }
 
 		const station_key = socket.request.session.user.PILOT.station_key
 		const system_key = socket.request.session.user.PILOT.system_key

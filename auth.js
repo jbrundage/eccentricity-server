@@ -39,7 +39,6 @@ function login_user( request ){
 
 			// log('flag', 'login: ', response )
 
-
 			const hash_pw = response.msg.password
 
 			const user = new User( response.msg )

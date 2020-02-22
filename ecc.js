@@ -187,45 +187,38 @@ exp.get('/touch_user', function( request, response ){ // not called from /sky
 			user: request.session.user.publish()
 		})
 
-		// const r = await request.session.user.touch_pilot()
-
-		// if( r.success && request.session.user.PILOT ){
-
-		// 	const s = await request.session.user.PILOT.touch_ship( request.session.user.PILOT.system_key, false )
-
-		// 	response.json({
-		// 		success: true,
-		// 		user: request.session.user.publish()
-		// 	})				
-
-		// 	return
-			
-		// }else{
-		// 	response.json({
-		// 		success: true,
-		// 		user: request.session.user.publish()
-		// 	})
-		// 	return
-		// }
-
 	})()
-
-	// request.session.user.touch_user( 'pilotBool', 'shipBool' )
-	// 	.then( res => {
-	// 		response.json({
-	// 			success: true,
-	// 			user: res
-	// 		})
-	// 	})
-	// 	.catch( err => { 
-	// 		response.json({
-	// 			success: false,
-	// 			err: err
-	// 		})
-	// 	})
 
 })
 
+
+exp.get('/touch_pilot', function( request, response ){
+
+	if( request.session.user.touch_pilot ){
+
+		request.session.user.touch_pilot()
+			.then(function( res ){
+				response.json( res )
+			})
+			.catch(function( err ){
+				log('flag', 'err getting pilot: ', err )
+				response.json({
+					success: false,
+					err: 'error getting pilot'
+				})
+			})
+
+	}else{
+
+		log('flag', 'user should be instantiated already: ', request.session.user )
+		response.json({
+			success: false,
+			err: 'failed to get pilot, try logging out and in again'
+		})
+
+	}
+
+})
 
 
 

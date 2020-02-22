@@ -429,8 +429,8 @@ function check_for_life( system ){
 	for( const uuid of Object.keys( system.sentient.pc )){
 		if( Date.now() - USERS[ uuid ].internal.last_ping > lib.tables.timeout ){
 
-			blorb
-			
+			// blorb
+			log('flag', 'unfinished check for life')
 
 		}
 	}
