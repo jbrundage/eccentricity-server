@@ -17,6 +17,7 @@ class Entropic {
 	constructor( init ){
 
 		init = init || {}
+		this.internal = init.internal || {}
 
 		this.id = init.id
 
@@ -52,6 +53,7 @@ class Entropic {
 		this.ref.model = this.ref.model || new Object3D()
 		this.ref.boosting = false
 
+
 		this.logistic = init.logistic || []
 		// 'previous'
 		// 'pulse_status'
@@ -86,6 +88,10 @@ class Entropic {
 		return changes
 
 	}
+
+
+
+	is_hydrated(){}
 
 
 

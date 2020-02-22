@@ -4,6 +4,9 @@ const p_validator = require('password-validator')
 const { Object3D, Vector3 } = require('three')
 
 const schema = new p_validator()
+const name_schema = new p_validator()
+
+
 const log = require('./log.js')
 
 log('call', 'lib.js')
@@ -18,6 +21,13 @@ schema
 	// .has().digits()                              // Must have digits
 	.has().not().spaces()                           // Should not have spaces
 	.is().not().oneOf(['password', 'Passw0rd', 'Password123'])
+
+
+name_schema
+	.is().min(3)
+	.is().max(25)
+	.has().not().spaces()
+	.has().not().digits()
 
 
 Object3D.prototype.lookAwayFrom = function( target ){
@@ -130,6 +140,25 @@ const lib = {
 
 	},
 
+	iso_to_ms( iso ){
+
+		let isoTest = new RegExp( /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/ )
+
+	    if( isoTest.test( str ) ){
+	    	return new Date( iso ).getTime()
+	    }
+	    return false 
+
+	},
+
+	ms_to_iso( ms ){
+
+		if( typeof( ms ) !=  'number' )  return false
+
+		return new Date( ms ).toISOString()
+
+	},
+
 	random_hex: random_hex,
 
 	random_int: function( start, range ){
@@ -211,6 +240,12 @@ const lib = {
 	is_valid_password: function( password ){
 
 		return schema.validate( password + '' )
+
+	},
+
+	is_valid_name: function( name ){
+
+		return name_schema.validate( name + '' )
 
 	},
 

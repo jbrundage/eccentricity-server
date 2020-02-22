@@ -25,7 +25,7 @@ class Ship extends Entropic {
 
 		this.subtype = 'ship'
 
-		this.table = 'ships'
+		this.internal.table = 'ships'
 
 		this.clickable = true
 

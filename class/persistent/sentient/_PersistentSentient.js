@@ -27,39 +27,35 @@ class PersistentEntropic extends Sentient {
 
 	}
 
-	insertOne(){
-
-		log('flag', 'requested unfinished function insertOne')
-		return false
-
-	}
 
 
-	updateOne(){
+	update(){
 
-		if( !this.table ) return false
+		if( !this.internal.table ) return false
 
 		const doc = this
 
 		const pool = DB.getPool()
 
-		return new Promise( ( resolve, reject ) => {
+		log('flag', 'incomplete update')
 
-			const table = ''
-			const id = 0
+		return false
+		// return new Promise( ( resolve, reject ) => {
 
-			pool.query('UPDATE * FROM ? WHERE id = ? ', [ table, id ], ( err, res, fields ) => {
-				if( err || !res ){
+		// 	const table = ''
+		// 	const id = 0
 
-				}
+		// 	pool.query('UPDATE * FROM ? WHERE id = ? ', [ table, id ], ( err, res, fields ) => {
+		// 		if( err || !res ){
 
-				log('flag', 'incomplete updateOne')
+		// 		}
 
-				resolve()
 
-			})
+		// 		resolve()
 
-		})
+		// 	})
+
+		// })
 
 	}
 

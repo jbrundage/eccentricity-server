@@ -27,17 +27,10 @@ class PersistentEntropic extends Entropic {
 
 	}
 
-	insertOne(){
 
-		log('flag', 'requested unfinished function insertOne')
-		return false
+	update(){
 
-	}
-
-
-	updateOne(){
-
-		if( !this.table ) return false
+		if( !this.internal.table ) return false
 
 		const doc = this
 
@@ -48,16 +41,19 @@ class PersistentEntropic extends Entropic {
 			const table = ''
 			const id = 0
 
-			pool.query('UPDATE * FROM ? WHERE id = ? ', [ table, id ], ( err, res, fields ) => {
-				if( err || !res ){
+			log('flag', 'incomplete update')
 
-				}
+			rejet()
 
-				log('flag', 'incomplete updateOne')
+			// pool.query('UPDATE * FROM ? WHERE id = ? ', [ table, id ], ( err, res, fields ) => {
+			// 	if( err || !res ){
 
-				resolve()
+			// 	}
 
-			})
+
+			// 	resolve()
+
+			// })
 
 		})
 

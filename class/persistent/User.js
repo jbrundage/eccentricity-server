@@ -2,6 +2,8 @@ const log = require('../../log.js')
 const env = require('../../env.js')
 const lib = require('../../lib.js')
 
+const uuid = require('uuid')
+
 // const Settings = require('../aux/Settings.js')
 
 const DB = require('../../db.js')
@@ -32,6 +34,7 @@ class User extends Persistent {
 
 		this.PILOT = init.PILOT 
 		this.active_pilot = init.active_pilot
+		this.pilots_data = init.pilots_data
 
 		this.confirmed = init.confirmed || 'no'
 
@@ -54,97 +57,137 @@ class User extends Persistent {
 
 
 
+
+
+
+
+
+
+
+
 	touch_pilot( system_key ){
 
 		const user = this
 
-		const pool = DB.getPool()
+		// const pool = DB.getPool()
 
 		return new Promise( (resolve, reject) => {
 
-			if( !user.active_pilot ) {
+			if( user.level === 0 ){ // non-logged
 
 				user.PILOT = new Pilot({
 					uuid: user.uuid,
 					system_key: system_key 
 				}) // builds provisional Pilot
 
-				// user.active_pilot // active_pilot is a lookup key - only saved pilots get this
+				resolve({ success: true	}) // already instantiated by gatekeeper()
+				return
 
-				resolve( user.PILOT ) // already instantiated by gatekeeper()
+			}else{ // logged in
 
-			}else{
+				let query_type = 'none'
 
-				if( typeof( user.active_pilot ) !== 'number' || user.active_pilot <= 0 ) {
-					resolve({
-						success: false,
-						msg: 'invalid active_pilot'
-					})
-					return false
-				}
+				if( user.active_pilot > 0 ){
 
-				let needs_query = false
+					if( !user.PILOT ){
 
-				if( user.PILOT ){
+						// log('flag', 'no pilot: ', user.active_pilot )
+						query_type = user.active_pilot; 
 
-					if( user.PILOT.id === user.active_pilot ){
+					}else if( user.active_pilot !== user.PILOT.id ){
 
-						user.PILOT = new Pilot( user.PILOT )
+						// log('flag', 'wtf: ', user.active_pilot, user.PILOT.id )
+						delete user.PILOT
+						query_type = user.active_pilot; 
 
-						if( !user.PILOT.uuid ){
-							reject('should already have pilot uuid')
-							return false
-						}
+					}else if( !user.PILOT.is_hydrated ){
 
-						resolve({
-							success: true,
-							pilot: user.PILOT
-						})
-						return true
+						log('flag', 'no hydrate: ', user.PILOT.is_hydrated )
+						delete user.PILOT
+						query_type = user.active_pilot 
 
 					}else{
 
-						log('flag', 'discarding PILOT in favor of discrepant active_pilot')
-
-						needs_query = true
+						query_type = 'valid'; 
 
 					}
 
 				}else{
 
-					needs_query = true
+					query_type = 'restart'
 
 				}
 
-				if( needs_query ){
+				log('User', 'initializing PILOT with "' + query_type + '" query type')
 
-					pool.query('SELECT * FROM `pilots` WHERE `id` = ?', [ user.active_pilot ], ( err, results, fields ) => {
+				if( query_type == 'valid' ){
 
-						if( err || !results ){
-							reject( err )
-							return false
-						}
-
-						log('flag', 'fetch user pilot: ', results )
-
-						const pilot = results[0]
-						pilot.system_key = pilot.system_key || env.INIT_SYSTEM_KEY
-
-						user.PILOT = new Pilot( pilot )
-
-						resolve({
-							success: true,
-							pilot: user.PILOT
-						})
-
-					})
+					resolve({ success: true })
 
 				}else{
 
-					resolve({
-						success: false,
-						msg: 'invalid pilot retrieval'
-					})
+					this.fetch_pilots()
+						.then( res => {
+
+							let packet = {}
+
+							if( !res.success || !res.pilots.length ){
+
+								packet = {
+									success: false,
+									msg: 'failed to fetch pilots'
+								}
+
+							}else if( query_type == 'restart' ){
+
+								user.active_pilot = res.pilots[0].id
+
+								user.PILOT = new Pilot( res.pilots[0] )
+
+								packet = {
+									success: true,
+									pilot: user.PILOT.publish()
+								}
+
+							}else if( typeof( query_type ) == 'number' ){ // active_pilot was requested
+
+								let pilot = false
+
+								for( let i = 0; i < res.pilots.length; i++){
+									if( res.pilots[i].id === query_type ){
+										pilot = res.pilots[i]
+									}
+								}
+								if( pilot ){
+									user.PILOT = new Pilot( pilot )
+									packet = { 
+										success: true,
+										pilot: user.PILOT.publish()
+									}
+								}else{
+									delete user.active_pilot
+									packet = { 
+										success: false,
+										msg: 'could not find pilot by active_pilot; reset active; try again' 
+									}
+								}
+
+							}else{
+
+								log('flag', 'unexpected response: ', res )
+								packet = {
+									success: false,
+									msg: 'failed to fetch pilots'
+								}
+
+							}
+
+							resolve( packet )
+
+						}).catch( err => {
+							log('flag', 'err fetching pilots: ', err )
+							resolve({ success: false, msg: 'failed to fetch pilots' })
+						})
 
 				}
 
@@ -155,13 +198,27 @@ class User extends Persistent {
 	}
 
 
-	fetch_pilots() {
+
+
+
+
+
+
+	fetch_pilots( deep ) {
 
 		const pool = DB.getPool()
 
 		const user = this
 
 		return new Promise( ( resolve, reject ) => {
+
+			if( !deep && user.pilots_data ){
+				resolve({
+					success: true,
+					pilots: user.pilots_data
+				})
+				return	
+			}
 
 			pool.query('SELECT * FROM `pilots` WHERE user_id= ?', [ user.id ], ( err, res, fields ) => {
 
@@ -172,11 +229,11 @@ class User extends Persistent {
 
 				log('User', 'fetch pilots:', res )//, fields )
 
-				const pilots = res
+				user.pilots_data = res
 
 				resolve({
 					success: true,
-					pilots: pilots
+					pilots: user.pilots_data
 				})
 
 			})
@@ -188,13 +245,194 @@ class User extends Persistent {
 
 
 
-	// async set_pilot ( request ) {
 
-	// 	log('flag', 'called unfinisehd func: set_pilot')
 
-	// 	return false
 
-	// }
+
+
+
+	async create_pilot( request ){
+
+		if( typeof( this.id ) != 'number' ){
+			return {
+				success: false,
+				msg: 'must be logged in to create a pilot'
+			}
+		}
+
+		const fname = request.body.fname
+		const lname = request.body.lname
+		const portrait = request.body.selected
+
+		log('flag', '-------------------', fname, lname)
+
+		if( !lib.is_valid_name( fname ) || !lib.is_valid_name( lname ) )  return {
+			success: false,
+			msg: 'invalid names'
+		}
+
+		const pool = DB.getPool()
+
+		const query = 'INSERT INTO `pilots` ( fname, lname, portrait, user_id, license ) VALUES ( ?, ?, ?, ?, ? )'
+		const vals = [ fname, lname, portrait, this.id, 'initiate' ]
+
+		const { result, fields } = await pool.queryPromise( query, vals )
+		if( !result ){
+			return {
+				success: false,
+				msg: 'error creating pilot record'
+			}
+		}
+
+		log('User', 'create_pilot:', result )//, fields )
+
+		if( result.insertId && typeof( result.insertId ) == 'number' ) {
+			request.session.user.active_pilot = result.insertId
+		}
+
+		return {
+			success: true,
+			msg: 'pilot created'
+		}
+
+	}
+
+
+
+
+
+
+
+
+
+
+	async set_pilot ( request ) {
+
+		try{
+
+			let desired_name  = request.body.name
+
+			if( !desired_name ){
+				return { 
+					success: false, 
+					msg: 'unable to set that pilot' 
+				}
+			}
+
+			if( !this.PILOT ){ // we have name but no active_pilot or PILOT
+
+				if( this.pilots_data ){
+
+					const name = this.set_pilot_by_name( desired_name )
+					if( name ){
+						return{
+							success: true, 
+							pilot: this.PILOT.publish()
+						}
+
+					}else{
+						return{
+							success: false, 
+							msg: 'unable to set pilot' 
+						}
+					}
+
+				}else{	
+
+					fetch_pilots()
+					.then( res => {
+
+						let packet = {}
+
+						if( !res.success || !res.pilots.length ){
+							packet = {
+								success: false,
+								msg: 'failed to fetch pilots'
+							}
+						}else{
+
+							user.pilots_data = res.pilots
+
+							const name = set_pilot_by_name( desired_name )
+							if( name ){
+								packet = {
+									success: true, 
+									pilot: this.PILOT.publish() 
+								}
+							}else{
+								packet = {
+									success: false, 
+									msg: 'unable to set pilot' 
+								}
+							}
+						}
+						return packet
+					})
+					// we need to query and set by name
+				}
+
+			}else{
+
+				if( !this.PILOT.is_hydrated ) this.PILOT = new Pilot( this.PILOT )
+
+				let current_name = this.PILOT.get_name()
+
+				if( current_name == desired_name ){
+					return{
+						success: true, 
+						pilot: this.PILOT.publish()
+					}
+				}else{
+
+					const name = this.set_pilot_by_name( desired_name )
+					
+					if( name ){
+						return{
+							success: true, 
+							pilot: this.PILOT.publish()
+						}
+						return
+					}else{
+						return{
+							success: false, 
+							msg: 'unable to set pilot' 
+						}
+					}
+
+				}
+
+			}
+
+			
+		}catch(e){
+			log('flag', 'errrrr: ', e)
+		}
+
+		return false
+
+	}
+
+
+
+
+
+
+
+
+
+	set_pilot_by_name( desired ){
+
+		let name = false
+		for( let i = 0; i < this.pilots_data.length; i++ ){
+			if( this.pilots_data[i].fname + ' ' + this.pilots_data[i].lname === desired ) {
+				name = this.pilots_data[i]
+				this.PILOT = new Pilot( this.pilots_data[i] )
+				this.active_pilot = this.pilots_data[i].id
+			}
+		}
+		return name
+
+	}
 
 }
 

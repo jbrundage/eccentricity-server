@@ -94,7 +94,7 @@ class Projectile {
 		this.ref.facing = this.ref.facing || new Vector3()
 		this.ref.model = this.ref.model || new Object3D()
 
-		this.internal = init.internal 
+		this.internal = init.internal || {} 
 
 		this.gc = false
 

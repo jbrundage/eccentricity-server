@@ -28,7 +28,7 @@ class Pilot extends Sentient {
 
 		this.type = 'pilot'
 
-		this.table = 'pilots'
+		this.internal.table = 'pilots'
 
 		this.license = init.license || 'provisional'
 		this.licensed = init.licensed || Date.now()
@@ -44,6 +44,12 @@ class Pilot extends Sentient {
 
 		this.ships = init.ships || []
 
+	}
+
+
+	get_name(){
+		if( !this.fname ) return false
+		return this.fname + ' ' + this.name
 	}
 
 

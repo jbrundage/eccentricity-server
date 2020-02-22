@@ -83,10 +83,7 @@ const gatekeep = function(req, res, next) {
 
 	}else{
 
-		// AVAST YE MATEYS
 		req.session.user = new User( req.session.user )
-		// any validation on req object here passes through serializer before added to WSS
-		// ( functions lost - WSS only though )
 
 		next()
 
@@ -119,22 +116,9 @@ exp.use( bodyParser.json({
 }))
 
 
-// exp.use('/ws', lru_session)
-
-// exp.use('/', lru_session )
-// exp.use('/hangar', lru_session )
-// exp.use('/sky', lru_session )
-// exp.use('/fetch*', lru_session )
-
 exp.use( lru_session )
 
 exp.use( gatekeep )
-
-// exp.use('/', gatekeep )
-// exp.use('/hangar', gatekeep )
-// exp.use('/sky', gatekeep )
-// exp.use('/fetch_system', gatekeep )
-// exp.use('/fetch_pilots', gatekeep )
 
 // routing
 exp.get('/', function(request, response) {
@@ -161,6 +145,10 @@ exp.get('/sky*', function(request, response){
 	response.send( render('sky'))
 })
 
+exp.get('/license*', function(request, response){
+	response.send( render('license'))
+})
+
 exp.get('/account*', function(request, response){
 	response.send( render('account'))
 	// response.sendFile('/client/html/account.html', {root: '../'})
@@ -169,10 +157,14 @@ exp.get('/account*', function(request, response){
 exp.get('/logout', function( request, response ){
 	auth.logout_user( request )
 		.then( function( res ){
-			response.redirect('/')
+			response.json( res )
 		})
-		.catch(function(err){
-			response.status(500).json(err)
+		.catch(function( err ){
+			log('flag', 'logout err: ', err )
+			response.json({
+				success: false,
+				msg: 'error logging out'
+			})
 		})
 })
 
@@ -187,17 +179,34 @@ exp.get('/touch_user', function( request, response ){ // not called from /sky
 
 	(async() => {
 
-		// request.session.user = new User( request.session.user )
-
-		request.session.user.PILOT = await request.session.user.touch_pilot()
-		request.session.user.SHIP = await request.session.user.PILOT.touch_ship( request.session.user.PILOT.system_key, false )
-
+		if( !request.session.user.is_hydrated ){
+			request.session.user = new User( request.session.user )
+		}
 		response.json({
 			success: true,
 			user: request.session.user.publish()
 		})
 
-		return true
+		// const r = await request.session.user.touch_pilot()
+
+		// if( r.success && request.session.user.PILOT ){
+
+		// 	const s = await request.session.user.PILOT.touch_ship( request.session.user.PILOT.system_key, false )
+
+		// 	response.json({
+		// 		success: true,
+		// 		user: request.session.user.publish()
+		// 	})				
+
+		// 	return
+			
+		// }else{
+		// 	response.json({
+		// 		success: true,
+		// 		user: request.session.user.publish()
+		// 	})
+		// 	return
+		// }
 
 	})()
 
@@ -222,19 +231,29 @@ exp.get('/touch_user', function( request, response ){ // not called from /sky
 
 exp.get('/fetch_pilots', function( request, response ){
 
-	request.session.user.fetch_pilots()
-		.then(function( res ){
-			response.json({
-				success: true,
-				pilots: res 
+	if( request.session.user.fetch_pilots ){
+
+		request.session.user.fetch_pilots()
+			.then(function( res ){
+				response.json( res )
 			})
-		})
-		.catch(function( err ){
-			response.json({
-				success: false,
-				err: err
+			.catch(function( err ){
+				log('flag', 'err fetching pilots: ', err )
+				response.json({
+					success: false,
+					err: 'error fetching pilots'
+				})
 			})
+
+	}else{
+
+		log('flag', 'user should be instantiated already: ', request.session.user )
+		response.json({
+			success: false,
+			err: 'failed to fetch pilots, try logging out and in again'
 		})
+
+	}
 
 })
 
@@ -267,21 +286,27 @@ exp.get('/warn', function(request, response){
 // -------
 // vv POST
 
-exp.post('/seed_galaxy', function( request, response ){
+// exp.post('/seed_galaxy', function( request, response ){
 
-	query.seed_galaxy( request )
-		.then( res => {
-			response.json( res )
-		}).catch( err => { log('flag', 'seed_galaxy err: ', err) })
+// 	query.seed_galaxy( request )
+// 		.then( res => {
+// 			response.json( res )
+// 		}).catch( err => { log('flag', 'seed_galaxy err: ', err) })
 
-})
+// })
 
 exp.post('/seed_system', function( request, response ){
 
 	query.seed_system( request )
 		.then( res => {
 			response.json( res )
-		}).catch( err => { log('flag', 'seed_system err: ', err) })
+		}).catch( err => { 
+			response.json({
+				success: false,
+				msg: 'failed to seed system'
+			})
+			log('flag', 'seed_system err: ', err) 
+		})
 
 })
 
@@ -291,43 +316,74 @@ exp.post('/fetch_system', function( request, response ){
 		.then( res => {
 			response.json( res )
 		})
-		.catch( err => { log( 'flag', 'err fetching system', err ) })
+		.catch( err => { 
+			log( 'flag', 'err fetching system', err ) 
+			response.json({
+				success: false,
+				msg: 'failed to fetch system'
+			})
+		})
 
 })
 
 exp.post('/login', function(request, response){
-	auth.verify_user(request)
+	auth.login_user(request)
 		.then(function(res){
-			response.status(200).json(res)
+			response.json(res)
 		})
 		.catch(function(err){
-			response.status(500).json(err)
+			log('flag', 'error logging in: ', err )
+			response.json({
+				success: false,
+				msg: 'error logging in'
+			})
 		})
 })
 
 exp.post('/register', function( request, response ){
 	auth.register_user( request )
 		.then( function( res ){
-			response.status(200).json( res )
+			response.json( res )
 		})
 		.catch(function(err){
-			response.status(500).json( err )
+			log('flag', 'error registering', err )
+			response.json({
+				success: false,
+				msg: 'error registering'
+			})
 		})
 })
 
 
 exp.post('/set_pilot', function( request, response ){
-	// auth.set_pilot(request)
-	request.session.user.set_pilot()
+	request.session.user.set_pilot( request )
 		.then(function( res ){
-			response.status(200).json( res )
+			response.json( res )
 		})
-		.catch(function(err){
-			response.status(500).json( err )
+		.catch(function( err ){
+			log('flag', 'error choosing pilot', err )
+			response.json({
+				success: false,
+				msg: 'error choosing pilot'
+			})
 		})
 })
 
-
+exp.post('/create_pilot', function( request, response ){
+	request.session.user.create_pilot( request )
+		.then(function( res ){
+			response.json( res )
+		})
+		.catch(function( err ){
+			log('flag', 'error creating pilot: ', err )
+			let msg = 'error creating pilot'
+			if( err.code = 'ER_DUP_ENTRY')  msg = 'you already have a pilot by that name'
+			response.json({
+				success: false,
+				msg: msg
+			})
+		})
+})
 
 exp.post('*', function(request, response){
 	log('routing', 'POST 404: ' + request.url)
@@ -368,9 +424,9 @@ exp.get('*', function(request, response){
 
 DB.initPool(( err, db ) => {
 
-	if(err) return console.error( 'no db: ', err )
+	if( err ) return console.error( 'no db: ', err )
 	
-	log('db', 'init:', Date.now())
+	log('db', 'init:', Date.now() )
   
 	server.listen( env.PORT, function() {
 

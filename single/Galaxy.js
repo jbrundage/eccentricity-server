@@ -89,11 +89,6 @@ class Galaxy {
 			return msg
 		}
 
-		// dont need this at spawn actually...
-		// const { results, fields } = await pool.queryPromise('SELECT * FROM \`stations\` WHERE id = ? LIMIT 1', [ station_key ])
-
-		// const STATION = results[ 0 ]
-
 		const SYSTEM = await this.touch_system( system_key )
 
 		if( !SYSTEM ){
@@ -350,9 +345,13 @@ class Galaxy {
 
 		SYSTEMS[ id ].end_pulse()
 
-		SYSTEMS[ id ].updateOne()
+		SYSTEMS[ id ].save()
 		.then( res => {
-			log('system', 'saved system: ', id )
+			if( res.success ){
+				log('system', 'saved system: ', id )
+			}else{
+				log('flag', 'failed to save system: ', res )
+			}
 		}).catch( err => { log('flag', 'failed to save system: ', err ) })
 
 		// any setIntervals in System from here are irretrievable !

@@ -17,7 +17,7 @@ class Commander extends Sentient {
 
 		this.type = 'commander'
 
-		this.table = 'commanders'
+		this.internal.table = 'commanders'
 
 		this.license = init.license || 'provisional'
 		this.licensed = init.licensed || Date.now()

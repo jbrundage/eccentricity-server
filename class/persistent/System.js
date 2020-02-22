@@ -59,10 +59,11 @@ class System extends Persistent {
 		super( init )
 
 		init = init || {}
+		this.internal = init.internal || {}
 
 		this.initialized = init.initialized
 
-		this.table = 'systems'
+		this.internal.table = 'systems'
 
 		this.name = init.name
 
@@ -94,29 +95,26 @@ class System extends Persistent {
 		this.projectiles = init.projectiles || {}
 
 
-		this.internal = {
+		this.internal.pulses = { 
 
-			pulses: { 
+			npc: {
+				spawn: false,
+				decide_move: false,
+				// think: false ----- event based actually
+			},
 
-				npc: {
-					spawn: false,
-					decide_move: false,
-					// think: false ----- event based actually
-				},
+			entropic: {
+				spawn: false,
+				move: false,
+				// status: false
+			},
 
-				entropic: {
-					spawn: false,
-					move: false,
-					// status: false
-				},
-
-				misc: {
-					projectiles: false
-				}
-
+			misc: {
+				projectiles: false
 			}
 
 		}
+
 
 	}
 
@@ -327,7 +325,7 @@ class System extends Persistent {
 
 		}
 
-		if( needs_update ) await system.updateOne()
+		if( needs_update ) await system.save()
 
 		return
 
@@ -377,7 +375,7 @@ class System extends Persistent {
 
 		}
 
-		if( needs_update ) await system.updateOne()
+		if( needs_update ) await system.save()
 
 		return
 
@@ -535,7 +533,7 @@ class System extends Persistent {
 
 				}else{
 
-					let high = 0
+					let high = 100
 					let faction = 'none'
 
 					for( const f of Object.keys( system.reputation ) ){
@@ -843,6 +841,18 @@ class System extends Persistent {
 			}
 
 		}
+
+	}
+
+
+
+
+
+
+	async save(){
+
+		log('flag', '** unfinished system save ** ')
+		return true
 
 	}
 

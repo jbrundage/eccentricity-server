@@ -13,6 +13,7 @@ class Sentient {
 	constructor( init ){
 
 		init = init || {}
+		this.internal = init.internal || {}
 
 		this.id = init.id
 
@@ -30,7 +31,7 @@ class Sentient {
 		this.lname = init.lname || lib.tables.names.pilots.lname[ Math.floor( Math.random() * lib.tables.names.pilots.lname.length ) ]
 		this.title = init.title || 'the Innocent'
 		this.color = init.color || 'rgb(' + lib.random_int( 100, 150 ) + ', ' + lib.random_int( 100, 150 ) + ', ' + lib.random_int( 100, 150 ) + ')'
-		this.portrait = init.portrait || ( Math.random() > .5 ? 'anon-male.jpg' : 'anon-female.jpg' )
+		this.portrait = init.portrait || ( Math.random() > .5 ? 'anon-male' : 'anon-female' )
 
 		this.coin = (function(){
 			if( init.coin === 0 ) return 0
@@ -48,10 +49,16 @@ class Sentient {
 
 		this.waypoint = init.waypoint
 
+
 		this.logistic = init.logistic || []
 		this.logistic.push('logistic', 'uuid', 'type', 'temporality', 'entropy')
 		
 	}
+
+
+
+	is_hydrated(){}
+	
 
 
 

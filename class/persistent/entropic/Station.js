@@ -20,7 +20,7 @@ class Station extends Entropic {
 		this.type = 'station'
 		this.subtype = init.subtype
 
-		this.table = 'stations'
+		this.internal.table = 'stations'
 
 		this.clickable = true
 

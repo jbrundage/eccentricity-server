@@ -38,7 +38,6 @@ function initPool( callback ) {
 
 	const queryPromise = ( ...args ) => new Promise( (resolve, reject) => {
 		_pool.query( ...args, (error, results, fields) => {
-			// reject( 'nooooooo' )
 			if ( error ) {
 				reject( error )
 			} else {
@@ -49,21 +48,9 @@ function initPool( callback ) {
 
 	_pool.queryPromise = queryPromise
 
-	// util.promisify( _pool.query )
 	if( _pool ) log('db', 'pool init')
 
 	return callback( null, _pool )
-
-	// pool.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-	//   if (error) throw error;
-	//   console.log('The solution is: ', results[0].solution);
-	// })
-
-	// _pool.connect(function(){
-
-	   //  return callback(null, _pool)
-	    
-	// })
 
 }
 

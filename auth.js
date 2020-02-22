@@ -23,79 +23,94 @@ log('call', 'auth.js')
 
 
 
-function verify_user( request ){
+function login_user( request ){
 
 	const pool = DB.getPool()
 
 	const email = request.body.email.toLowerCase().trim()
-	const password = request.body.password
+	const password = request.body.password.trim()
+
+	const err_msg =  'failed to validate user'
 
 	return new Promise( function( resolve, reject ){
 
-		reject({
-			success: false,
-			msg: 'accounts not yet available'
-		})
-		return false
+		select_user( 'email', email )
+		.then( response => {
 
-		let msg = false
-		if( !lib.is_valid_email( email ) ) msg = 'invalid email'
-		if( !lib.is_valid_password( password ) ) msg = 'invalid password'
-		if( msg ){
+			// log('flag', 'login: ', response )
 
-			resolve({ success: false, msg: msg })
+
+			const hash_pw = response.msg.password
+
+			const user = new User( response.msg )
+
+			// log('flag', 'um, what is the user response: ', user )
+
+			if( !user ){
+				log('flag', 'failed to find email: ', email)
+				resolve({
+					success: false,
+					msg: err_msg
+				})
+				return false
+			}
+
+			if( !hash_pw ){
+				log('flag', 'no password found on user')
+				reject()
+				return false
+			}
+
+			bcrypt.compare( password, hash_pw )
+			.then( bcrypt_boolean => {
+
+				if( bcrypt_boolean ){
+
+					request.session.user = user
+
+					resolve({
+						success: true,
+						msg: 'congrats' // user
+					})
+
+				}else{
+
+					resolve({
+						success: false,
+						msg: err_msg
+					})
+
+				}
+
+
+			}).catch( err => {
+				log('flag', 'bcrypt error: ', err )
+				resolve({
+					success: false,
+					msg: err_msg
+				})
+			})
+
+		}).catch( err => {
+			log('flag', 'error validating credentials: ', err )
+			resolve({
+				success: false,
+				msg: err_msg
+			})
 			return false
-		}
+		})
 
-		resolve({ success: true })
-
-		// db.collection('users').findOne({
-		// 	email: {$eq: email}
-		// }, function(err, res){
-
-		// 	log('auth', 'user verify attempt with password: ' + password, res)
-
-		// 	if(err || !res ){
-
-		// 		resolve({
-		// 			success: false,
-		// 			msg: 'user does not exist'
-		// 		})
-		// 		return false
-		// 	}
-
-		// 	let u = res
-
-
-		// 	bcrypt.compare(password, res.password)
-		// 	.then(function(res){
-		// 		// if(err) log('once', 'aha err: ', err)
-		// 		// log('flag', 'compare err: ', err)
-		// 		// log('flag', 'compare res: ', res)
-		// 		if(res){
-
-		// 			request.session.user = new User(u)
-
-		// 			resolve({
-		// 				success: true,
-		// 				user: request.session.user
-		// 			})
-		// 		}else{
-		// 			resolve({
-		// 				success: false,
-		// 				msg: 'wrong password'
-		// 			})
-		// 		}
-		// 	})
-		// 	.catch(function(err){
-		// 		resolve({
-		// 			success: false,
-		// 			msg: 'error logging in'
-		// 		})
-		// 		// return false
-		// 	})
-
-		// })
+		// no need to help hackers:
+		// let msg = false
+		// if( !lib.is_valid_email( email ) ){
+		// 	msg = 'invalid email'
+		// }else if( !lib.is_valid_password( password ) ) {
+		// 	msg = 'invalid password'
+		// }
+		// if( msg ){
+		// 	resolve({ success: false, msg: msg })
+		// 	return false
+		// }
 
 	})
 }
@@ -223,64 +238,15 @@ function select_user( type, value ){
 	
 
 
-function logout_user( request ){
+const logout_user = async( request ) => {
 
-	const pool = DB.getPool()
+	if( !request.session.user.update )  return false
 
-	return new Promise( function( resolve, reject ){
+	const r = await request.session.user.update( ['last_log'], [ new Date().toISOString() ] )
 
-		// reject({msg: 'accounts not yet available'})
-		// return false
+	request.session.destroy()
 
-		// if(request.session.user_id){
-		if(request.session.user){
-			
-			let u
-
-			resolve({ success: true })
-				
-	  //   	db.collection('users').findOneAndUpdate({
-	  //   		_id: request.session.user.id
-	  //   	},{
-	  //   		$set: {last_log: Date.now()}
-	  //   	},{
-	  //   		// returnNewDocument: true,
-	  //   		returnOriginal: false,
-	  //   		upsert: false
-	  //   	})
-			// .then(function(res){
-			// 	let s = true
-			// 	let msg = request.session.email + ' logged out'
-			// 	log('flag', res.value)
-			// 	if(!res.value) {
-			// 		msg = 'failed to timestamp logout for : ', request.session.user.email
-			// 		log('flag', msg)
-			// 		s = false
-			// 	}
-				
-			// 	request.session.destroy()
-
-			// 	resolve({
-			// 		success: s,
-			// 		msg: msg
-			// 	})
-			// })
-			// .catch(function(err){
-			// 	request.session.destroy()
-			// 	reject(err)
-			// })
-
-		}else{
-
-			resolve({
-				success: false,
-				msg: 'already logged'
-			})
-
-			// reject(ax_parcel('no', 'you are not logged in', 'non-logged logout attempt', {}))
-
-		}
-	})
+	return r
 
 }
 
@@ -289,7 +255,7 @@ function logout_user( request ){
 module.exports = {
 	register_user,
 	select_user,
-	verify_user,
+	login_user,
 	logout_user
 }
 
